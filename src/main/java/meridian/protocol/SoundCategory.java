@@ -1,0 +1,37 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package meridian.protocol;
+
+import meridian.protocol.io.ProtocolException;
+
+public enum SoundCategory {
+    Music(0),
+    Ambient(1),
+    SFX(2),
+    UI(3),
+    Voice(4);
+
+    public static final SoundCategory[] VALUES;
+    private final int value;
+
+    private SoundCategory(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
+
+    public static SoundCategory fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("SoundCategory", value);
+    }
+
+    static {
+        VALUES = SoundCategory.values();
+    }
+}
+
