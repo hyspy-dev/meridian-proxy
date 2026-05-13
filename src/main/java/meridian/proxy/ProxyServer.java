@@ -136,6 +136,8 @@ public class ProxyServer {
     public static void main(String[] args) throws Exception {
         ProxyConfig config = ProxyConfig.fromArgs(args);
 
+        log.info("Meridian Proxy {} — releases: {}", Version.VERSION, Version.RELEASES_URL);
+
         // Load modules early to show them in the Management UI
         ModuleManager mm = new ModuleManager();
         mm.loadModules(Paths.get("modules"));

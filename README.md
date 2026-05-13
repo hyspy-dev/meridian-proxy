@@ -346,10 +346,36 @@ hytale-proxy-forwarding/
 > To create a valid module:
 > 1. It must be a standard `.jar` file.
 > 2. It **must contain a `module.json` manifest** in the root of the archive, e.g.:
->    `{"name": "Xray", "version": "1.0", "main": "com.mypackage.MyModule", "priority": 100}`
->    (lower `priority` loads earlier; default is `100`). Load order is persisted in `order.json` next to the JARs.
+>    ```json
+>    {
+>      "name": "Xray",
+>      "version": "1.0",
+>      "main": "com.mypackage.MyModule",
+>      "priority": 100,
+>      "minCoreVersion": "1.0.0",
+>      "maxCoreVersion": "1.5.0"
+>    }
+>    ```
+>    - `priority` — lower loads earlier; default `100`. Load order is persisted in `order.json` next to the JARs.
+>    - `minCoreVersion` / `maxCoreVersion` — **optional** inclusive bounds. Compared against the core's `git describe` version (only `MAJOR.MINOR.PATCH` is used — git suffixes are ignored). If the running core falls outside the range, the module is skipped *before* classloading and a clear `WARN` is logged. Use these for hard compatibility — anything that would otherwise crash with `NoSuchMethodError`.
 > 3. The `main` class must implement `ProxyModule`.
 > 4. See [meridian-xray](./meridian-xray) for a working reference implementation.
+>
+> **Soft feature detection.** For optional behavior that the module can enable when the core is new enough (but doesn't strictly require), use `ModuleContext.getCoreVersion()` from `onEnable()`:
+>
+> ```java
+> @Override
+> public void onEnable(ModuleContext ctx) {
+>     ctx.getLogger().info("Running on core {}", ctx.getCoreVersion());
+>     // Example: enable an extra hook only on 1.1.0+
+>     if (SemVer.inRange(SemVer.parse(ctx.getCoreVersion()), "1.1.0", null)) {
+>         ctx.registerHandler(new OptionalNewApiHandler());
+>     }
+>     ctx.registerHandler(new BaselineHandler());
+> }
+> ```
+>
+> Rule of thumb: **declarative gate in `module.json` is the primary mechanism** (it runs before classloading and protects against missing APIs). `getCoreVersion()` is purely for adapting behavior when the module *can* work either way.
 
 ### Pipeline Architecture
 
@@ -437,7 +463,25 @@ cd meridian-proxy
 mvn clean install -DskipTests
 ```
 
-Produces: `target/meridian-proxy-1.0.0-SNAPSHOT-all.jar` (uber-jar with all dependencies, built by `maven-shade-plugin` with classifier `all`). A thin non-shaded `meridian-proxy-1.0.0-SNAPSHOT.jar` is produced alongside — use the `-all` one to run.
+Produces: `target/meridian-proxy-<version>-all.jar` (uber-jar with all dependencies, built by `maven-shade-plugin` with classifier `all`). A thin non-shaded jar is produced alongside — use the `-all` one to run.
+
+The `<version>` part is derived from `git describe --tags` at build time:
+- Exactly on a tag (e.g. `v1.0.0`) → `meridian-proxy-v1.0.0-all.jar`
+- Between tags → `meridian-proxy-v1.0.0-3-gabc1234-all.jar` (tag + commits since + short SHA)
+- With uncommitted changes → `...-dirty` suffix
+
+The same string is shown in the window title bar, the status bar (with a link to GitHub Releases), and the `Implementation-Version` manifest entry.
+
+### Releasing a new version
+
+```bash
+git tag v1.0.1
+git push --tags
+mvn clean package -DskipTests
+# Upload target/meridian-proxy-v1.0.1-all.jar to GitHub Releases
+```
+
+That's the whole bump flow — `pom.xml` is not touched. Released binaries on [GitHub Releases](https://github.com/hyspy-dev/meridian-proxy/releases).
 
 ### Run: Launcher Mode
 
@@ -454,7 +498,7 @@ java -jar HytaleServer.jar \
 Manual launch without replacing the HytaleServer JAR. Provide tokens and server address directly:
 
 ```bash
-java -jar meridian-proxy-1.0.0-SNAPSHOT-all.jar \
+java -jar meridian-proxy-v1.0.0-all.jar \
     --remote 1.2.3.4:5520 \
     --bind localhost:5521 \
     --session-token "eyJ..." \

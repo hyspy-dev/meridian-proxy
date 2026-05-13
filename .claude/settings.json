@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//b/Job/dev/_java/hytale-proxy-forwarding/**)"
+    ],
+    "additionalDirectories": [
+      "B:\\Job\\dev\\_java\\hytale-proxy-forwarding"
+    ]
+  }
+}

@@ -2,6 +2,8 @@ package meridian.proxy.module;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import meridian.proxy.SemVer;
+import meridian.proxy.Version;
 import meridian.proxy.handler.PacketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,6 +168,10 @@ public class ModuleManager {
             return;
         }
 
+        if (!isCompatible(meta)) {
+            return; // reason already logged
+        }
+
         log.info("Loading module {} (v{}) with priority {} from {}", meta.name, meta.version, meta.priority, jarFile.getName());
 
             URLClassLoader loader = new URLClassLoader(
@@ -185,7 +191,7 @@ public class ModuleManager {
             // Create scoped context
             ModuleContext context = new ModuleContext() {
                 private final Logger moduleLog = LoggerFactory.getLogger(meta.name);
-                
+
                 @Override
                 public Logger getLogger() { return moduleLog; }
 
@@ -200,11 +206,30 @@ public class ModuleManager {
                     entry.settingsPanel = panel;
                     moduleLog.info("Registered settings panel.");
                 }
+
+                @Override
+                public String getCoreVersion() { return Version.VERSION; }
             };
 
             module.onEnable(context);
             loadedModules.add(entry);
             log.info("Module {} enabled successfully.", meta.name);
+    }
+
+    private boolean isCompatible(ModuleMetadata meta) {
+        SemVer core = SemVer.parse(Version.VERSION);
+        if (!SemVer.inRange(core, meta.minCoreVersion, meta.maxCoreVersion)) {
+            StringBuilder need = new StringBuilder();
+            if (meta.minCoreVersion != null) need.append("≥ ").append(meta.minCoreVersion);
+            if (meta.maxCoreVersion != null) {
+                if (need.length() > 0) need.append(", ");
+                need.append("≤ ").append(meta.maxCoreVersion);
+            }
+            log.warn("Skipping module {} (v{}): requires core {} but current is {}",
+                    meta.name, meta.version, need, Version.VERSION);
+            return false;
+        }
+        return true;
     }
 
     public List<ModuleEntry> getLoadedModules() {
@@ -265,6 +290,8 @@ public class ModuleManager {
         String version;
         String main;
         int priority = 100; // Default priority
+        String minCoreVersion; // optional; inclusive lower bound (e.g. "1.0.0")
+        String maxCoreVersion; // optional; inclusive upper bound (e.g. "1.5.0")
     }
 
     private static class ModuleMetadataWrapper {

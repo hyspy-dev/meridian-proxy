@@ -5,6 +5,13 @@
   <artifactId>meridian-proxy</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <finalName>meridian-proxy-${git.commit.id.describe}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -12,6 +19,30 @@
         <configuration>
           <source>21</source>
           <target>21</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>9.0.1</version>
+        <executions>
+          <execution>
+            <id>get-git-info</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+          <gitDescribe>
+            <always>true</always>
+            <dirty>-dirty</dirty>
+            <tags>true</tags>
+          </gitDescribe>
         </configuration>
       </plugin>
       <plugin>
@@ -26,9 +57,13 @@
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>all</shadedClassifierName>
+              <finalName>meridian-proxy-${git.commit.id.describe}-all</finalName>
               <transformers>
                 <transformer>
                   <mainClass>meridian.proxy.ProxyServer</mainClass>
+                  <manifestEntries>
+                    <Implementation-Version>${git.commit.id.describe}</Implementation-Version>
+                  </manifestEntries>
                 </transformer>
               </transformers>
               <filters>
@@ -56,9 +91,9 @@
     </dependency>
   </dependencies>
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>21</maven.compiler.target>
     <netty.version>4.1.100.Final</netty.version>
     <maven.compiler.source>21</maven.compiler.source>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>

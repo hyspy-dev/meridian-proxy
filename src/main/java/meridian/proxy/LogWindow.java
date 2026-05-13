@@ -2,12 +2,15 @@ package meridian.proxy;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -96,7 +99,7 @@ public final class LogWindow {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {}
 
-        frame = new JFrame("Meridian Proxy — Management");
+        frame = new JFrame("Meridian Proxy " + Version.VERSION + " — Management");
         frame.setSize(1200, 800);
         frame.setLocationByPlatform(true);
 
@@ -222,7 +225,9 @@ public final class LogWindow {
         splitPane.setResizeWeight(1.0);
         splitPane.setBorder(null);
 
-        frame.add(splitPane);
+        frame.setLayout(new BorderLayout());
+        frame.add(splitPane, BorderLayout.CENTER);
+        frame.add(buildStatusBar(), BorderLayout.SOUTH);
 
         // Close window → terminate JVM
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -235,6 +240,42 @@ public final class LogWindow {
 
         frame.setVisible(true);
         updateModuleList();
+    }
+
+    private static JPanel buildStatusBar() {
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 3));
+        bar.setBackground(new Color(28, 28, 28));
+        bar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(40, 40, 40)));
+
+        JLabel versionLabel = new JLabel("Meridian Proxy " + Version.VERSION);
+        versionLabel.setForeground(new Color(160, 160, 160));
+        versionLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+
+        JLabel separator = new JLabel("•");
+        separator.setForeground(new Color(80, 80, 80));
+
+        JLabel releasesLink = new JLabel("<html><u>Releases &#x2197;</u></html>");
+        releasesLink.setForeground(new Color(100, 160, 220));
+        releasesLink.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        releasesLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        releasesLink.setToolTipText(Version.RELEASES_URL);
+        releasesLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    if (Desktop.isDesktopSupported()
+                            && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                        Desktop.getDesktop().browse(new URI(Version.RELEASES_URL));
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        });
+
+        bar.add(versionLabel);
+        bar.add(separator);
+        bar.add(releasesLink);
+        return bar;
     }
 
     private static void openSettings(ModuleEntry entry) {
