@@ -1,41 +1,34 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum EntityStatOp {
-    Init(0),
-    Remove(1),
-    PutModifier(2),
-    RemoveModifier(3),
-    Add(4),
-    Set(5),
-    Minimize(6),
-    Maximize(7),
-    Reset(8);
+   Init(0),
+   Remove(1),
+   PutModifier(2),
+   RemoveModifier(3),
+   Add(4),
+   Set(5),
+   Minimize(6),
+   Maximize(7),
+   Reset(8);
 
-    public static final EntityStatOp[] VALUES;
-    private final int value;
+   public static final EntityStatOp[] VALUES = values();
+   private final int value;
 
-    private EntityStatOp(int value) {
-        this.value = value;
-    }
+   EntityStatOp(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static EntityStatOp fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("EntityStatOp", value);
-    }
-
-    static {
-        VALUES = EntityStatOp.values();
-    }
+   public static EntityStatOp fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("EntityStatOp", value);
+      }
+   }
 }
-

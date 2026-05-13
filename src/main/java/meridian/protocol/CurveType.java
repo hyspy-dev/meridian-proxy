@@ -1,36 +1,29 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum CurveType {
-    Linear(0),
-    QuartIn(1),
-    QuartOut(2),
-    QuartInOut(3);
+   Linear(0),
+   QuartIn(1),
+   QuartOut(2),
+   QuartInOut(3);
 
-    public static final CurveType[] VALUES;
-    private final int value;
+   public static final CurveType[] VALUES = values();
+   private final int value;
 
-    private CurveType(int value) {
-        this.value = value;
-    }
+   CurveType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static CurveType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("CurveType", value);
-    }
-
-    static {
-        VALUES = CurveType.values();
-    }
+   public static CurveType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("CurveType", value);
+      }
+   }
 }
-

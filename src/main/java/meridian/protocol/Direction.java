@@ -1,89 +1,135 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
 public class Direction {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 12;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 12;
-    public static final int MAX_SIZE = 12;
-    public float yaw;
-    public float pitch;
-    public float roll;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 12;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 12;
+   public static final int MAX_SIZE = 12;
+   public float yaw;
+   public float pitch;
+   public float roll;
 
-    public Direction() {
-    }
+   public Direction() {
+   }
 
-    public Direction(float yaw, float pitch, float roll) {
-        this.yaw = yaw;
-        this.pitch = pitch;
-        this.roll = roll;
-    }
+   public Direction(float yaw, float pitch, float roll) {
+      this.yaw = yaw;
+      this.pitch = pitch;
+      this.roll = roll;
+   }
 
-    public Direction(@Nonnull Direction other) {
-        this.yaw = other.yaw;
-        this.pitch = other.pitch;
-        this.roll = other.roll;
-    }
+   public Direction(@Nonnull Direction other) {
+      this.yaw = other.yaw;
+      this.pitch = other.pitch;
+      this.roll = other.roll;
+   }
 
-    @Nonnull
-    public static Direction deserialize(@Nonnull ByteBuf buf, int offset) {
-        Direction obj = new Direction();
-        obj.yaw = buf.getFloatLE(offset + 0);
-        obj.pitch = buf.getFloatLE(offset + 4);
-        obj.roll = buf.getFloatLE(offset + 8);
-        return obj;
-    }
+   @Nonnull
+   public static Direction deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 12) {
+         throw ProtocolException.bufferTooSmall("Direction", 12, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 12;
-    }
+      Direction obj = new Direction();
+      obj.yaw = buf.getFloatLE(offset + 0);
+      obj.pitch = buf.getFloatLE(offset + 4);
+      obj.roll = buf.getFloatLE(offset + 8);
+      return obj;
+   }
 
-    public void serialize(@Nonnull ByteBuf buf) {
-        buf.writeFloatLE(this.yaw);
-        buf.writeFloatLE(this.pitch);
-        buf.writeFloatLE(this.roll);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 12;
+   }
 
-    public int computeSize() {
-        return 12;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 12L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 12) {
-            return ValidationResult.error("Buffer too small: expected at least 12 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static float getYaw(MemorySegment mem) {
+      return getYaw(mem, 0);
+   }
 
-    public Direction clone() {
-        Direction copy = new Direction();
-        copy.yaw = this.yaw;
-        copy.pitch = this.pitch;
-        copy.roll = this.roll;
-        return copy;
-    }
+   public static float getYaw(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Direction)) {
-            return false;
-        }
-        Direction other = (Direction)obj;
-        return this.yaw == other.yaw && this.pitch == other.pitch && this.roll == other.roll;
-    }
+   public static float getPitch(MemorySegment mem) {
+      return getPitch(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(Float.valueOf(this.yaw), Float.valueOf(this.pitch), Float.valueOf(this.roll));
-    }
+   public static float getPitch(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 4);
+   }
+
+   public static float getRoll(MemorySegment mem) {
+      return getRoll(mem, 0);
+   }
+
+   public static float getRoll(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 8);
+   }
+
+   public static Direction toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static Direction toObject(MemorySegment mem, int offset) {
+      if (offset + 12 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("Direction", offset + 12, (int)mem.byteSize());
+      } else {
+         return new Direction(mem.get(PacketIO.PROTO_FLOAT, offset + 0), mem.get(PacketIO.PROTO_FLOAT, offset + 4), mem.get(PacketIO.PROTO_FLOAT, offset + 8));
+      }
+   }
+
+   public void serialize(@Nonnull ByteBuf buf) {
+      buf.writeFloatLE(this.yaw);
+      buf.writeFloatLE(this.pitch);
+      buf.writeFloatLE(this.roll);
+   }
+
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      mem.set(PacketIO.PROTO_FLOAT, offset + 0, this.yaw);
+      mem.set(PacketIO.PROTO_FLOAT, offset + 4, this.pitch);
+      mem.set(PacketIO.PROTO_FLOAT, offset + 8, this.roll);
+      return 12;
+   }
+
+   public int computeSize() {
+      return 12;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 12 ? ValidationResult.error("Buffer too small: expected at least 12 bytes") : ValidationResult.OK;
+   }
+
+   public Direction clone() {
+      Direction copy = new Direction();
+      copy.yaw = this.yaw;
+      copy.pitch = this.pitch;
+      copy.roll = this.roll;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof Direction other) ? false : this.yaw == other.yaw && this.pitch == other.pitch && this.roll == other.roll;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.yaw, this.pitch, this.roll);
+   }
 }
-

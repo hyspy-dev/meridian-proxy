@@ -1,127 +1,205 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
-import meridian.protocol.ComponentUpdate;
+import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
 
-public class UIComponentsUpdate
-extends ComponentUpdate {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 0;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 0;
-    public static final int MAX_SIZE = 16384005;
-    @Nonnull
-    public int[] components = new int[0];
+public class UIComponentsUpdate extends ComponentUpdate {
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 0;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 0;
+   public static final int MAX_SIZE = 16384005;
+   @Nonnull
+   public int[] components = new int[0];
 
-    public UIComponentsUpdate() {
-    }
+   public UIComponentsUpdate() {
+   }
 
-    public UIComponentsUpdate(@Nonnull int[] components) {
-        this.components = components;
-    }
+   public UIComponentsUpdate(@Nonnull int[] components) {
+      this.components = components;
+   }
 
-    public UIComponentsUpdate(@Nonnull UIComponentsUpdate other) {
-        this.components = other.components;
-    }
+   public UIComponentsUpdate(@Nonnull UIComponentsUpdate other) {
+      this.components = other.components;
+   }
 
-    @Nonnull
-    public static UIComponentsUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
-        UIComponentsUpdate obj = new UIComponentsUpdate();
-        int pos = offset + 0;
-        int componentsCount = VarInt.peek(buf, pos);
-        if (componentsCount < 0) {
-            throw ProtocolException.negativeLength("Components", componentsCount);
-        }
-        if (componentsCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Components", componentsCount, 4096000);
-        }
-        int componentsVarLen = VarInt.size(componentsCount);
-        if ((long)(pos + componentsVarLen) + (long)componentsCount * 4L > (long)buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Components", pos + componentsVarLen + componentsCount * 4, buf.readableBytes());
-        }
-        pos += componentsVarLen;
-        obj.components = new int[componentsCount];
-        for (int i = 0; i < componentsCount; ++i) {
-            obj.components[i] = buf.getIntLE(pos + i * 4);
-        }
-        pos += componentsCount * 4;
-        return obj;
-    }
+   @Nonnull
+   public static UIComponentsUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
+      UIComponentsUpdate obj = new UIComponentsUpdate();
+      int pos = offset + 0;
+      int componentsCount = VarInt.peek(buf, pos);
+      if (componentsCount < 0) {
+         throw ProtocolException.invalidVarInt("Components");
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        int pos = offset + 0;
-        int arrLen = VarInt.peek(buf, pos);
-        pos += VarInt.length(buf, pos) + arrLen * 4;
-        return pos - offset;
-    }
+      int componentsVarLen = VarInt.size(componentsCount);
+      if (componentsCount > 4096000) {
+         throw ProtocolException.arrayTooLong("Components", componentsCount, 4096000);
+      }
 
-    @Override
-    public int serialize(@Nonnull ByteBuf buf) {
-        int startPos = buf.writerIndex();
-        if (this.components.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Components", this.components.length, 4096000);
-        }
-        VarInt.write(buf, this.components.length);
-        for (int item : this.components) {
-            buf.writeIntLE(item);
-        }
-        return buf.writerIndex() - startPos;
-    }
+      if (pos + componentsVarLen + componentsCount * 4L > buf.readableBytes()) {
+         throw ProtocolException.bufferTooSmall("Components", pos + componentsVarLen + componentsCount * 4, buf.readableBytes());
+      }
 
-    @Override
-    public int computeSize() {
-        int size = 0;
-        return size += VarInt.size(this.components.length) + this.components.length * 4;
-    }
+      pos += componentsVarLen;
+      obj.components = new int[componentsCount];
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 0) {
-            return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-        }
-        int pos = offset + 0;
-        int componentsCount = VarInt.peek(buffer, pos);
-        if (componentsCount < 0) {
-            return ValidationResult.error("Invalid array count for Components");
-        }
-        if (componentsCount > 4096000) {
-            return ValidationResult.error("Components exceeds max length 4096000");
-        }
-        pos += VarInt.length(buffer, pos);
-        if ((pos += componentsCount * 4) > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Components");
-        }
-        return ValidationResult.OK;
-    }
+      for (int i = 0; i < componentsCount; i++) {
+         obj.components[i] = buf.getIntLE(pos + i * 4);
+      }
 
-    public UIComponentsUpdate clone() {
-        UIComponentsUpdate copy = new UIComponentsUpdate();
-        copy.components = Arrays.copyOf(this.components, this.components.length);
-        return copy;
-    }
+      pos += componentsCount * 4;
+      return obj;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof UIComponentsUpdate)) {
-            return false;
-        }
-        UIComponentsUpdate other = (UIComponentsUpdate)obj;
-        return Arrays.equals(this.components, other.components);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      int pos = offset + 0;
+      int arrLen = VarInt.peek(buf, pos);
+      pos += VarInt.size(arrLen) + arrLen * 4;
+      return pos - offset;
+   }
 
-    public int hashCode() {
-        int result = 1;
-        result = 31 * result + Arrays.hashCode(this.components);
-        return result;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 0L;
+   }
+
+   public static int[] getComponents(MemorySegment mem) {
+      return getComponents(mem, 0);
+   }
+
+   public static int[] getComponents(MemorySegment mem, int offset) {
+      int off = offset + 0;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("Components", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.arrayTooLong("Components", len, 4096000);
+      }
+
+      int lenOffset = (int)(packed >>> 32);
+      if (off + lenOffset + len * 4L > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("Components", off + lenOffset + len * 4, (int)mem.byteSize());
+      }
+
+      off += lenOffset;
+      int[] data = new int[len];
+      MemorySegment.copy(mem, PacketIO.PROTO_INT, off, data, 0, len);
+      return data;
+   }
+
+   public static UIComponentsUpdate toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static UIComponentsUpdate toObject(MemorySegment mem, int offset) {
+      if (offset + 0 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("UIComponentsUpdate", offset + 0, (int)mem.byteSize());
+      }
+
+      int off = offset + 0;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("Components", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.arrayTooLong("Components", len, 4096000);
+      }
+
+      int lenOffset = (int)(packed >>> 32);
+      if (off + lenOffset + len * 4L > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("Components", off + lenOffset + len * 4, (int)mem.byteSize());
+      }
+
+      off += lenOffset;
+      int[] components = new int[len];
+      MemorySegment.copy(mem, PacketIO.PROTO_INT, off, components, 0, len);
+      return new UIComponentsUpdate(components);
+   }
+
+   @Override
+   public int serialize(@Nonnull ByteBuf buf) {
+      int startPos = buf.writerIndex();
+      if (this.components.length > 4096000) {
+         throw ProtocolException.arrayTooLong("Components", this.components.length, 4096000);
+      }
+
+      VarInt.write(buf, this.components.length);
+
+      for (int item : this.components) {
+         buf.writeIntLE(item);
+      }
+
+      return buf.writerIndex() - startPos;
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      int varOffset = offset + 0;
+      if (this.components.length > 4096000) {
+         throw ProtocolException.arrayTooLong("Components", this.components.length, 4096000);
+      }
+
+      varOffset += VarInt.set(mem, varOffset, this.components.length);
+      MemorySegment.copy(this.components, 0, mem, PacketIO.PROTO_INT, varOffset, this.components.length);
+      varOffset += this.components.length * 4;
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 0;
+      return size + VarInt.size(this.components.length) + this.components.length * 4;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 0) {
+         return ValidationResult.error("Buffer too small: expected at least 0 bytes");
+      }
+
+      int pos = offset + 0;
+      int componentsCount = VarInt.peek(buffer, pos);
+      if (componentsCount < 0) {
+         return ValidationResult.error("Invalid array count for Components");
+      }
+
+      if (componentsCount > 4096000) {
+         return ValidationResult.error("Components exceeds max length 4096000");
+      }
+
+      pos += VarInt.size(componentsCount);
+      pos += componentsCount * 4;
+      return pos > buffer.writerIndex() ? ValidationResult.error("Buffer overflow reading Components") : ValidationResult.OK;
+   }
+
+   public UIComponentsUpdate clone() {
+      UIComponentsUpdate copy = new UIComponentsUpdate();
+      copy.components = Arrays.copyOf(this.components, this.components.length);
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof UIComponentsUpdate other ? Arrays.equals(this.components, other.components) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      int result = 1;
+      return 31 * result + Arrays.hashCode(this.components);
+   }
 }
-

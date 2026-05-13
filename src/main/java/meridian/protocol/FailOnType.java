@@ -1,36 +1,29 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum FailOnType {
-    Neither(0),
-    Entity(1),
-    Block(2),
-    Either(3);
+   Neither(0),
+   Entity(1),
+   Block(2),
+   Either(3);
 
-    public static final FailOnType[] VALUES;
-    private final int value;
+   public static final FailOnType[] VALUES = values();
+   private final int value;
 
-    private FailOnType(int value) {
-        this.value = value;
-    }
+   FailOnType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static FailOnType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("FailOnType", value);
-    }
-
-    static {
-        VALUES = FailOnType.values();
-    }
+   public static FailOnType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("FailOnType", value);
+      }
+   }
 }
-

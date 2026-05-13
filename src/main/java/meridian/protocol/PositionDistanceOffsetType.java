@@ -1,35 +1,28 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum PositionDistanceOffsetType {
-    DistanceOffset(0),
-    DistanceOffsetRaycast(1),
-    None(2);
+   DistanceOffset(0),
+   DistanceOffsetRaycast(1),
+   None(2);
 
-    public static final PositionDistanceOffsetType[] VALUES;
-    private final int value;
+   public static final PositionDistanceOffsetType[] VALUES = values();
+   private final int value;
 
-    private PositionDistanceOffsetType(int value) {
-        this.value = value;
-    }
+   PositionDistanceOffsetType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static PositionDistanceOffsetType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("PositionDistanceOffsetType", value);
-    }
-
-    static {
-        VALUES = PositionDistanceOffsetType.values();
-    }
+   public static PositionDistanceOffsetType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("PositionDistanceOffsetType", value);
+      }
+   }
 }
-

@@ -1,113 +1,145 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
-import meridian.protocol.ComponentUpdate;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class NameplateUpdate
-extends ComponentUpdate {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 0;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 0;
-    public static final int MAX_SIZE = 16384005;
-    @Nonnull
-    public String text = "";
+public class NameplateUpdate extends ComponentUpdate {
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 0;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 0;
+   public static final int MAX_SIZE = 16384005;
+   @Nonnull
+   public String text = "";
 
-    public NameplateUpdate() {
-    }
+   public NameplateUpdate() {
+   }
 
-    public NameplateUpdate(@Nonnull String text) {
-        this.text = text;
-    }
+   public NameplateUpdate(@Nonnull String text) {
+      this.text = text;
+   }
 
-    public NameplateUpdate(@Nonnull NameplateUpdate other) {
-        this.text = other.text;
-    }
+   public NameplateUpdate(@Nonnull NameplateUpdate other) {
+      this.text = other.text;
+   }
 
-    @Nonnull
-    public static NameplateUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
-        NameplateUpdate obj = new NameplateUpdate();
-        int pos = offset + 0;
-        int textLen = VarInt.peek(buf, pos);
-        if (textLen < 0) {
-            throw ProtocolException.negativeLength("Text", textLen);
-        }
-        if (textLen > 4096000) {
-            throw ProtocolException.stringTooLong("Text", textLen, 4096000);
-        }
-        int textVarLen = VarInt.length(buf, pos);
-        obj.text = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-        pos += textVarLen + textLen;
-        return obj;
-    }
+   @Nonnull
+   public static NameplateUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
+      NameplateUpdate obj = new NameplateUpdate();
+      int pos = offset + 0;
+      int textLen = VarInt.peek(buf, pos);
+      if (textLen < 0) {
+         throw ProtocolException.invalidVarInt("Text");
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        int pos = offset + 0;
-        int sl = VarInt.peek(buf, pos);
-        pos += VarInt.length(buf, pos) + sl;
-        return pos - offset;
-    }
+      int textVarLen = VarInt.size(textLen);
+      if (textLen > 4096000) {
+         throw ProtocolException.stringTooLong("Text", textLen, 4096000);
+      }
 
-    @Override
-    public int serialize(@Nonnull ByteBuf buf) {
-        int startPos = buf.writerIndex();
-        PacketIO.writeVarString(buf, this.text, 4096000);
-        return buf.writerIndex() - startPos;
-    }
+      if (pos + textVarLen + textLen > buf.readableBytes()) {
+         throw ProtocolException.bufferTooSmall("Text", pos + textVarLen + textLen, buf.readableBytes());
+      }
 
-    @Override
-    public int computeSize() {
-        int size = 0;
-        return size += PacketIO.stringSize(this.text);
-    }
+      obj.text = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
+      pos += textVarLen + textLen;
+      return obj;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 0) {
-            return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-        }
-        int pos = offset + 0;
-        int textLen = VarInt.peek(buffer, pos);
-        if (textLen < 0) {
-            return ValidationResult.error("Invalid string length for Text");
-        }
-        if (textLen > 4096000) {
-            return ValidationResult.error("Text exceeds max length 4096000");
-        }
-        pos += VarInt.length(buffer, pos);
-        if ((pos += textLen) > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Text");
-        }
-        return ValidationResult.OK;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      int pos = offset + 0;
+      int sl = VarInt.peek(buf, pos);
+      pos += VarInt.size(sl) + sl;
+      return pos - offset;
+   }
 
-    public NameplateUpdate clone() {
-        NameplateUpdate copy = new NameplateUpdate();
-        copy.text = this.text;
-        return copy;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 0L;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof NameplateUpdate)) {
-            return false;
-        }
-        NameplateUpdate other = (NameplateUpdate)obj;
-        return Objects.equals(this.text, other.text);
-    }
+   public static String getText(MemorySegment mem) {
+      return getText(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.text);
-    }
+   public static String getText(MemorySegment mem, int offset) {
+      return PacketIO.readVarString("Text", mem, offset + 0, 4096000, PacketIO.UTF8);
+   }
+
+   public static NameplateUpdate toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static NameplateUpdate toObject(MemorySegment mem, int offset) {
+      if (offset + 0 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("NameplateUpdate", offset + 0, (int)mem.byteSize());
+      } else {
+         return new NameplateUpdate(PacketIO.readVarString("Text", mem, offset + 0, 4096000, PacketIO.UTF8));
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull ByteBuf buf) {
+      int startPos = buf.writerIndex();
+      PacketIO.writeVarString(buf, this.text, 4096000);
+      return buf.writerIndex() - startPos;
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      int varOffset = offset + 0;
+      varOffset += PacketIO.writeVarString(mem, varOffset, this.text, 4096000);
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 0;
+      return size + PacketIO.stringSize(this.text);
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 0) {
+         return ValidationResult.error("Buffer too small: expected at least 0 bytes");
+      }
+
+      int pos = offset + 0;
+      int textLen = VarInt.peek(buffer, pos);
+      if (textLen < 0) {
+         return ValidationResult.error("Invalid string length for Text");
+      }
+
+      if (textLen > 4096000) {
+         return ValidationResult.error("Text exceeds max length 4096000");
+      }
+
+      pos += VarInt.size(textLen);
+      pos += textLen;
+      return pos > buffer.writerIndex() ? ValidationResult.error("Buffer overflow reading Text") : ValidationResult.OK;
+   }
+
+   public NameplateUpdate clone() {
+      NameplateUpdate copy = new NameplateUpdate();
+      copy.text = this.text;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof NameplateUpdate other ? Objects.equals(this.text, other.text) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.text);
+   }
 }
-

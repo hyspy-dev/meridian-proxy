@@ -1,98 +1,124 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.setup;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class ViewRadius
-implements Packet,
-ToServerPacket,
-ToClientPacket {
-    public static final int PACKET_ID = 32;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 4;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 4;
-    public static final int MAX_SIZE = 4;
-    public int value;
+public class ViewRadius implements Packet, ToServerPacket, ToClientPacket {
+   public static final int PACKET_ID = 32;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 4;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 4;
+   public static final int MAX_SIZE = 4;
+   public int value;
 
-    @Override
-    public int getId() {
-        return 32;
-    }
+   @Override
+   public int getId() {
+      return 32;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public ViewRadius() {
-    }
+   public ViewRadius() {
+   }
 
-    public ViewRadius(int value) {
-        this.value = value;
-    }
+   public ViewRadius(int value) {
+      this.value = value;
+   }
 
-    public ViewRadius(@Nonnull ViewRadius other) {
-        this.value = other.value;
-    }
+   public ViewRadius(@Nonnull ViewRadius other) {
+      this.value = other.value;
+   }
 
-    @Nonnull
-    public static ViewRadius deserialize(@Nonnull ByteBuf buf, int offset) {
-        ViewRadius obj = new ViewRadius();
-        obj.value = buf.getIntLE(offset + 0);
-        return obj;
-    }
+   @Nonnull
+   public static ViewRadius deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 4) {
+         throw ProtocolException.bufferTooSmall("ViewRadius", 4, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 4;
-    }
+      ViewRadius obj = new ViewRadius();
+      obj.value = buf.getIntLE(offset + 0);
+      return obj;
+   }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        buf.writeIntLE(this.value);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 4;
+   }
 
-    @Override
-    public int computeSize() {
-        return 4;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 4L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 4) {
-            return ValidationResult.error("Buffer too small: expected at least 4 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static int getValue(MemorySegment mem) {
+      return getValue(mem, 0);
+   }
 
-    public ViewRadius clone() {
-        ViewRadius copy = new ViewRadius();
-        copy.value = this.value;
-        return copy;
-    }
+   public static int getValue(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof ViewRadius)) {
-            return false;
-        }
-        ViewRadius other = (ViewRadius)obj;
-        return this.value == other.value;
-    }
+   public static ViewRadius toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.value);
-    }
+   public static ViewRadius toObject(MemorySegment mem, int offset) {
+      if (offset + 4 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("ViewRadius", offset + 4, (int)mem.byteSize());
+      } else {
+         return new ViewRadius(mem.get(PacketIO.PROTO_INT, offset + 0));
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      buf.writeIntLE(this.value);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      mem.set(PacketIO.PROTO_INT, offset + 0, this.value);
+      return 4;
+   }
+
+   @Override
+   public int computeSize() {
+      return 4;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 4 ? ValidationResult.error("Buffer too small: expected at least 4 bytes") : ValidationResult.OK;
+   }
+
+   public ViewRadius clone() {
+      ViewRadius copy = new ViewRadius();
+      copy.value = this.value;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof ViewRadius other ? this.value == other.value : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.value);
+   }
 }
-

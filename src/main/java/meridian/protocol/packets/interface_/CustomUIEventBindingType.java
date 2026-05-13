@@ -1,56 +1,49 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.interface_;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum CustomUIEventBindingType {
-    Activating(0),
-    RightClicking(1),
-    DoubleClicking(2),
-    MouseEntered(3),
-    MouseExited(4),
-    ValueChanged(5),
-    ElementReordered(6),
-    Validating(7),
-    Dismissing(8),
-    FocusGained(9),
-    FocusLost(10),
-    KeyDown(11),
-    MouseButtonReleased(12),
-    SlotClicking(13),
-    SlotDoubleClicking(14),
-    SlotMouseEntered(15),
-    SlotMouseExited(16),
-    DragCancelled(17),
-    Dropped(18),
-    SlotMouseDragCompleted(19),
-    SlotMouseDragExited(20),
-    SlotClickReleaseWhileDragging(21),
-    SlotClickPressWhileDragging(22),
-    SelectedTabChanged(23);
+   Activating(0),
+   RightClicking(1),
+   DoubleClicking(2),
+   MouseEntered(3),
+   MouseExited(4),
+   ValueChanged(5),
+   ElementReordered(6),
+   Validating(7),
+   Dismissing(8),
+   FocusGained(9),
+   FocusLost(10),
+   KeyDown(11),
+   MouseButtonReleased(12),
+   SlotClicking(13),
+   SlotDoubleClicking(14),
+   SlotMouseEntered(15),
+   SlotMouseExited(16),
+   DragCancelled(17),
+   Dropped(18),
+   SlotMouseDragCompleted(19),
+   SlotMouseDragExited(20),
+   SlotClickReleaseWhileDragging(21),
+   SlotClickPressWhileDragging(22),
+   SelectedTabChanged(23);
 
-    public static final CustomUIEventBindingType[] VALUES;
-    private final int value;
+   public static final CustomUIEventBindingType[] VALUES = values();
+   private final int value;
 
-    private CustomUIEventBindingType(int value) {
-        this.value = value;
-    }
+   CustomUIEventBindingType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static CustomUIEventBindingType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("CustomUIEventBindingType", value);
-    }
-
-    static {
-        VALUES = CustomUIEventBindingType.values();
-    }
+   public static CustomUIEventBindingType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("CustomUIEventBindingType", value);
+      }
+   }
 }
-

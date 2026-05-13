@@ -1,42 +1,35 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BlockParticleEvent {
-    Walk(0),
-    Run(1),
-    Sprint(2),
-    SoftLand(3),
-    HardLand(4),
-    MoveOut(5),
-    Hit(6),
-    Break(7),
-    Build(8),
-    Physics(9);
+   Walk(0),
+   Run(1),
+   Sprint(2),
+   SoftLand(3),
+   HardLand(4),
+   MoveOut(5),
+   Hit(6),
+   Break(7),
+   Build(8),
+   Physics(9);
 
-    public static final BlockParticleEvent[] VALUES;
-    private final int value;
+   public static final BlockParticleEvent[] VALUES = values();
+   private final int value;
 
-    private BlockParticleEvent(int value) {
-        this.value = value;
-    }
+   BlockParticleEvent(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static BlockParticleEvent fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("BlockParticleEvent", value);
-    }
-
-    static {
-        VALUES = BlockParticleEvent.values();
-    }
+   public static BlockParticleEvent fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("BlockParticleEvent", value);
+      }
+   }
 }
-

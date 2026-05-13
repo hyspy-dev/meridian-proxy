@@ -1,135 +1,197 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.asseteditor;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
-import meridian.protocol.packets.asseteditor.AssetPath;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AssetEditorUndoChanges
-implements Packet,
-ToServerPacket {
-    public static final int PACKET_ID = 349;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 5;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 5;
-    public static final int MAX_SIZE = 32768024;
-    public int token;
-    @Nullable
-    public AssetPath path;
+public class AssetEditorUndoChanges implements Packet, ToServerPacket {
+   public static final int PACKET_ID = 349;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 5;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 5;
+   public static final int MAX_SIZE = 32768024;
+   public int token;
+   @Nullable
+   public AssetPath path;
 
-    @Override
-    public int getId() {
-        return 349;
-    }
+   @Override
+   public int getId() {
+      return 349;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public AssetEditorUndoChanges() {
-    }
+   public AssetEditorUndoChanges() {
+   }
 
-    public AssetEditorUndoChanges(int token, @Nullable AssetPath path) {
-        this.token = token;
-        this.path = path;
-    }
+   public AssetEditorUndoChanges(int token, @Nullable AssetPath path) {
+      this.token = token;
+      this.path = path;
+   }
 
-    public AssetEditorUndoChanges(@Nonnull AssetEditorUndoChanges other) {
-        this.token = other.token;
-        this.path = other.path;
-    }
+   public AssetEditorUndoChanges(@Nonnull AssetEditorUndoChanges other) {
+      this.token = other.token;
+      this.path = other.path;
+   }
 
-    @Nonnull
-    public static AssetEditorUndoChanges deserialize(@Nonnull ByteBuf buf, int offset) {
-        AssetEditorUndoChanges obj = new AssetEditorUndoChanges();
-        byte nullBits = buf.getByte(offset);
-        obj.token = buf.getIntLE(offset + 1);
-        int pos = offset + 5;
-        if ((nullBits & 1) != 0) {
-            obj.path = AssetPath.deserialize(buf, pos);
-            pos += AssetPath.computeBytesConsumed(buf, pos);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static AssetEditorUndoChanges deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 5) {
+         throw ProtocolException.bufferTooSmall("AssetEditorUndoChanges", 5, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 5;
-        if ((nullBits & 1) != 0) {
-            pos += AssetPath.computeBytesConsumed(buf, pos);
-        }
-        return pos - offset;
-    }
+      AssetEditorUndoChanges obj = new AssetEditorUndoChanges();
+      byte nullBits = buf.getByte(offset);
+      obj.token = buf.getIntLE(offset + 1);
+      int pos = offset + 5;
+      if ((nullBits & 1) != 0) {
+         obj.path = AssetPath.deserialize(buf, pos);
+         pos += AssetPath.computeBytesConsumed(buf, pos);
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.path != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeIntLE(this.token);
-        if (this.path != null) {
-            this.path.serialize(buf);
-        }
-    }
+      return obj;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 5;
-        if (this.path != null) {
-            size += this.path.computeSize();
-        }
-        return size;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 5;
+      if ((nullBits & 1) != 0) {
+         pos += AssetPath.computeBytesConsumed(buf, pos);
+      }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 5) {
-            return ValidationResult.error("Buffer too small: expected at least 5 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 5;
-        if ((nullBits & 1) != 0) {
-            ValidationResult pathResult = AssetPath.validateStructure(buffer, pos);
-            if (!pathResult.isValid()) {
-                return ValidationResult.error("Invalid Path: " + pathResult.error());
-            }
-            pos += AssetPath.computeBytesConsumed(buffer, pos);
-        }
-        return ValidationResult.OK;
-    }
+      return pos - offset;
+   }
 
-    public AssetEditorUndoChanges clone() {
-        AssetEditorUndoChanges copy = new AssetEditorUndoChanges();
-        copy.token = this.token;
-        copy.path = this.path != null ? this.path.clone() : null;
-        return copy;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 5L;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof AssetEditorUndoChanges)) {
-            return false;
-        }
-        AssetEditorUndoChanges other = (AssetEditorUndoChanges)obj;
-        return this.token == other.token && Objects.equals(this.path, other.path);
-    }
+   public static int getToken(MemorySegment mem) {
+      return getToken(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.token, this.path);
-    }
+   public static int getToken(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 1);
+   }
+
+   @Nullable
+   public static AssetPath getPath(MemorySegment mem) {
+      return getPath(mem, 0);
+   }
+
+   @Nullable
+   public static AssetPath getPath(MemorySegment mem, int offset) {
+      return hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 5) : null;
+   }
+
+   public static boolean hasPath(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static AssetEditorUndoChanges toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static AssetEditorUndoChanges toObject(MemorySegment mem, int offset) {
+      if (offset + 5 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("AssetEditorUndoChanges", offset + 5, (int)mem.byteSize());
+      } else {
+         return new AssetEditorUndoChanges(mem.get(PacketIO.PROTO_INT, offset + 1), hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 5) : null);
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.path != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeIntLE(this.token);
+      if (this.path != null) {
+         this.path.serialize(buf);
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.path != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_INT, offset + 1, this.token);
+      int varOffset = offset + 5;
+      if (this.path != null) {
+         varOffset += this.path.serialize(mem, varOffset);
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 5;
+      if (this.path != null) {
+         size += this.path.computeSize();
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 5) {
+         return ValidationResult.error("Buffer too small: expected at least 5 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int pos = offset + 5;
+      if ((nullBits & 1) != 0) {
+         ValidationResult pathResult = AssetPath.validateStructure(buffer, pos);
+         if (!pathResult.isValid()) {
+            return ValidationResult.error("Invalid Path: " + pathResult.error());
+         }
+
+         pos += AssetPath.computeBytesConsumed(buffer, pos);
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public AssetEditorUndoChanges clone() {
+      AssetEditorUndoChanges copy = new AssetEditorUndoChanges();
+      copy.token = this.token;
+      copy.path = this.path != null ? this.path.clone() : null;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof AssetEditorUndoChanges other) ? false : this.token == other.token && Objects.equals(this.path, other.path);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.token, this.path);
+   }
 }
-

@@ -1,34 +1,27 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum CameraPerspectiveType {
-    First(0),
-    Third(1);
+   First(0),
+   Third(1);
 
-    public static final CameraPerspectiveType[] VALUES;
-    private final int value;
+   public static final CameraPerspectiveType[] VALUES = values();
+   private final int value;
 
-    private CameraPerspectiveType(int value) {
-        this.value = value;
-    }
+   CameraPerspectiveType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static CameraPerspectiveType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("CameraPerspectiveType", value);
-    }
-
-    static {
-        VALUES = CameraPerspectiveType.values();
-    }
+   public static CameraPerspectiveType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("CameraPerspectiveType", value);
+      }
+   }
 }
-

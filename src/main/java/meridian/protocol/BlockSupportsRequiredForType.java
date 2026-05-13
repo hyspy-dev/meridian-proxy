@@ -1,34 +1,27 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BlockSupportsRequiredForType {
-    Any(0),
-    All(1);
+   Any(0),
+   All(1);
 
-    public static final BlockSupportsRequiredForType[] VALUES;
-    private final int value;
+   public static final BlockSupportsRequiredForType[] VALUES = values();
+   private final int value;
 
-    private BlockSupportsRequiredForType(int value) {
-        this.value = value;
-    }
+   BlockSupportsRequiredForType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static BlockSupportsRequiredForType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("BlockSupportsRequiredForType", value);
-    }
-
-    static {
-        VALUES = BlockSupportsRequiredForType.values();
-    }
+   public static BlockSupportsRequiredForType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("BlockSupportsRequiredForType", value);
+      }
+   }
 }
-

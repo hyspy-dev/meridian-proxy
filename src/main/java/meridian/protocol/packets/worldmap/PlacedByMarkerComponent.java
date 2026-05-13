@@ -1,105 +1,148 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.worldmap;
 
 import meridian.protocol.FormattedMessage;
 import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
-import meridian.protocol.packets.worldmap.MapMarkerComponent;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 
-public class PlacedByMarkerComponent
-extends MapMarkerComponent {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 16;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 16;
-    public static final int MAX_SIZE = 0x64000000;
-    @Nonnull
-    public FormattedMessage name = new FormattedMessage();
-    @Nonnull
-    public UUID playerId = new UUID(0L, 0L);
+public class PlacedByMarkerComponent extends MapMarkerComponent {
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 16;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 16;
+   public static final int MAX_SIZE = 1677721600;
+   @Nonnull
+   public FormattedMessage name = new FormattedMessage();
+   @Nonnull
+   public UUID playerId = new UUID(0L, 0L);
 
-    public PlacedByMarkerComponent() {
-    }
+   public PlacedByMarkerComponent() {
+   }
 
-    public PlacedByMarkerComponent(@Nonnull FormattedMessage name, @Nonnull UUID playerId) {
-        this.name = name;
-        this.playerId = playerId;
-    }
+   public PlacedByMarkerComponent(@Nonnull FormattedMessage name, @Nonnull UUID playerId) {
+      this.name = name;
+      this.playerId = playerId;
+   }
 
-    public PlacedByMarkerComponent(@Nonnull PlacedByMarkerComponent other) {
-        this.name = other.name;
-        this.playerId = other.playerId;
-    }
+   public PlacedByMarkerComponent(@Nonnull PlacedByMarkerComponent other) {
+      this.name = other.name;
+      this.playerId = other.playerId;
+   }
 
-    @Nonnull
-    public static PlacedByMarkerComponent deserialize(@Nonnull ByteBuf buf, int offset) {
-        PlacedByMarkerComponent obj = new PlacedByMarkerComponent();
-        obj.playerId = PacketIO.readUUID(buf, offset + 0);
-        int pos = offset + 16;
-        obj.name = FormattedMessage.deserialize(buf, pos);
-        pos += FormattedMessage.computeBytesConsumed(buf, pos);
-        return obj;
-    }
+   @Nonnull
+   public static PlacedByMarkerComponent deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 16) {
+         throw ProtocolException.bufferTooSmall("PlacedByMarkerComponent", 16, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        int pos = offset + 16;
-        pos += FormattedMessage.computeBytesConsumed(buf, pos);
-        return pos - offset;
-    }
+      PlacedByMarkerComponent obj = new PlacedByMarkerComponent();
+      obj.playerId = PacketIO.readUUID(buf, offset + 0);
+      int pos = offset + 16;
+      obj.name = FormattedMessage.deserialize(buf, pos);
+      pos += FormattedMessage.computeBytesConsumed(buf, pos);
+      return obj;
+   }
 
-    @Override
-    public int serialize(@Nonnull ByteBuf buf) {
-        int startPos = buf.writerIndex();
-        PacketIO.writeUUID(buf, this.playerId);
-        this.name.serialize(buf);
-        return buf.writerIndex() - startPos;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      int pos = offset + 16;
+      pos += FormattedMessage.computeBytesConsumed(buf, pos);
+      return pos - offset;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 16;
-        return size += this.name.computeSize();
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 16L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 16) {
-            return ValidationResult.error("Buffer too small: expected at least 16 bytes");
-        }
-        int pos = offset + 16;
-        ValidationResult nameResult = FormattedMessage.validateStructure(buffer, pos);
-        if (!nameResult.isValid()) {
-            return ValidationResult.error("Invalid Name: " + nameResult.error());
-        }
-        pos += FormattedMessage.computeBytesConsumed(buffer, pos);
-        return ValidationResult.OK;
-    }
+   public static FormattedMessage getName(MemorySegment mem) {
+      return getName(mem, 0);
+   }
 
-    public PlacedByMarkerComponent clone() {
-        PlacedByMarkerComponent copy = new PlacedByMarkerComponent();
-        copy.name = this.name.clone();
-        copy.playerId = this.playerId;
-        return copy;
-    }
+   public static FormattedMessage getName(MemorySegment mem, int offset) {
+      return FormattedMessage.toObject(mem, offset + 16);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof PlacedByMarkerComponent)) {
-            return false;
-        }
-        PlacedByMarkerComponent other = (PlacedByMarkerComponent)obj;
-        return Objects.equals(this.name, other.name) && Objects.equals(this.playerId, other.playerId);
-    }
+   public static UUID getPlayerId(MemorySegment mem) {
+      return getPlayerId(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.name, this.playerId);
-    }
+   public static UUID getPlayerId(MemorySegment mem, int offset) {
+      return PacketIO.readUUID(mem, offset + 0);
+   }
+
+   public static PlacedByMarkerComponent toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static PlacedByMarkerComponent toObject(MemorySegment mem, int offset) {
+      if (offset + 16 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("PlacedByMarkerComponent", offset + 16, (int)mem.byteSize());
+      } else {
+         return new PlacedByMarkerComponent(FormattedMessage.toObject(mem, offset + 16), PacketIO.readUUID(mem, offset + 0));
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull ByteBuf buf) {
+      int startPos = buf.writerIndex();
+      PacketIO.writeUUID(buf, this.playerId);
+      this.name.serialize(buf);
+      return buf.writerIndex() - startPos;
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      PacketIO.writeUUID(mem, offset + 0, this.playerId);
+      int varOffset = offset + 16;
+      varOffset += this.name.serialize(mem, varOffset);
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 16;
+      return size + this.name.computeSize();
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 16) {
+         return ValidationResult.error("Buffer too small: expected at least 16 bytes");
+      }
+
+      int pos = offset + 16;
+      ValidationResult nameResult = FormattedMessage.validateStructure(buffer, pos);
+      if (!nameResult.isValid()) {
+         return ValidationResult.error("Invalid Name: " + nameResult.error());
+      }
+
+      pos += FormattedMessage.computeBytesConsumed(buffer, pos);
+      return ValidationResult.OK;
+   }
+
+   public PlacedByMarkerComponent clone() {
+      PlacedByMarkerComponent copy = new PlacedByMarkerComponent();
+      copy.name = this.name.clone();
+      copy.playerId = this.playerId;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof PlacedByMarkerComponent other)
+            ? false
+            : Objects.equals(this.name, other.name) && Objects.equals(this.playerId, other.playerId);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.name, this.playerId);
+   }
 }
-

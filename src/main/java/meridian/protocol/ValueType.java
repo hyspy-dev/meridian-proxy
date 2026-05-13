@@ -1,34 +1,27 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ValueType {
-    Percent(0),
-    Absolute(1);
+   Percent(0),
+   Absolute(1);
 
-    public static final ValueType[] VALUES;
-    private final int value;
+   public static final ValueType[] VALUES = values();
+   private final int value;
 
-    private ValueType(int value) {
-        this.value = value;
-    }
+   ValueType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static ValueType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("ValueType", value);
-    }
-
-    static {
-        VALUES = ValueType.values();
-    }
+   public static ValueType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("ValueType", value);
+      }
+   }
 }
-

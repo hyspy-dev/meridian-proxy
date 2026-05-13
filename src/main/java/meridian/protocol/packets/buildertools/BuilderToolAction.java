@@ -1,39 +1,32 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.buildertools;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BuilderToolAction {
-    SelectionPosition1(0),
-    SelectionPosition2(1),
-    SelectionCopy(2),
-    HistoryUndo(3),
-    HistoryRedo(4),
-    ActivateToolMode(5),
-    DeactivateToolMode(6);
+   SelectionPosition1(0),
+   SelectionPosition2(1),
+   SelectionCopy(2),
+   HistoryUndo(3),
+   HistoryRedo(4),
+   ActivateToolMode(5),
+   DeactivateToolMode(6);
 
-    public static final BuilderToolAction[] VALUES;
-    private final int value;
+   public static final BuilderToolAction[] VALUES = values();
+   private final int value;
 
-    private BuilderToolAction(int value) {
-        this.value = value;
-    }
+   BuilderToolAction(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static BuilderToolAction fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("BuilderToolAction", value);
-    }
-
-    static {
-        VALUES = BuilderToolAction.values();
-    }
+   public static BuilderToolAction fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("BuilderToolAction", value);
+      }
+   }
 }
-

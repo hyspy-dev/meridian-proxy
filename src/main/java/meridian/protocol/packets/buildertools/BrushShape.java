@@ -1,43 +1,36 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.buildertools;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BrushShape {
-    Cube(0),
-    Sphere(1),
-    Cylinder(2),
-    Cone(3),
-    InvertedCone(4),
-    Pyramid(5),
-    InvertedPyramid(6),
-    Dome(7),
-    InvertedDome(8),
-    Diamond(9),
-    Torus(10);
+   Cube(0),
+   Sphere(1),
+   Cylinder(2),
+   Cone(3),
+   InvertedCone(4),
+   Pyramid(5),
+   InvertedPyramid(6),
+   Dome(7),
+   InvertedDome(8),
+   Diamond(9),
+   Torus(10);
 
-    public static final BrushShape[] VALUES;
-    private final int value;
+   public static final BrushShape[] VALUES = values();
+   private final int value;
 
-    private BrushShape(int value) {
-        this.value = value;
-    }
+   BrushShape(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static BrushShape fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("BrushShape", value);
-    }
-
-    static {
-        VALUES = BrushShape.values();
-    }
+   public static BrushShape fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("BrushShape", value);
+      }
+   }
 }
-

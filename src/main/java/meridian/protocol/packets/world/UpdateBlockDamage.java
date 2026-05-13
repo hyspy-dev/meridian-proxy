@@ -1,123 +1,200 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.world;
 
 import meridian.protocol.BlockPosition;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class UpdateBlockDamage
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 144;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 21;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 21;
-    public static final int MAX_SIZE = 21;
-    @Nullable
-    public BlockPosition blockPosition;
-    public float damage;
-    public float delta;
+public class UpdateBlockDamage implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 144;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 21;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 21;
+   public static final int MAX_SIZE = 21;
+   @Nullable
+   public BlockPosition blockPosition;
+   public float damage;
+   public float delta;
 
-    @Override
-    public int getId() {
-        return 144;
-    }
+   @Override
+   public int getId() {
+      return 144;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Chunks;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Chunks;
+   }
 
-    public UpdateBlockDamage() {
-    }
+   public UpdateBlockDamage() {
+   }
 
-    public UpdateBlockDamage(@Nullable BlockPosition blockPosition, float damage, float delta) {
-        this.blockPosition = blockPosition;
-        this.damage = damage;
-        this.delta = delta;
-    }
+   public UpdateBlockDamage(@Nullable BlockPosition blockPosition, float damage, float delta) {
+      this.blockPosition = blockPosition;
+      this.damage = damage;
+      this.delta = delta;
+   }
 
-    public UpdateBlockDamage(@Nonnull UpdateBlockDamage other) {
-        this.blockPosition = other.blockPosition;
-        this.damage = other.damage;
-        this.delta = other.delta;
-    }
+   public UpdateBlockDamage(@Nonnull UpdateBlockDamage other) {
+      this.blockPosition = other.blockPosition;
+      this.damage = other.damage;
+      this.delta = other.delta;
+   }
 
-    @Nonnull
-    public static UpdateBlockDamage deserialize(@Nonnull ByteBuf buf, int offset) {
-        UpdateBlockDamage obj = new UpdateBlockDamage();
-        byte nullBits = buf.getByte(offset);
-        if ((nullBits & 1) != 0) {
-            obj.blockPosition = BlockPosition.deserialize(buf, offset + 1);
-        }
-        obj.damage = buf.getFloatLE(offset + 13);
-        obj.delta = buf.getFloatLE(offset + 17);
-        return obj;
-    }
+   @Nonnull
+   public static UpdateBlockDamage deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 21) {
+         throw ProtocolException.bufferTooSmall("UpdateBlockDamage", 21, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 21;
-    }
+      UpdateBlockDamage obj = new UpdateBlockDamage();
+      byte nullBits = buf.getByte(offset);
+      if ((nullBits & 1) != 0) {
+         obj.blockPosition = BlockPosition.deserialize(buf, offset + 1);
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.blockPosition != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        if (this.blockPosition != null) {
-            this.blockPosition.serialize(buf);
-        } else {
-            buf.writeZero(12);
-        }
-        buf.writeFloatLE(this.damage);
-        buf.writeFloatLE(this.delta);
-    }
+      obj.damage = buf.getFloatLE(offset + 13);
+      obj.delta = buf.getFloatLE(offset + 17);
+      return obj;
+   }
 
-    @Override
-    public int computeSize() {
-        return 21;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 21;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 21) {
-            return ValidationResult.error("Buffer too small: expected at least 21 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 21L;
+   }
 
-    public UpdateBlockDamage clone() {
-        UpdateBlockDamage copy = new UpdateBlockDamage();
-        copy.blockPosition = this.blockPosition != null ? this.blockPosition.clone() : null;
-        copy.damage = this.damage;
-        copy.delta = this.delta;
-        return copy;
-    }
+   @Nullable
+   public static BlockPosition getBlockPosition(MemorySegment mem) {
+      return getBlockPosition(mem, 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof UpdateBlockDamage)) {
-            return false;
-        }
-        UpdateBlockDamage other = (UpdateBlockDamage)obj;
-        return Objects.equals(this.blockPosition, other.blockPosition) && this.damage == other.damage && this.delta == other.delta;
-    }
+   @Nullable
+   public static BlockPosition getBlockPosition(MemorySegment mem, int offset) {
+      return hasBlockPosition(mem, offset) ? BlockPosition.toObject(mem, offset + 1) : null;
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.blockPosition, Float.valueOf(this.damage), Float.valueOf(this.delta));
-    }
+   public static float getDamage(MemorySegment mem) {
+      return getDamage(mem, 0);
+   }
+
+   public static float getDamage(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 13);
+   }
+
+   public static float getDelta(MemorySegment mem) {
+      return getDelta(mem, 0);
+   }
+
+   public static float getDelta(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 17);
+   }
+
+   public static boolean hasBlockPosition(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static UpdateBlockDamage toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static UpdateBlockDamage toObject(MemorySegment mem, int offset) {
+      if (offset + 21 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("UpdateBlockDamage", offset + 21, (int)mem.byteSize());
+      } else {
+         return new UpdateBlockDamage(
+            hasBlockPosition(mem, offset) ? BlockPosition.toObject(mem, offset + 1) : null,
+            mem.get(PacketIO.PROTO_FLOAT, offset + 13),
+            mem.get(PacketIO.PROTO_FLOAT, offset + 17)
+         );
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.blockPosition != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      if (this.blockPosition != null) {
+         this.blockPosition.serialize(buf);
+      } else {
+         buf.writeZero(12);
+      }
+
+      buf.writeFloatLE(this.damage);
+      buf.writeFloatLE(this.delta);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.blockPosition != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      if (this.blockPosition != null) {
+         this.blockPosition.serialize(mem, offset + 1);
+      } else {
+         mem.asSlice(offset + 1, 12L).fill((byte)0);
+      }
+
+      mem.set(PacketIO.PROTO_FLOAT, offset + 13, this.damage);
+      mem.set(PacketIO.PROTO_FLOAT, offset + 17, this.delta);
+      return 21;
+   }
+
+   @Override
+   public int computeSize() {
+      return 21;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 21) {
+         return ValidationResult.error("Buffer too small: expected at least 21 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      return ValidationResult.OK;
+   }
+
+   public UpdateBlockDamage clone() {
+      UpdateBlockDamage copy = new UpdateBlockDamage();
+      copy.blockPosition = this.blockPosition != null ? this.blockPosition.clone() : null;
+      copy.damage = this.damage;
+      copy.delta = this.delta;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof UpdateBlockDamage other)
+            ? false
+            : Objects.equals(this.blockPosition, other.blockPosition) && this.damage == other.damage && this.delta == other.delta;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.blockPosition, this.damage, this.delta);
+   }
 }
-

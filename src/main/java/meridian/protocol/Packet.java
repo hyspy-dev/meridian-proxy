@@ -1,19 +1,17 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
-import meridian.protocol.NetworkChannel;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import javax.annotation.Nonnull;
 
 public interface Packet {
-    public int getId();
+   int getId();
 
-    public NetworkChannel getChannel();
+   NetworkChannel getChannel();
 
-    public void serialize(@Nonnull ByteBuf var1);
+   void serialize(@Nonnull ByteBuf var1);
 
-    public int computeSize();
+   int serialize(@Nonnull MemorySegment var1, int var2);
+
+   int computeSize();
 }
-

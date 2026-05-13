@@ -1,34 +1,27 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum Match {
-    All(0),
-    None(1);
+   All(0),
+   None(1);
 
-    public static final Match[] VALUES;
-    private final int value;
+   public static final Match[] VALUES = values();
+   private final int value;
 
-    private Match(int value) {
-        this.value = value;
-    }
+   Match(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static Match fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("Match", value);
-    }
-
-    static {
-        VALUES = Match.values();
-    }
+   public static Match fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("Match", value);
+      }
+   }
 }
-

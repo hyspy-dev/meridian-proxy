@@ -1,321 +1,711 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
-import meridian.protocol.ParticleAnimationFrame;
-import meridian.protocol.ParticleScaleRatioConstraint;
-import meridian.protocol.ParticleUVOption;
-import meridian.protocol.Size;
-import meridian.protocol.SoftParticle;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class Particle {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 133;
-    public static final int VARIABLE_FIELD_COUNT = 2;
-    public static final int VARIABLE_BLOCK_START = 141;
-    public static final int MAX_SIZE = 270336151;
-    @Nullable
-    public String texturePath;
-    @Nullable
-    public Size frameSize;
-    @Nonnull
-    public ParticleUVOption uvOption = ParticleUVOption.None;
-    @Nonnull
-    public ParticleScaleRatioConstraint scaleRatioConstraint = ParticleScaleRatioConstraint.OneToOne;
-    @Nonnull
-    public SoftParticle softParticles = SoftParticle.Enable;
-    public float softParticlesFadeFactor;
-    public boolean useSpriteBlending;
-    @Nullable
-    public ParticleAnimationFrame initialAnimationFrame;
-    @Nullable
-    public ParticleAnimationFrame collisionAnimationFrame;
-    @Nullable
-    public Map<Integer, ParticleAnimationFrame> animationFrames;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 133;
+   public static final int VARIABLE_FIELD_COUNT = 2;
+   public static final int VARIABLE_BLOCK_START = 141;
+   public static final int MAX_SIZE = 270336151;
+   @Nullable
+   public String texturePath;
+   @Nullable
+   public Size frameSize;
+   @Nonnull
+   public ParticleUVOption uvOption = ParticleUVOption.None;
+   @Nonnull
+   public ParticleScaleRatioConstraint scaleRatioConstraint = ParticleScaleRatioConstraint.OneToOne;
+   @Nonnull
+   public SoftParticle softParticles = SoftParticle.Enable;
+   public float softParticlesFadeFactor;
+   public boolean useSpriteBlending;
+   @Nullable
+   public ParticleAnimationFrame initialAnimationFrame;
+   @Nullable
+   public ParticleAnimationFrame collisionAnimationFrame;
+   @Nullable
+   public Map<Integer, ParticleAnimationFrame> animationFrames;
 
-    public Particle() {
-    }
+   public Particle() {
+   }
 
-    public Particle(@Nullable String texturePath, @Nullable Size frameSize, @Nonnull ParticleUVOption uvOption, @Nonnull ParticleScaleRatioConstraint scaleRatioConstraint, @Nonnull SoftParticle softParticles, float softParticlesFadeFactor, boolean useSpriteBlending, @Nullable ParticleAnimationFrame initialAnimationFrame, @Nullable ParticleAnimationFrame collisionAnimationFrame, @Nullable Map<Integer, ParticleAnimationFrame> animationFrames) {
-        this.texturePath = texturePath;
-        this.frameSize = frameSize;
-        this.uvOption = uvOption;
-        this.scaleRatioConstraint = scaleRatioConstraint;
-        this.softParticles = softParticles;
-        this.softParticlesFadeFactor = softParticlesFadeFactor;
-        this.useSpriteBlending = useSpriteBlending;
-        this.initialAnimationFrame = initialAnimationFrame;
-        this.collisionAnimationFrame = collisionAnimationFrame;
-        this.animationFrames = animationFrames;
-    }
+   public Particle(
+      @Nullable String texturePath,
+      @Nullable Size frameSize,
+      @Nonnull ParticleUVOption uvOption,
+      @Nonnull ParticleScaleRatioConstraint scaleRatioConstraint,
+      @Nonnull SoftParticle softParticles,
+      float softParticlesFadeFactor,
+      boolean useSpriteBlending,
+      @Nullable ParticleAnimationFrame initialAnimationFrame,
+      @Nullable ParticleAnimationFrame collisionAnimationFrame,
+      @Nullable Map<Integer, ParticleAnimationFrame> animationFrames
+   ) {
+      this.texturePath = texturePath;
+      this.frameSize = frameSize;
+      this.uvOption = uvOption;
+      this.scaleRatioConstraint = scaleRatioConstraint;
+      this.softParticles = softParticles;
+      this.softParticlesFadeFactor = softParticlesFadeFactor;
+      this.useSpriteBlending = useSpriteBlending;
+      this.initialAnimationFrame = initialAnimationFrame;
+      this.collisionAnimationFrame = collisionAnimationFrame;
+      this.animationFrames = animationFrames;
+   }
 
-    public Particle(@Nonnull Particle other) {
-        this.texturePath = other.texturePath;
-        this.frameSize = other.frameSize;
-        this.uvOption = other.uvOption;
-        this.scaleRatioConstraint = other.scaleRatioConstraint;
-        this.softParticles = other.softParticles;
-        this.softParticlesFadeFactor = other.softParticlesFadeFactor;
-        this.useSpriteBlending = other.useSpriteBlending;
-        this.initialAnimationFrame = other.initialAnimationFrame;
-        this.collisionAnimationFrame = other.collisionAnimationFrame;
-        this.animationFrames = other.animationFrames;
-    }
+   public Particle(@Nonnull Particle other) {
+      this.texturePath = other.texturePath;
+      this.frameSize = other.frameSize;
+      this.uvOption = other.uvOption;
+      this.scaleRatioConstraint = other.scaleRatioConstraint;
+      this.softParticles = other.softParticles;
+      this.softParticlesFadeFactor = other.softParticlesFadeFactor;
+      this.useSpriteBlending = other.useSpriteBlending;
+      this.initialAnimationFrame = other.initialAnimationFrame;
+      this.collisionAnimationFrame = other.collisionAnimationFrame;
+      this.animationFrames = other.animationFrames;
+   }
 
-    @Nonnull
-    public static Particle deserialize(@Nonnull ByteBuf buf, int offset) {
-        Particle obj = new Particle();
-        byte nullBits = buf.getByte(offset);
-        if ((nullBits & 1) != 0) {
-            obj.frameSize = Size.deserialize(buf, offset + 1);
-        }
-        obj.uvOption = ParticleUVOption.fromValue(buf.getByte(offset + 9));
-        obj.scaleRatioConstraint = ParticleScaleRatioConstraint.fromValue(buf.getByte(offset + 10));
-        obj.softParticles = SoftParticle.fromValue(buf.getByte(offset + 11));
-        obj.softParticlesFadeFactor = buf.getFloatLE(offset + 12);
-        boolean bl = obj.useSpriteBlending = buf.getByte(offset + 16) != 0;
-        if ((nullBits & 2) != 0) {
-            obj.initialAnimationFrame = ParticleAnimationFrame.deserialize(buf, offset + 17);
-        }
-        if ((nullBits & 4) != 0) {
-            obj.collisionAnimationFrame = ParticleAnimationFrame.deserialize(buf, offset + 75);
-        }
-        if ((nullBits & 8) != 0) {
-            int varPos0 = offset + 141 + buf.getIntLE(offset + 133);
-            int texturePathLen = VarInt.peek(buf, varPos0);
-            if (texturePathLen < 0) {
-                throw ProtocolException.negativeLength("TexturePath", texturePathLen);
-            }
-            if (texturePathLen > 4096000) {
-                throw ProtocolException.stringTooLong("TexturePath", texturePathLen, 4096000);
-            }
-            obj.texturePath = PacketIO.readVarString(buf, varPos0, PacketIO.UTF8);
-        }
-        if ((nullBits & 0x10) != 0) {
-            int varPos1 = offset + 141 + buf.getIntLE(offset + 137);
-            int animationFramesCount = VarInt.peek(buf, varPos1);
-            if (animationFramesCount < 0) {
-                throw ProtocolException.negativeLength("AnimationFrames", animationFramesCount);
-            }
-            if (animationFramesCount > 4096000) {
-                throw ProtocolException.dictionaryTooLarge("AnimationFrames", animationFramesCount, 4096000);
-            }
-            int varIntLen = VarInt.length(buf, varPos1);
-            obj.animationFrames = new HashMap<Integer, ParticleAnimationFrame>(animationFramesCount);
-            int dictPos = varPos1 + varIntLen;
-            for (int i = 0; i < animationFramesCount; ++i) {
-                int key = buf.getIntLE(dictPos);
-                ParticleAnimationFrame val = ParticleAnimationFrame.deserialize(buf, dictPos += 4);
-                dictPos += ParticleAnimationFrame.computeBytesConsumed(buf, dictPos);
-                if (obj.animationFrames.put(key, val) == null) continue;
-                throw ProtocolException.duplicateKey("animationFrames", key);
-            }
-        }
-        return obj;
-    }
+   @Nonnull
+   public static Particle deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 141) {
+         throw ProtocolException.bufferTooSmall("Particle", 141, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int maxEnd = 141;
-        if ((nullBits & 8) != 0) {
-            int fieldOffset0 = buf.getIntLE(offset + 133);
-            int pos0 = offset + 141 + fieldOffset0;
-            int sl = VarInt.peek(buf, pos0);
-            if ((pos0 += VarInt.length(buf, pos0) + sl) - offset > maxEnd) {
-                maxEnd = pos0 - offset;
-            }
-        }
-        if ((nullBits & 0x10) != 0) {
-            int fieldOffset1 = buf.getIntLE(offset + 137);
-            int pos1 = offset + 141 + fieldOffset1;
-            int dictLen = VarInt.peek(buf, pos1);
-            pos1 += VarInt.length(buf, pos1);
-            for (int i = 0; i < dictLen; ++i) {
-                pos1 += 4;
-                pos1 += ParticleAnimationFrame.computeBytesConsumed(buf, pos1);
-            }
-            if (pos1 - offset > maxEnd) {
-                maxEnd = pos1 - offset;
-            }
-        }
-        return maxEnd;
-    }
+      Particle obj = new Particle();
+      byte nullBits = buf.getByte(offset);
+      if ((nullBits & 1) != 0) {
+         obj.frameSize = Size.deserialize(buf, offset + 1);
+      }
 
-    public void serialize(@Nonnull ByteBuf buf) {
-        int startPos = buf.writerIndex();
-        byte nullBits = 0;
-        if (this.frameSize != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        if (this.initialAnimationFrame != null) {
-            nullBits = (byte)(nullBits | 2);
-        }
-        if (this.collisionAnimationFrame != null) {
-            nullBits = (byte)(nullBits | 4);
-        }
-        if (this.texturePath != null) {
-            nullBits = (byte)(nullBits | 8);
-        }
-        if (this.animationFrames != null) {
-            nullBits = (byte)(nullBits | 0x10);
-        }
-        buf.writeByte(nullBits);
-        if (this.frameSize != null) {
-            this.frameSize.serialize(buf);
-        } else {
-            buf.writeZero(8);
-        }
-        buf.writeByte(this.uvOption.getValue());
-        buf.writeByte(this.scaleRatioConstraint.getValue());
-        buf.writeByte(this.softParticles.getValue());
-        buf.writeFloatLE(this.softParticlesFadeFactor);
-        buf.writeByte(this.useSpriteBlending ? 1 : 0);
-        if (this.initialAnimationFrame != null) {
-            this.initialAnimationFrame.serialize(buf);
-        } else {
-            buf.writeZero(58);
-        }
-        if (this.collisionAnimationFrame != null) {
-            this.collisionAnimationFrame.serialize(buf);
-        } else {
-            buf.writeZero(58);
-        }
-        int texturePathOffsetSlot = buf.writerIndex();
-        buf.writeIntLE(0);
-        int animationFramesOffsetSlot = buf.writerIndex();
-        buf.writeIntLE(0);
-        int varBlockStart = buf.writerIndex();
-        if (this.texturePath != null) {
-            buf.setIntLE(texturePathOffsetSlot, buf.writerIndex() - varBlockStart);
-            PacketIO.writeVarString(buf, this.texturePath, 4096000);
-        } else {
-            buf.setIntLE(texturePathOffsetSlot, -1);
-        }
-        if (this.animationFrames != null) {
-            buf.setIntLE(animationFramesOffsetSlot, buf.writerIndex() - varBlockStart);
-            if (this.animationFrames.size() > 4096000) {
-                throw ProtocolException.dictionaryTooLarge("AnimationFrames", this.animationFrames.size(), 4096000);
-            }
-            VarInt.write(buf, this.animationFrames.size());
-            for (var e : this.animationFrames.entrySet()) {
-                buf.writeIntLE(e.getKey());
-                e.getValue().serialize(buf);
-            }
-        } else {
-            buf.setIntLE(animationFramesOffsetSlot, -1);
-        }
-    }
+      obj.uvOption = ParticleUVOption.fromValue(buf.getByte(offset + 9));
+      obj.scaleRatioConstraint = ParticleScaleRatioConstraint.fromValue(buf.getByte(offset + 10));
+      obj.softParticles = SoftParticle.fromValue(buf.getByte(offset + 11));
+      obj.softParticlesFadeFactor = buf.getFloatLE(offset + 12);
+      obj.useSpriteBlending = buf.getByte(offset + 16) != 0;
+      if ((nullBits & 2) != 0) {
+         obj.initialAnimationFrame = ParticleAnimationFrame.deserialize(buf, offset + 17);
+      }
 
-    public int computeSize() {
-        int size = 141;
-        if (this.texturePath != null) {
-            size += PacketIO.stringSize(this.texturePath);
-        }
-        if (this.animationFrames != null) {
-            size += VarInt.size(this.animationFrames.size()) + this.animationFrames.size() * 62;
-        }
-        return size;
-    }
+      if ((nullBits & 4) != 0) {
+         obj.collisionAnimationFrame = ParticleAnimationFrame.deserialize(buf, offset + 75);
+      }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        int pos;
-        if (buffer.readableBytes() - offset < 141) {
-            return ValidationResult.error("Buffer too small: expected at least 141 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        if ((nullBits & 8) != 0) {
-            int texturePathOffset = buffer.getIntLE(offset + 133);
-            if (texturePathOffset < 0) {
-                return ValidationResult.error("Invalid offset for TexturePath");
-            }
-            pos = offset + 141 + texturePathOffset;
-            if (pos >= buffer.writerIndex()) {
-                return ValidationResult.error("Offset out of bounds for TexturePath");
-            }
-            int texturePathLen = VarInt.peek(buffer, pos);
-            if (texturePathLen < 0) {
-                return ValidationResult.error("Invalid string length for TexturePath");
-            }
-            if (texturePathLen > 4096000) {
-                return ValidationResult.error("TexturePath exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            if ((pos += texturePathLen) > buffer.writerIndex()) {
-                return ValidationResult.error("Buffer overflow reading TexturePath");
-            }
-        }
-        if ((nullBits & 0x10) != 0) {
-            int animationFramesOffset = buffer.getIntLE(offset + 137);
-            if (animationFramesOffset < 0) {
-                return ValidationResult.error("Invalid offset for AnimationFrames");
-            }
-            pos = offset + 141 + animationFramesOffset;
-            if (pos >= buffer.writerIndex()) {
-                return ValidationResult.error("Offset out of bounds for AnimationFrames");
-            }
-            int animationFramesCount = VarInt.peek(buffer, pos);
-            if (animationFramesCount < 0) {
-                return ValidationResult.error("Invalid dictionary count for AnimationFrames");
-            }
-            if (animationFramesCount > 4096000) {
-                return ValidationResult.error("AnimationFrames exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            for (int i = 0; i < animationFramesCount; ++i) {
-                if ((pos += 4) > buffer.writerIndex()) {
-                    return ValidationResult.error("Buffer overflow reading key");
-                }
-                pos += 58;
-            }
-        }
-        return ValidationResult.OK;
-    }
+      if ((nullBits & 8) != 0) {
+         int varPosBase0 = buf.getIntLE(offset + 133);
+         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 141) {
+            throw ProtocolException.invalidOffset("TexturePath", varPosBase0, buf.readableBytes());
+         }
 
-    public Particle clone() {
-        Particle copy = new Particle();
-        copy.texturePath = this.texturePath;
-        copy.frameSize = this.frameSize != null ? this.frameSize.clone() : null;
-        copy.uvOption = this.uvOption;
-        copy.scaleRatioConstraint = this.scaleRatioConstraint;
-        copy.softParticles = this.softParticles;
-        copy.softParticlesFadeFactor = this.softParticlesFadeFactor;
-        copy.useSpriteBlending = this.useSpriteBlending;
-        copy.initialAnimationFrame = this.initialAnimationFrame != null ? this.initialAnimationFrame.clone() : null;
-        ParticleAnimationFrame particleAnimationFrame = copy.collisionAnimationFrame = this.collisionAnimationFrame != null ? this.collisionAnimationFrame.clone() : null;
-        if (this.animationFrames != null) {
-            HashMap<Integer, ParticleAnimationFrame> m = new HashMap<Integer, ParticleAnimationFrame>();
-            for (var e : this.animationFrames.entrySet()) {
-                m.put(e.getKey(), e.getValue().clone());
+         int varPos0 = offset + 141 + varPosBase0;
+         int texturePathLen = VarInt.peek(buf, varPos0);
+         if (texturePathLen < 0) {
+            throw ProtocolException.invalidVarInt("TexturePath");
+         }
+
+         int texturePathVarIntLen = VarInt.size(texturePathLen);
+         if (texturePathLen > 4096000) {
+            throw ProtocolException.stringTooLong("TexturePath", texturePathLen, 4096000);
+         }
+
+         if (varPos0 + texturePathVarIntLen + texturePathLen > buf.readableBytes()) {
+            throw ProtocolException.bufferTooSmall("TexturePath", varPos0 + texturePathVarIntLen + texturePathLen, buf.readableBytes());
+         }
+
+         obj.texturePath = PacketIO.readVarString(buf, varPos0, PacketIO.UTF8);
+      }
+
+      if ((nullBits & 16) != 0) {
+         int varPosBase1 = buf.getIntLE(offset + 137);
+         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 141) {
+            throw ProtocolException.invalidOffset("AnimationFrames", varPosBase1, buf.readableBytes());
+         }
+
+         int varPos1 = offset + 141 + varPosBase1;
+         int animationFramesCount = VarInt.peek(buf, varPos1);
+         if (animationFramesCount < 0) {
+            throw ProtocolException.invalidVarInt("AnimationFrames");
+         }
+
+         int varIntLen = VarInt.size(animationFramesCount);
+         if (animationFramesCount > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("AnimationFrames", animationFramesCount, 4096000);
+         }
+
+         obj.animationFrames = new HashMap<>(animationFramesCount);
+         int dictPos = varPos1 + varIntLen;
+
+         for (int i = 0; i < animationFramesCount; i++) {
+            int key = buf.getIntLE(dictPos);
+            dictPos += 4;
+            ParticleAnimationFrame val = ParticleAnimationFrame.deserialize(buf, dictPos);
+            dictPos += ParticleAnimationFrame.computeBytesConsumed(buf, dictPos);
+            if (obj.animationFrames.put(key, val) != null) {
+               throw ProtocolException.duplicateKey("animationFrames", key);
             }
-            copy.animationFrames = m;
-        }
-        return copy;
-    }
+         }
+      }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Particle)) {
-            return false;
-        }
-        Particle other = (Particle)obj;
-        return Objects.equals(this.texturePath, other.texturePath) && Objects.equals(this.frameSize, other.frameSize) && Objects.equals((Object)this.uvOption, (Object)other.uvOption) && Objects.equals((Object)this.scaleRatioConstraint, (Object)other.scaleRatioConstraint) && Objects.equals((Object)this.softParticles, (Object)other.softParticles) && this.softParticlesFadeFactor == other.softParticlesFadeFactor && this.useSpriteBlending == other.useSpriteBlending && Objects.equals(this.initialAnimationFrame, other.initialAnimationFrame) && Objects.equals(this.collisionAnimationFrame, other.collisionAnimationFrame) && Objects.equals(this.animationFrames, other.animationFrames);
-    }
+      return obj;
+   }
 
-    public int hashCode() {
-        return Objects.hash(new Object[]{this.texturePath, this.frameSize, this.uvOption, this.scaleRatioConstraint, this.softParticles, Float.valueOf(this.softParticlesFadeFactor), this.useSpriteBlending, this.initialAnimationFrame, this.collisionAnimationFrame, this.animationFrames});
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int maxEnd = 141;
+      if ((nullBits & 8) != 0) {
+         int fieldOffset0 = buf.getIntLE(offset + 133);
+         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 141) {
+            throw ProtocolException.invalidOffset("TexturePath", fieldOffset0, maxEnd);
+         }
+
+         int pos0 = offset + 141 + fieldOffset0;
+         int sl = VarInt.peek(buf, pos0);
+         pos0 += VarInt.size(sl) + sl;
+         if (pos0 - offset > maxEnd) {
+            maxEnd = pos0 - offset;
+         }
+      }
+
+      if ((nullBits & 16) != 0) {
+         int fieldOffset1 = buf.getIntLE(offset + 137);
+         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 141) {
+            throw ProtocolException.invalidOffset("AnimationFrames", fieldOffset1, maxEnd);
+         }
+
+         int pos1 = offset + 141 + fieldOffset1;
+         int dictLen = VarInt.peek(buf, pos1);
+         pos1 += VarInt.size(dictLen);
+
+         for (int i = 0; i < dictLen; i++) {
+            pos1 += 4;
+            pos1 += ParticleAnimationFrame.computeBytesConsumed(buf, pos1);
+         }
+
+         if (pos1 - offset > maxEnd) {
+            maxEnd = pos1 - offset;
+         }
+      }
+
+      return maxEnd;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 141L;
+   }
+
+   @Nullable
+   public static String getTexturePath(MemorySegment mem) {
+      return getTexturePath(mem, 0);
+   }
+
+   @Nullable
+   public static String getTexturePath(MemorySegment mem, int offset) {
+      return hasTexturePath(mem, offset)
+         ? PacketIO.readVarString("TexturePath", mem, offset + getValidatedOffset(mem, offset, 133, 141, "TexturePath"), 4096000, PacketIO.UTF8)
+         : null;
+   }
+
+   @Nullable
+   public static Size getFrameSize(MemorySegment mem) {
+      return getFrameSize(mem, 0);
+   }
+
+   @Nullable
+   public static Size getFrameSize(MemorySegment mem, int offset) {
+      return hasFrameSize(mem, offset) ? Size.toObject(mem, offset + 1) : null;
+   }
+
+   public static ParticleUVOption getUvOption(MemorySegment mem) {
+      return getUvOption(mem, 0);
+   }
+
+   public static ParticleUVOption getUvOption(MemorySegment mem, int offset) {
+      return ParticleUVOption.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 9));
+   }
+
+   public static ParticleScaleRatioConstraint getScaleRatioConstraint(MemorySegment mem) {
+      return getScaleRatioConstraint(mem, 0);
+   }
+
+   public static ParticleScaleRatioConstraint getScaleRatioConstraint(MemorySegment mem, int offset) {
+      return ParticleScaleRatioConstraint.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 10));
+   }
+
+   public static SoftParticle getSoftParticles(MemorySegment mem) {
+      return getSoftParticles(mem, 0);
+   }
+
+   public static SoftParticle getSoftParticles(MemorySegment mem, int offset) {
+      return SoftParticle.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 11));
+   }
+
+   public static float getSoftParticlesFadeFactor(MemorySegment mem) {
+      return getSoftParticlesFadeFactor(mem, 0);
+   }
+
+   public static float getSoftParticlesFadeFactor(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 12);
+   }
+
+   public static boolean getUseSpriteBlending(MemorySegment mem) {
+      return getUseSpriteBlending(mem, 0);
+   }
+
+   public static boolean getUseSpriteBlending(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_BOOL, offset + 16);
+   }
+
+   @Nullable
+   public static ParticleAnimationFrame getInitialAnimationFrame(MemorySegment mem) {
+      return getInitialAnimationFrame(mem, 0);
+   }
+
+   @Nullable
+   public static ParticleAnimationFrame getInitialAnimationFrame(MemorySegment mem, int offset) {
+      return hasInitialAnimationFrame(mem, offset) ? ParticleAnimationFrame.toObject(mem, offset + 17) : null;
+   }
+
+   @Nullable
+   public static ParticleAnimationFrame getCollisionAnimationFrame(MemorySegment mem) {
+      return getCollisionAnimationFrame(mem, 0);
+   }
+
+   @Nullable
+   public static ParticleAnimationFrame getCollisionAnimationFrame(MemorySegment mem, int offset) {
+      return hasCollisionAnimationFrame(mem, offset) ? ParticleAnimationFrame.toObject(mem, offset + 75) : null;
+   }
+
+   @Nullable
+   public static Map<Integer, ParticleAnimationFrame> getAnimationFrames(MemorySegment mem) {
+      return getAnimationFrames(mem, 0);
+   }
+
+   @Nullable
+   public static Map<Integer, ParticleAnimationFrame> getAnimationFrames(MemorySegment mem, int offset) {
+      if (!hasAnimationFrames(mem, offset)) {
+         return null;
+      }
+
+      int off = offset + getValidatedOffset(mem, offset, 137, 141, "AnimationFrames");
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("AnimationFrames", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.dictionaryTooLarge("AnimationFrames", len, 4096000);
+      }
+
+      Map<Integer, ParticleAnimationFrame> data = new HashMap<>(len);
+      off += (int)(packed >>> 32);
+
+      for (int i = 0; i < len; i++) {
+         int key = mem.get(PacketIO.PROTO_INT, off);
+         off += 4;
+         ParticleAnimationFrame value = ParticleAnimationFrame.toObject(mem, off);
+         off += value.computeSize();
+         if (data.put(key, value) != null) {
+            throw ProtocolException.duplicateKey("AnimationFrames", key);
+         }
+      }
+
+      return data;
+   }
+
+   public static boolean hasFrameSize(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static boolean hasInitialAnimationFrame(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 2) != 0;
+   }
+
+   public static boolean hasCollisionAnimationFrame(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 4) != 0;
+   }
+
+   public static boolean hasTexturePath(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 8) != 0;
+   }
+
+   public static boolean hasAnimationFrames(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 16) != 0;
+   }
+
+   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
+         return varBlockStart + offset;
+      } else {
+         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
+      }
+   }
+
+   public static Particle toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static Particle toObject(MemorySegment mem, int offset) {
+      if (offset + 141 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("Particle", offset + 141, (int)mem.byteSize());
+      }
+
+      Map<Integer, ParticleAnimationFrame> animationFrames = null;
+      if (hasAnimationFrames(mem, offset)) {
+         int off = offset + getValidatedOffset(mem, offset, 137, 141, "AnimationFrames");
+         long packed = VarInt.getWithLength(mem, off);
+         int len = (int)packed;
+         if (len < 0) {
+            throw ProtocolException.negativeLength("AnimationFrames", len);
+         }
+
+         if (len > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("AnimationFrames", len, 4096000);
+         }
+
+         animationFrames = new HashMap<>(len);
+         off += (int)(packed >>> 32);
+
+         for (int i = 0; i < len; i++) {
+            int key = mem.get(PacketIO.PROTO_INT, off);
+            off += 4;
+            ParticleAnimationFrame value = ParticleAnimationFrame.toObject(mem, off);
+            off += value.computeSize();
+            if (animationFrames.put(key, value) != null) {
+               throw ProtocolException.duplicateKey("AnimationFrames", key);
+            }
+         }
+      }
+
+      return new Particle(
+         hasTexturePath(mem, offset)
+            ? PacketIO.readVarString("TexturePath", mem, offset + getValidatedOffset(mem, offset, 133, 141, "TexturePath"), 4096000, PacketIO.UTF8)
+            : null,
+         hasFrameSize(mem, offset) ? Size.toObject(mem, offset + 1) : null,
+         ParticleUVOption.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 9)),
+         ParticleScaleRatioConstraint.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 10)),
+         SoftParticle.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 11)),
+         mem.get(PacketIO.PROTO_FLOAT, offset + 12),
+         mem.get(PacketIO.PROTO_BOOL, offset + 16),
+         hasInitialAnimationFrame(mem, offset) ? ParticleAnimationFrame.toObject(mem, offset + 17) : null,
+         hasCollisionAnimationFrame(mem, offset) ? ParticleAnimationFrame.toObject(mem, offset + 75) : null,
+         animationFrames
+      );
+   }
+
+   public void serialize(@Nonnull ByteBuf buf) {
+      int startPos = buf.writerIndex();
+      byte nullBits = 0;
+      if (this.frameSize != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      if (this.initialAnimationFrame != null) {
+         nullBits = (byte)(nullBits | 2);
+      }
+
+      if (this.collisionAnimationFrame != null) {
+         nullBits = (byte)(nullBits | 4);
+      }
+
+      if (this.texturePath != null) {
+         nullBits = (byte)(nullBits | 8);
+      }
+
+      if (this.animationFrames != null) {
+         nullBits = (byte)(nullBits | 16);
+      }
+
+      buf.writeByte(nullBits);
+      if (this.frameSize != null) {
+         this.frameSize.serialize(buf);
+      } else {
+         buf.writeZero(8);
+      }
+
+      buf.writeByte(this.uvOption.getValue());
+      buf.writeByte(this.scaleRatioConstraint.getValue());
+      buf.writeByte(this.softParticles.getValue());
+      buf.writeFloatLE(this.softParticlesFadeFactor);
+      buf.writeByte(this.useSpriteBlending ? 1 : 0);
+      if (this.initialAnimationFrame != null) {
+         this.initialAnimationFrame.serialize(buf);
+      } else {
+         buf.writeZero(58);
+      }
+
+      if (this.collisionAnimationFrame != null) {
+         this.collisionAnimationFrame.serialize(buf);
+      } else {
+         buf.writeZero(58);
+      }
+
+      int texturePathOffsetSlot = buf.writerIndex();
+      buf.writeIntLE(0);
+      int animationFramesOffsetSlot = buf.writerIndex();
+      buf.writeIntLE(0);
+      int varBlockStart = buf.writerIndex();
+      if (this.texturePath != null) {
+         buf.setIntLE(texturePathOffsetSlot, buf.writerIndex() - varBlockStart);
+         PacketIO.writeVarString(buf, this.texturePath, 4096000);
+      } else {
+         buf.setIntLE(texturePathOffsetSlot, -1);
+      }
+
+      if (this.animationFrames != null) {
+         buf.setIntLE(animationFramesOffsetSlot, buf.writerIndex() - varBlockStart);
+         if (this.animationFrames.size() > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("AnimationFrames", this.animationFrames.size(), 4096000);
+         }
+
+         VarInt.write(buf, this.animationFrames.size());
+
+         for (Entry<Integer, ParticleAnimationFrame> e : this.animationFrames.entrySet()) {
+            buf.writeIntLE(e.getKey());
+            e.getValue().serialize(buf);
+         }
+      } else {
+         buf.setIntLE(animationFramesOffsetSlot, -1);
+      }
+   }
+
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.frameSize != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      if (this.initialAnimationFrame != null) {
+         nullBits = (byte)(nullBits | 2);
+      }
+
+      if (this.collisionAnimationFrame != null) {
+         nullBits = (byte)(nullBits | 4);
+      }
+
+      if (this.texturePath != null) {
+         nullBits = (byte)(nullBits | 8);
+      }
+
+      if (this.animationFrames != null) {
+         nullBits = (byte)(nullBits | 16);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      if (this.frameSize != null) {
+         this.frameSize.serialize(mem, offset + 1);
+      } else {
+         mem.asSlice(offset + 1, 8L).fill((byte)0);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 9, (byte)this.uvOption.getValue());
+      mem.set(PacketIO.PROTO_BYTE, offset + 10, (byte)this.scaleRatioConstraint.getValue());
+      mem.set(PacketIO.PROTO_BYTE, offset + 11, (byte)this.softParticles.getValue());
+      mem.set(PacketIO.PROTO_FLOAT, offset + 12, this.softParticlesFadeFactor);
+      mem.set(PacketIO.PROTO_BOOL, offset + 16, this.useSpriteBlending);
+      if (this.initialAnimationFrame != null) {
+         this.initialAnimationFrame.serialize(mem, offset + 17);
+      } else {
+         mem.asSlice(offset + 17, 58L).fill((byte)0);
+      }
+
+      if (this.collisionAnimationFrame != null) {
+         this.collisionAnimationFrame.serialize(mem, offset + 75);
+      } else {
+         mem.asSlice(offset + 75, 58L).fill((byte)0);
+      }
+
+      int varOffset = offset + 141;
+      if (this.texturePath != null) {
+         mem.set(PacketIO.PROTO_INT, offset + 133, varOffset - offset - 141);
+         varOffset += PacketIO.writeVarString(mem, varOffset, this.texturePath, 4096000);
+      } else {
+         mem.set(PacketIO.PROTO_INT, offset + 133, -1);
+      }
+
+      if (this.animationFrames != null) {
+         mem.set(PacketIO.PROTO_INT, offset + 137, varOffset - offset - 141);
+         if (this.animationFrames.size() > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("AnimationFrames", this.animationFrames.size(), 4096000);
+         }
+
+         varOffset += VarInt.set(mem, varOffset, this.animationFrames.size());
+
+         for (Entry<Integer, ParticleAnimationFrame> e : this.animationFrames.entrySet()) {
+            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+            varOffset += 4;
+            varOffset += e.getValue().serialize(mem, varOffset);
+         }
+      } else {
+         mem.set(PacketIO.PROTO_INT, offset + 137, -1);
+      }
+
+      return varOffset - offset;
+   }
+
+   public int computeSize() {
+      int size = 141;
+      if (this.texturePath != null) {
+         size += PacketIO.stringSize(this.texturePath);
+      }
+
+      if (this.animationFrames != null) {
+         size += VarInt.size(this.animationFrames.size()) + this.animationFrames.size() * 62;
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 141) {
+         return ValidationResult.error("Buffer too small: expected at least 141 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int v = buffer.getByte(offset + 9) & 255;
+      if (v >= 7) {
+         return ValidationResult.error("Invalid ParticleUVOption value for UvOption");
+      }
+
+      v = buffer.getByte(offset + 10) & 255;
+      if (v >= 3) {
+         return ValidationResult.error("Invalid ParticleScaleRatioConstraint value for ScaleRatioConstraint");
+      }
+
+      v = buffer.getByte(offset + 11) & 255;
+      if (v >= 3) {
+         return ValidationResult.error("Invalid SoftParticle value for SoftParticles");
+      }
+
+      if ((nullBits & 8) != 0) {
+         v = buffer.getIntLE(offset + 133);
+         if (v < 0 || v > buffer.writerIndex() - offset - 141) {
+            return ValidationResult.error("Invalid offset for TexturePath");
+         }
+
+         int pos = offset + 141 + v;
+         int texturePathLen = VarInt.peek(buffer, pos);
+         if (texturePathLen < 0) {
+            return ValidationResult.error("Invalid string length for TexturePath");
+         }
+
+         if (texturePathLen > 4096000) {
+            return ValidationResult.error("TexturePath exceeds max length 4096000");
+         }
+
+         pos += VarInt.size(texturePathLen);
+         pos += texturePathLen;
+         if (pos > buffer.writerIndex()) {
+            return ValidationResult.error("Buffer overflow reading TexturePath");
+         }
+      }
+
+      if ((nullBits & 16) != 0) {
+         v = buffer.getIntLE(offset + 137);
+         if (v < 0 || v > buffer.writerIndex() - offset - 141) {
+            return ValidationResult.error("Invalid offset for AnimationFrames");
+         }
+
+         int pos = offset + 141 + v;
+         int animationFramesCount = VarInt.peek(buffer, pos);
+         if (animationFramesCount < 0) {
+            return ValidationResult.error("Invalid dictionary count for AnimationFrames");
+         }
+
+         if (animationFramesCount > 4096000) {
+            return ValidationResult.error("AnimationFrames exceeds max length 4096000");
+         }
+
+         pos += VarInt.size(animationFramesCount);
+
+         for (int i = 0; i < animationFramesCount; i++) {
+            pos += 4;
+            if (pos > buffer.writerIndex()) {
+               return ValidationResult.error("Buffer overflow reading key");
+            }
+
+            pos += 58;
+         }
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public Particle clone() {
+      Particle copy = new Particle();
+      copy.texturePath = this.texturePath;
+      copy.frameSize = this.frameSize != null ? this.frameSize.clone() : null;
+      copy.uvOption = this.uvOption;
+      copy.scaleRatioConstraint = this.scaleRatioConstraint;
+      copy.softParticles = this.softParticles;
+      copy.softParticlesFadeFactor = this.softParticlesFadeFactor;
+      copy.useSpriteBlending = this.useSpriteBlending;
+      copy.initialAnimationFrame = this.initialAnimationFrame != null ? this.initialAnimationFrame.clone() : null;
+      copy.collisionAnimationFrame = this.collisionAnimationFrame != null ? this.collisionAnimationFrame.clone() : null;
+      if (this.animationFrames != null) {
+         Map<Integer, ParticleAnimationFrame> m = new HashMap<>();
+
+         for (Entry<Integer, ParticleAnimationFrame> e : this.animationFrames.entrySet()) {
+            m.put(e.getKey(), e.getValue().clone());
+         }
+
+         copy.animationFrames = m;
+      }
+
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof Particle other)
+            ? false
+            : Objects.equals(this.texturePath, other.texturePath)
+               && Objects.equals(this.frameSize, other.frameSize)
+               && Objects.equals(this.uvOption, other.uvOption)
+               && Objects.equals(this.scaleRatioConstraint, other.scaleRatioConstraint)
+               && Objects.equals(this.softParticles, other.softParticles)
+               && this.softParticlesFadeFactor == other.softParticlesFadeFactor
+               && this.useSpriteBlending == other.useSpriteBlending
+               && Objects.equals(this.initialAnimationFrame, other.initialAnimationFrame)
+               && Objects.equals(this.collisionAnimationFrame, other.collisionAnimationFrame)
+               && Objects.equals(this.animationFrames, other.animationFrames);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(
+         this.texturePath,
+         this.frameSize,
+         this.uvOption,
+         this.scaleRatioConstraint,
+         this.softParticles,
+         this.softParticlesFadeFactor,
+         this.useSpriteBlending,
+         this.initialAnimationFrame,
+         this.collisionAnimationFrame,
+         this.animationFrames
+      );
+   }
 }
-

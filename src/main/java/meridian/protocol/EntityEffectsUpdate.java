@@ -1,139 +1,239 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
-import meridian.protocol.ComponentUpdate;
-import meridian.protocol.EntityEffectUpdate;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
 
-public class EntityEffectsUpdate
-extends ComponentUpdate {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 0;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 0;
-    public static final int MAX_SIZE = 0x64000000;
-    @Nonnull
-    public EntityEffectUpdate[] entityEffectUpdates = new EntityEffectUpdate[0];
+public class EntityEffectsUpdate extends ComponentUpdate {
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 0;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 0;
+   public static final int MAX_SIZE = 1677721600;
+   @Nonnull
+   public EntityEffectUpdate[] entityEffectUpdates = new EntityEffectUpdate[0];
 
-    public EntityEffectsUpdate() {
-    }
+   public EntityEffectsUpdate() {
+   }
 
-    public EntityEffectsUpdate(@Nonnull EntityEffectUpdate[] entityEffectUpdates) {
-        this.entityEffectUpdates = entityEffectUpdates;
-    }
+   public EntityEffectsUpdate(@Nonnull EntityEffectUpdate[] entityEffectUpdates) {
+      this.entityEffectUpdates = entityEffectUpdates;
+   }
 
-    public EntityEffectsUpdate(@Nonnull EntityEffectsUpdate other) {
-        this.entityEffectUpdates = other.entityEffectUpdates;
-    }
+   public EntityEffectsUpdate(@Nonnull EntityEffectsUpdate other) {
+      this.entityEffectUpdates = other.entityEffectUpdates;
+   }
 
-    @Nonnull
-    public static EntityEffectsUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
-        EntityEffectsUpdate obj = new EntityEffectsUpdate();
-        int pos = offset + 0;
-        int entityEffectUpdatesCount = VarInt.peek(buf, pos);
-        if (entityEffectUpdatesCount < 0) {
-            throw ProtocolException.negativeLength("EntityEffectUpdates", entityEffectUpdatesCount);
-        }
-        if (entityEffectUpdatesCount > 4096000) {
-            throw ProtocolException.arrayTooLong("EntityEffectUpdates", entityEffectUpdatesCount, 4096000);
-        }
-        int entityEffectUpdatesVarLen = VarInt.size(entityEffectUpdatesCount);
-        if ((long)(pos + entityEffectUpdatesVarLen) + (long)entityEffectUpdatesCount * 12L > (long)buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("EntityEffectUpdates", pos + entityEffectUpdatesVarLen + entityEffectUpdatesCount * 12, buf.readableBytes());
-        }
-        pos += entityEffectUpdatesVarLen;
-        obj.entityEffectUpdates = new EntityEffectUpdate[entityEffectUpdatesCount];
-        for (int i = 0; i < entityEffectUpdatesCount; ++i) {
-            obj.entityEffectUpdates[i] = EntityEffectUpdate.deserialize(buf, pos);
-            pos += EntityEffectUpdate.computeBytesConsumed(buf, pos);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static EntityEffectsUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
+      EntityEffectsUpdate obj = new EntityEffectsUpdate();
+      int pos = offset + 0;
+      int entityEffectUpdatesCount = VarInt.peek(buf, pos);
+      if (entityEffectUpdatesCount < 0) {
+         throw ProtocolException.invalidVarInt("EntityEffectUpdates");
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        int pos = offset + 0;
-        int arrLen = VarInt.peek(buf, pos);
-        pos += VarInt.length(buf, pos);
-        for (int i = 0; i < arrLen; ++i) {
-            pos += EntityEffectUpdate.computeBytesConsumed(buf, pos);
-        }
-        return pos - offset;
-    }
+      int entityEffectUpdatesVarLen = VarInt.size(entityEffectUpdatesCount);
+      if (entityEffectUpdatesCount > 4096000) {
+         throw ProtocolException.arrayTooLong("EntityEffectUpdates", entityEffectUpdatesCount, 4096000);
+      }
 
-    @Override
-    public int serialize(@Nonnull ByteBuf buf) {
-        int startPos = buf.writerIndex();
-        if (this.entityEffectUpdates.length > 4096000) {
-            throw ProtocolException.arrayTooLong("EntityEffectUpdates", this.entityEffectUpdates.length, 4096000);
-        }
-        VarInt.write(buf, this.entityEffectUpdates.length);
-        for (EntityEffectUpdate item : this.entityEffectUpdates) {
-            item.serialize(buf);
-        }
-        return buf.writerIndex() - startPos;
-    }
+      if (pos + entityEffectUpdatesVarLen + entityEffectUpdatesCount * 12L > buf.readableBytes()) {
+         throw ProtocolException.bufferTooSmall("EntityEffectUpdates", pos + entityEffectUpdatesVarLen + entityEffectUpdatesCount * 12, buf.readableBytes());
+      }
 
-    @Override
-    public int computeSize() {
-        int size = 0;
-        int entityEffectUpdatesSize = 0;
-        for (EntityEffectUpdate elem : this.entityEffectUpdates) {
-            entityEffectUpdatesSize += elem.computeSize();
-        }
-        return size += VarInt.size(this.entityEffectUpdates.length) + entityEffectUpdatesSize;
-    }
+      pos += entityEffectUpdatesVarLen;
+      obj.entityEffectUpdates = new EntityEffectUpdate[entityEffectUpdatesCount];
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 0) {
-            return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-        }
-        int pos = offset + 0;
-        int entityEffectUpdatesCount = VarInt.peek(buffer, pos);
-        if (entityEffectUpdatesCount < 0) {
-            return ValidationResult.error("Invalid array count for EntityEffectUpdates");
-        }
-        if (entityEffectUpdatesCount > 4096000) {
-            return ValidationResult.error("EntityEffectUpdates exceeds max length 4096000");
-        }
-        pos += VarInt.length(buffer, pos);
-        for (int i = 0; i < entityEffectUpdatesCount; ++i) {
-            ValidationResult structResult = EntityEffectUpdate.validateStructure(buffer, pos);
-            if (!structResult.isValid()) {
-                return ValidationResult.error("Invalid EntityEffectUpdate in EntityEffectUpdates[" + i + "]: " + structResult.error());
-            }
-            pos += EntityEffectUpdate.computeBytesConsumed(buffer, pos);
-        }
-        return ValidationResult.OK;
-    }
+      for (int i = 0; i < entityEffectUpdatesCount; i++) {
+         obj.entityEffectUpdates[i] = EntityEffectUpdate.deserialize(buf, pos);
+         pos += EntityEffectUpdate.computeBytesConsumed(buf, pos);
+      }
 
-    public EntityEffectsUpdate clone() {
-        EntityEffectsUpdate copy = new EntityEffectsUpdate();
-        copy.entityEffectUpdates = (EntityEffectUpdate[])Arrays.stream(this.entityEffectUpdates).map(e -> e.clone()).toArray(EntityEffectUpdate[]::new);
-        return copy;
-    }
+      return obj;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof EntityEffectsUpdate)) {
-            return false;
-        }
-        EntityEffectsUpdate other = (EntityEffectsUpdate)obj;
-        return Arrays.equals(this.entityEffectUpdates, other.entityEffectUpdates);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      int pos = offset + 0;
+      int arrLen = VarInt.peek(buf, pos);
+      pos += VarInt.size(arrLen);
 
-    public int hashCode() {
-        int result = 1;
-        result = 31 * result + Arrays.hashCode(this.entityEffectUpdates);
-        return result;
-    }
+      for (int i = 0; i < arrLen; i++) {
+         pos += EntityEffectUpdate.computeBytesConsumed(buf, pos);
+      }
+
+      return pos - offset;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 0L;
+   }
+
+   public static EntityEffectUpdate[] getEntityEffectUpdates(MemorySegment mem) {
+      return getEntityEffectUpdates(mem, 0);
+   }
+
+   public static EntityEffectUpdate[] getEntityEffectUpdates(MemorySegment mem, int offset) {
+      int off = offset + 0;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("EntityEffectUpdates", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.arrayTooLong("EntityEffectUpdates", len, 4096000);
+      }
+
+      int lenOffset = (int)(packed >>> 32);
+      if (off + lenOffset + len > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("EntityEffectUpdates", off + lenOffset + len, (int)mem.byteSize());
+      }
+
+      off += lenOffset;
+      EntityEffectUpdate[] data = new EntityEffectUpdate[len];
+
+      for (int i = 0; i < len; i++) {
+         data[i] = EntityEffectUpdate.toObject(mem, off);
+         off += data[i].computeSize();
+      }
+
+      return data;
+   }
+
+   public static EntityEffectsUpdate toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static EntityEffectsUpdate toObject(MemorySegment mem, int offset) {
+      if (offset + 0 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("EntityEffectsUpdate", offset + 0, (int)mem.byteSize());
+      }
+
+      int off = offset + 0;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("EntityEffectUpdates", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.arrayTooLong("EntityEffectUpdates", len, 4096000);
+      }
+
+      int lenOffset = (int)(packed >>> 32);
+      if (off + lenOffset + len > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("EntityEffectUpdates", off + lenOffset + len, (int)mem.byteSize());
+      }
+
+      off += lenOffset;
+      EntityEffectUpdate[] entityEffectUpdates = new EntityEffectUpdate[len];
+
+      for (int i = 0; i < len; i++) {
+         entityEffectUpdates[i] = EntityEffectUpdate.toObject(mem, off);
+         off += entityEffectUpdates[i].computeSize();
+      }
+
+      return new EntityEffectsUpdate(entityEffectUpdates);
+   }
+
+   @Override
+   public int serialize(@Nonnull ByteBuf buf) {
+      int startPos = buf.writerIndex();
+      if (this.entityEffectUpdates.length > 4096000) {
+         throw ProtocolException.arrayTooLong("EntityEffectUpdates", this.entityEffectUpdates.length, 4096000);
+      }
+
+      VarInt.write(buf, this.entityEffectUpdates.length);
+
+      for (EntityEffectUpdate item : this.entityEffectUpdates) {
+         item.serialize(buf);
+      }
+
+      return buf.writerIndex() - startPos;
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      int varOffset = offset + 0;
+      if (this.entityEffectUpdates.length > 4096000) {
+         throw ProtocolException.arrayTooLong("EntityEffectUpdates", this.entityEffectUpdates.length, 4096000);
+      }
+
+      varOffset += VarInt.set(mem, varOffset, this.entityEffectUpdates.length);
+      int entityEffectUpdatesValueOffset = 0;
+
+      for (int i = 0; i < this.entityEffectUpdates.length; i++) {
+         entityEffectUpdatesValueOffset += this.entityEffectUpdates[i].serialize(mem, varOffset + entityEffectUpdatesValueOffset);
+      }
+
+      varOffset += entityEffectUpdatesValueOffset;
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 0;
+      int entityEffectUpdatesSize = 0;
+
+      for (EntityEffectUpdate elem : this.entityEffectUpdates) {
+         entityEffectUpdatesSize += elem.computeSize();
+      }
+
+      return size + VarInt.size(this.entityEffectUpdates.length) + entityEffectUpdatesSize;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 0) {
+         return ValidationResult.error("Buffer too small: expected at least 0 bytes");
+      }
+
+      int pos = offset + 0;
+      int entityEffectUpdatesCount = VarInt.peek(buffer, pos);
+      if (entityEffectUpdatesCount < 0) {
+         return ValidationResult.error("Invalid array count for EntityEffectUpdates");
+      }
+
+      if (entityEffectUpdatesCount > 4096000) {
+         return ValidationResult.error("EntityEffectUpdates exceeds max length 4096000");
+      }
+
+      pos += VarInt.size(entityEffectUpdatesCount);
+
+      for (int i = 0; i < entityEffectUpdatesCount; i++) {
+         ValidationResult structResult = EntityEffectUpdate.validateStructure(buffer, pos);
+         if (!structResult.isValid()) {
+            return ValidationResult.error("Invalid EntityEffectUpdate in EntityEffectUpdates[" + i + "]: " + structResult.error());
+         }
+
+         pos += EntityEffectUpdate.computeBytesConsumed(buffer, pos);
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public EntityEffectsUpdate clone() {
+      EntityEffectsUpdate copy = new EntityEffectsUpdate();
+      copy.entityEffectUpdates = Arrays.stream(this.entityEffectUpdates).map(e -> e.clone()).toArray(EntityEffectUpdate[]::new);
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof EntityEffectsUpdate other ? Arrays.equals(this.entityEffectUpdates, other.entityEffectUpdates) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      int result = 1;
+      return 31 * result + Arrays.hashCode(this.entityEffectUpdates);
+   }
 }
-

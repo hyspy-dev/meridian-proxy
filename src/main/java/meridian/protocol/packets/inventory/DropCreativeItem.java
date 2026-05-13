@@ -1,109 +1,137 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.inventory;
 
 import meridian.protocol.ItemQuantity;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class DropCreativeItem
-implements Packet,
-ToServerPacket {
-    public static final int PACKET_ID = 172;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 0;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 0;
-    public static final int MAX_SIZE = 0xFA000A;
-    @Nonnull
-    public ItemQuantity item = new ItemQuantity();
+public class DropCreativeItem implements Packet, ToServerPacket {
+   public static final int PACKET_ID = 172;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 0;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 0;
+   public static final int MAX_SIZE = 16384010;
+   @Nonnull
+   public ItemQuantity item = new ItemQuantity();
 
-    @Override
-    public int getId() {
-        return 172;
-    }
+   @Override
+   public int getId() {
+      return 172;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public DropCreativeItem() {
-    }
+   public DropCreativeItem() {
+   }
 
-    public DropCreativeItem(@Nonnull ItemQuantity item) {
-        this.item = item;
-    }
+   public DropCreativeItem(@Nonnull ItemQuantity item) {
+      this.item = item;
+   }
 
-    public DropCreativeItem(@Nonnull DropCreativeItem other) {
-        this.item = other.item;
-    }
+   public DropCreativeItem(@Nonnull DropCreativeItem other) {
+      this.item = other.item;
+   }
 
-    @Nonnull
-    public static DropCreativeItem deserialize(@Nonnull ByteBuf buf, int offset) {
-        DropCreativeItem obj = new DropCreativeItem();
-        int pos = offset + 0;
-        obj.item = ItemQuantity.deserialize(buf, pos);
-        pos += ItemQuantity.computeBytesConsumed(buf, pos);
-        return obj;
-    }
+   @Nonnull
+   public static DropCreativeItem deserialize(@Nonnull ByteBuf buf, int offset) {
+      DropCreativeItem obj = new DropCreativeItem();
+      int pos = offset + 0;
+      obj.item = ItemQuantity.deserialize(buf, pos);
+      pos += ItemQuantity.computeBytesConsumed(buf, pos);
+      return obj;
+   }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        int pos = offset + 0;
-        pos += ItemQuantity.computeBytesConsumed(buf, pos);
-        return pos - offset;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      int pos = offset + 0;
+      pos += ItemQuantity.computeBytesConsumed(buf, pos);
+      return pos - offset;
+   }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        this.item.serialize(buf);
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 0L;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 0;
-        return size += this.item.computeSize();
-    }
+   public static ItemQuantity getItem(MemorySegment mem) {
+      return getItem(mem, 0);
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 0) {
-            return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-        }
-        int pos = offset + 0;
-        ValidationResult itemResult = ItemQuantity.validateStructure(buffer, pos);
-        if (!itemResult.isValid()) {
-            return ValidationResult.error("Invalid Item: " + itemResult.error());
-        }
-        pos += ItemQuantity.computeBytesConsumed(buffer, pos);
-        return ValidationResult.OK;
-    }
+   public static ItemQuantity getItem(MemorySegment mem, int offset) {
+      return ItemQuantity.toObject(mem, offset + 0);
+   }
 
-    public DropCreativeItem clone() {
-        DropCreativeItem copy = new DropCreativeItem();
-        copy.item = this.item.clone();
-        return copy;
-    }
+   public static DropCreativeItem toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof DropCreativeItem)) {
-            return false;
-        }
-        DropCreativeItem other = (DropCreativeItem)obj;
-        return Objects.equals(this.item, other.item);
-    }
+   public static DropCreativeItem toObject(MemorySegment mem, int offset) {
+      if (offset + 0 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("DropCreativeItem", offset + 0, (int)mem.byteSize());
+      } else {
+         return new DropCreativeItem(ItemQuantity.toObject(mem, offset + 0));
+      }
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.item);
-    }
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      this.item.serialize(buf);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      int varOffset = offset + 0;
+      varOffset += this.item.serialize(mem, varOffset);
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 0;
+      return size + this.item.computeSize();
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 0) {
+         return ValidationResult.error("Buffer too small: expected at least 0 bytes");
+      }
+
+      int pos = offset + 0;
+      ValidationResult itemResult = ItemQuantity.validateStructure(buffer, pos);
+      if (!itemResult.isValid()) {
+         return ValidationResult.error("Invalid Item: " + itemResult.error());
+      }
+
+      pos += ItemQuantity.computeBytesConsumed(buffer, pos);
+      return ValidationResult.OK;
+   }
+
+   public DropCreativeItem clone() {
+      DropCreativeItem copy = new DropCreativeItem();
+      copy.item = this.item.clone();
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof DropCreativeItem other ? Objects.equals(this.item, other.item) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.item);
+   }
 }
-

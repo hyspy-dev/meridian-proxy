@@ -1,35 +1,28 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum PickupLocation {
-    Hotbar(0),
-    Storage(1),
-    Backpack(2);
+   Hotbar(0),
+   Storage(1),
+   Backpack(2);
 
-    public static final PickupLocation[] VALUES;
-    private final int value;
+   public static final PickupLocation[] VALUES = values();
+   private final int value;
 
-    private PickupLocation(int value) {
-        this.value = value;
-    }
+   PickupLocation(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static PickupLocation fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("PickupLocation", value);
-    }
-
-    static {
-        VALUES = PickupLocation.values();
-    }
+   public static PickupLocation fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("PickupLocation", value);
+      }
+   }
 }
-

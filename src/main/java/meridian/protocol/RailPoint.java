@@ -1,108 +1,123 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
-import meridian.protocol.Vector3f;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.joml.Vector3fc;
 
 public class RailPoint {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 25;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 25;
-    public static final int MAX_SIZE = 25;
-    @Nullable
-    public Vector3f point;
-    @Nullable
-    public Vector3f normal;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 24;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 24;
+   public static final int MAX_SIZE = 24;
+   @Nonnull
+   public Vector3fc point = PacketIO.ZERO_VECTOR3;
+   @Nonnull
+   public Vector3fc normal = PacketIO.ZERO_VECTOR3;
 
-    public RailPoint() {
-    }
+   public RailPoint() {
+   }
 
-    public RailPoint(@Nullable Vector3f point, @Nullable Vector3f normal) {
-        this.point = point;
-        this.normal = normal;
-    }
+   public RailPoint(@Nonnull Vector3fc point, @Nonnull Vector3fc normal) {
+      this.point = point;
+      this.normal = normal;
+   }
 
-    public RailPoint(@Nonnull RailPoint other) {
-        this.point = other.point;
-        this.normal = other.normal;
-    }
+   public RailPoint(@Nonnull RailPoint other) {
+      this.point = other.point;
+      this.normal = other.normal;
+   }
 
-    @Nonnull
-    public static RailPoint deserialize(@Nonnull ByteBuf buf, int offset) {
-        RailPoint obj = new RailPoint();
-        byte nullBits = buf.getByte(offset);
-        if ((nullBits & 1) != 0) {
-            obj.point = Vector3f.deserialize(buf, offset + 1);
-        }
-        if ((nullBits & 2) != 0) {
-            obj.normal = Vector3f.deserialize(buf, offset + 13);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static RailPoint deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 24) {
+         throw ProtocolException.bufferTooSmall("RailPoint", 24, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 25;
-    }
+      RailPoint obj = new RailPoint();
+      obj.point = PacketIO.readVector3f(buf, offset + 0);
+      obj.normal = PacketIO.readVector3f(buf, offset + 12);
+      return obj;
+   }
 
-    public void serialize(@Nonnull ByteBuf buf) {
-        byte nullBits = 0;
-        if (this.point != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        if (this.normal != null) {
-            nullBits = (byte)(nullBits | 2);
-        }
-        buf.writeByte(nullBits);
-        if (this.point != null) {
-            this.point.serialize(buf);
-        } else {
-            buf.writeZero(12);
-        }
-        if (this.normal != null) {
-            this.normal.serialize(buf);
-        } else {
-            buf.writeZero(12);
-        }
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 24;
+   }
 
-    public int computeSize() {
-        return 25;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 24L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 25) {
-            return ValidationResult.error("Buffer too small: expected at least 25 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static Vector3fc getPoint(MemorySegment mem) {
+      return getPoint(mem, 0);
+   }
 
-    public RailPoint clone() {
-        RailPoint copy = new RailPoint();
-        copy.point = this.point != null ? this.point.clone() : null;
-        copy.normal = this.normal != null ? this.normal.clone() : null;
-        return copy;
-    }
+   public static Vector3fc getPoint(MemorySegment mem, int offset) {
+      return PacketIO.readVector3f(mem, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof RailPoint)) {
-            return false;
-        }
-        RailPoint other = (RailPoint)obj;
-        return Objects.equals(this.point, other.point) && Objects.equals(this.normal, other.normal);
-    }
+   public static Vector3fc getNormal(MemorySegment mem) {
+      return getNormal(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.point, this.normal);
-    }
+   public static Vector3fc getNormal(MemorySegment mem, int offset) {
+      return PacketIO.readVector3f(mem, offset + 12);
+   }
+
+   public static RailPoint toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static RailPoint toObject(MemorySegment mem, int offset) {
+      if (offset + 24 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("RailPoint", offset + 24, (int)mem.byteSize());
+      } else {
+         return new RailPoint(PacketIO.readVector3f(mem, offset + 0), PacketIO.readVector3f(mem, offset + 12));
+      }
+   }
+
+   public void serialize(@Nonnull ByteBuf buf) {
+      PacketIO.writeVector3f(buf, this.point);
+      PacketIO.writeVector3f(buf, this.normal);
+   }
+
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      PacketIO.writeVector3f(mem, offset + 0, this.point);
+      PacketIO.writeVector3f(mem, offset + 12, this.normal);
+      return 24;
+   }
+
+   public int computeSize() {
+      return 24;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 24 ? ValidationResult.error("Buffer too small: expected at least 24 bytes") : ValidationResult.OK;
+   }
+
+   public RailPoint clone() {
+      RailPoint copy = new RailPoint();
+      copy.point = this.point;
+      copy.normal = this.normal;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof RailPoint other) ? false : Objects.equals(this.point, other.point) && Objects.equals(this.normal, other.normal);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.point, this.normal);
+   }
 }
-

@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.player;
 
 import meridian.protocol.NetworkChannel;
@@ -11,136 +8,199 @@ import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RemoveMapMarker
-implements Packet,
-ToServerPacket {
-    public static final int PACKET_ID = 119;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 1;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 1;
-    public static final int MAX_SIZE = 16384006;
-    @Nullable
-    public String markerId;
+public class RemoveMapMarker implements Packet, ToServerPacket {
+   public static final int PACKET_ID = 119;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 1;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 1;
+   public static final int MAX_SIZE = 16384006;
+   @Nullable
+   public String markerId;
 
-    @Override
-    public int getId() {
-        return 119;
-    }
+   @Override
+   public int getId() {
+      return 119;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public RemoveMapMarker() {
-    }
+   public RemoveMapMarker() {
+   }
 
-    public RemoveMapMarker(@Nullable String markerId) {
-        this.markerId = markerId;
-    }
+   public RemoveMapMarker(@Nullable String markerId) {
+      this.markerId = markerId;
+   }
 
-    public RemoveMapMarker(@Nonnull RemoveMapMarker other) {
-        this.markerId = other.markerId;
-    }
+   public RemoveMapMarker(@Nonnull RemoveMapMarker other) {
+      this.markerId = other.markerId;
+   }
 
-    @Nonnull
-    public static RemoveMapMarker deserialize(@Nonnull ByteBuf buf, int offset) {
-        RemoveMapMarker obj = new RemoveMapMarker();
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            int markerIdLen = VarInt.peek(buf, pos);
-            if (markerIdLen < 0) {
-                throw ProtocolException.negativeLength("MarkerId", markerIdLen);
-            }
-            if (markerIdLen > 4096000) {
-                throw ProtocolException.stringTooLong("MarkerId", markerIdLen, 4096000);
-            }
-            int markerIdVarLen = VarInt.length(buf, pos);
-            obj.markerId = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-            pos += markerIdVarLen + markerIdLen;
-        }
-        return obj;
-    }
+   @Nonnull
+   public static RemoveMapMarker deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 1) {
+         throw ProtocolException.bufferTooSmall("RemoveMapMarker", 1, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            int sl = VarInt.peek(buf, pos);
-            pos += VarInt.length(buf, pos) + sl;
-        }
-        return pos - offset;
-    }
+      RemoveMapMarker obj = new RemoveMapMarker();
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         int markerIdLen = VarInt.peek(buf, pos);
+         if (markerIdLen < 0) {
+            throw ProtocolException.invalidVarInt("MarkerId");
+         }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.markerId != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        if (this.markerId != null) {
-            PacketIO.writeVarString(buf, this.markerId, 4096000);
-        }
-    }
+         int markerIdVarLen = VarInt.size(markerIdLen);
+         if (markerIdLen > 4096000) {
+            throw ProtocolException.stringTooLong("MarkerId", markerIdLen, 4096000);
+         }
 
-    @Override
-    public int computeSize() {
-        int size = 1;
-        if (this.markerId != null) {
-            size += PacketIO.stringSize(this.markerId);
-        }
-        return size;
-    }
+         if (pos + markerIdVarLen + markerIdLen > buf.readableBytes()) {
+            throw ProtocolException.bufferTooSmall("MarkerId", pos + markerIdVarLen + markerIdLen, buf.readableBytes());
+         }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 1) {
-            return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            int markerIdLen = VarInt.peek(buffer, pos);
-            if (markerIdLen < 0) {
-                return ValidationResult.error("Invalid string length for MarkerId");
-            }
-            if (markerIdLen > 4096000) {
-                return ValidationResult.error("MarkerId exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            if ((pos += markerIdLen) > buffer.writerIndex()) {
-                return ValidationResult.error("Buffer overflow reading MarkerId");
-            }
-        }
-        return ValidationResult.OK;
-    }
+         obj.markerId = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
+         pos += markerIdVarLen + markerIdLen;
+      }
 
-    public RemoveMapMarker clone() {
-        RemoveMapMarker copy = new RemoveMapMarker();
-        copy.markerId = this.markerId;
-        return copy;
-    }
+      return obj;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof RemoveMapMarker)) {
-            return false;
-        }
-        RemoveMapMarker other = (RemoveMapMarker)obj;
-        return Objects.equals(this.markerId, other.markerId);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         int sl = VarInt.peek(buf, pos);
+         pos += VarInt.size(sl) + sl;
+      }
 
-    public int hashCode() {
-        return Objects.hash(this.markerId);
-    }
+      return pos - offset;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 1L;
+   }
+
+   @Nullable
+   public static String getMarkerId(MemorySegment mem) {
+      return getMarkerId(mem, 0);
+   }
+
+   @Nullable
+   public static String getMarkerId(MemorySegment mem, int offset) {
+      return hasMarkerId(mem, offset) ? PacketIO.readVarString("MarkerId", mem, offset + 1, 4096000, PacketIO.UTF8) : null;
+   }
+
+   public static boolean hasMarkerId(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static RemoveMapMarker toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static RemoveMapMarker toObject(MemorySegment mem, int offset) {
+      if (offset + 1 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("RemoveMapMarker", offset + 1, (int)mem.byteSize());
+      } else {
+         return new RemoveMapMarker(hasMarkerId(mem, offset) ? PacketIO.readVarString("MarkerId", mem, offset + 1, 4096000, PacketIO.UTF8) : null);
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.markerId != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      if (this.markerId != null) {
+         PacketIO.writeVarString(buf, this.markerId, 4096000);
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.markerId != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      int varOffset = offset + 1;
+      if (this.markerId != null) {
+         varOffset += PacketIO.writeVarString(mem, varOffset, this.markerId, 4096000);
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 1;
+      if (this.markerId != null) {
+         size += PacketIO.stringSize(this.markerId);
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 1) {
+         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         int markerIdLen = VarInt.peek(buffer, pos);
+         if (markerIdLen < 0) {
+            return ValidationResult.error("Invalid string length for MarkerId");
+         }
+
+         if (markerIdLen > 4096000) {
+            return ValidationResult.error("MarkerId exceeds max length 4096000");
+         }
+
+         pos += VarInt.size(markerIdLen);
+         pos += markerIdLen;
+         if (pos > buffer.writerIndex()) {
+            return ValidationResult.error("Buffer overflow reading MarkerId");
+         }
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public RemoveMapMarker clone() {
+      RemoveMapMarker copy = new RemoveMapMarker();
+      copy.markerId = this.markerId;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof RemoveMapMarker other ? Objects.equals(this.markerId, other.markerId) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.markerId);
+   }
 }
-

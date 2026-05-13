@@ -1,99 +1,125 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.assets;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 
-public class UntrackObjective
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 70;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 16;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 16;
-    public static final int MAX_SIZE = 16;
-    @Nonnull
-    public UUID objectiveUuid = new UUID(0L, 0L);
+public class UntrackObjective implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 70;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 16;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 16;
+   public static final int MAX_SIZE = 16;
+   @Nonnull
+   public UUID objectiveUuid = new UUID(0L, 0L);
 
-    @Override
-    public int getId() {
-        return 70;
-    }
+   @Override
+   public int getId() {
+      return 70;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public UntrackObjective() {
-    }
+   public UntrackObjective() {
+   }
 
-    public UntrackObjective(@Nonnull UUID objectiveUuid) {
-        this.objectiveUuid = objectiveUuid;
-    }
+   public UntrackObjective(@Nonnull UUID objectiveUuid) {
+      this.objectiveUuid = objectiveUuid;
+   }
 
-    public UntrackObjective(@Nonnull UntrackObjective other) {
-        this.objectiveUuid = other.objectiveUuid;
-    }
+   public UntrackObjective(@Nonnull UntrackObjective other) {
+      this.objectiveUuid = other.objectiveUuid;
+   }
 
-    @Nonnull
-    public static UntrackObjective deserialize(@Nonnull ByteBuf buf, int offset) {
-        UntrackObjective obj = new UntrackObjective();
-        obj.objectiveUuid = PacketIO.readUUID(buf, offset + 0);
-        return obj;
-    }
+   @Nonnull
+   public static UntrackObjective deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 16) {
+         throw ProtocolException.bufferTooSmall("UntrackObjective", 16, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 16;
-    }
+      UntrackObjective obj = new UntrackObjective();
+      obj.objectiveUuid = PacketIO.readUUID(buf, offset + 0);
+      return obj;
+   }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        PacketIO.writeUUID(buf, this.objectiveUuid);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 16;
+   }
 
-    @Override
-    public int computeSize() {
-        return 16;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 16L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 16) {
-            return ValidationResult.error("Buffer too small: expected at least 16 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static UUID getObjectiveUuid(MemorySegment mem) {
+      return getObjectiveUuid(mem, 0);
+   }
 
-    public UntrackObjective clone() {
-        UntrackObjective copy = new UntrackObjective();
-        copy.objectiveUuid = this.objectiveUuid;
-        return copy;
-    }
+   public static UUID getObjectiveUuid(MemorySegment mem, int offset) {
+      return PacketIO.readUUID(mem, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof UntrackObjective)) {
-            return false;
-        }
-        UntrackObjective other = (UntrackObjective)obj;
-        return Objects.equals(this.objectiveUuid, other.objectiveUuid);
-    }
+   public static UntrackObjective toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.objectiveUuid);
-    }
+   public static UntrackObjective toObject(MemorySegment mem, int offset) {
+      if (offset + 16 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("UntrackObjective", offset + 16, (int)mem.byteSize());
+      } else {
+         return new UntrackObjective(PacketIO.readUUID(mem, offset + 0));
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      PacketIO.writeUUID(buf, this.objectiveUuid);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      PacketIO.writeUUID(mem, offset + 0, this.objectiveUuid);
+      return 16;
+   }
+
+   @Override
+   public int computeSize() {
+      return 16;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 16 ? ValidationResult.error("Buffer too small: expected at least 16 bytes") : ValidationResult.OK;
+   }
+
+   public UntrackObjective clone() {
+      UntrackObjective copy = new UntrackObjective();
+      copy.objectiveUuid = this.objectiveUuid;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof UntrackObjective other ? Objects.equals(this.objectiveUuid, other.objectiveUuid) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.objectiveUuid);
+   }
 }
-

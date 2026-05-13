@@ -17,6 +17,7 @@ public class ProxySession {
     private final HytaleAuthState authState;
     private volatile Channel clientChannel;
     private volatile Channel serverChannel;
+    private volatile SessionPhase phase = SessionPhase.PRE_AUTH;
     private final Map<Class<?>, Object> attachments = new ConcurrentHashMap<>();
 
     public ProxySession(HytaleAuthState authState) {
@@ -26,6 +27,20 @@ public class ProxySession {
     public void setClientChannel(Channel ch) { this.clientChannel = ch; }
     public void setServerChannel(Channel ch) { this.serverChannel = ch; }
     public HytaleAuthState authState() { return authState; }
+    public SessionPhase phase() { return phase; }
+
+    /**
+     * Advance the session phase. Only moves forward — out-of-order or repeated
+     * triggers (e.g. AUTH_COMPLETE arriving after WORLD_LOADED) are ignored.
+     * Returns true if the phase actually changed.
+     */
+    public boolean advancePhase(SessionPhase next) {
+        if (next.ordinal() > phase.ordinal()) {
+            phase = next;
+            return true;
+        }
+        return false;
+    }
     
     /** Internal access for pipeline assembly / emergency close. Normal handlers should not use these. */
     Channel clientChannelRaw() { return clientChannel; }

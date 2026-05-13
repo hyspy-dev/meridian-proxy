@@ -1,129 +1,183 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.assets;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Objective;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class TrackOrUpdateObjective
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 69;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 1;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 1;
-    public static final int MAX_SIZE = 0x64000000;
-    @Nullable
-    public Objective objective;
+public class TrackOrUpdateObjective implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 69;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 1;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 1;
+   public static final int MAX_SIZE = 1677721600;
+   @Nullable
+   public Objective objective;
 
-    @Override
-    public int getId() {
-        return 69;
-    }
+   @Override
+   public int getId() {
+      return 69;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public TrackOrUpdateObjective() {
-    }
+   public TrackOrUpdateObjective() {
+   }
 
-    public TrackOrUpdateObjective(@Nullable Objective objective) {
-        this.objective = objective;
-    }
+   public TrackOrUpdateObjective(@Nullable Objective objective) {
+      this.objective = objective;
+   }
 
-    public TrackOrUpdateObjective(@Nonnull TrackOrUpdateObjective other) {
-        this.objective = other.objective;
-    }
+   public TrackOrUpdateObjective(@Nonnull TrackOrUpdateObjective other) {
+      this.objective = other.objective;
+   }
 
-    @Nonnull
-    public static TrackOrUpdateObjective deserialize(@Nonnull ByteBuf buf, int offset) {
-        TrackOrUpdateObjective obj = new TrackOrUpdateObjective();
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            obj.objective = Objective.deserialize(buf, pos);
-            pos += Objective.computeBytesConsumed(buf, pos);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static TrackOrUpdateObjective deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 1) {
+         throw ProtocolException.bufferTooSmall("TrackOrUpdateObjective", 1, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            pos += Objective.computeBytesConsumed(buf, pos);
-        }
-        return pos - offset;
-    }
+      TrackOrUpdateObjective obj = new TrackOrUpdateObjective();
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         obj.objective = Objective.deserialize(buf, pos);
+         pos += Objective.computeBytesConsumed(buf, pos);
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.objective != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        if (this.objective != null) {
-            this.objective.serialize(buf);
-        }
-    }
+      return obj;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 1;
-        if (this.objective != null) {
-            size += this.objective.computeSize();
-        }
-        return size;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         pos += Objective.computeBytesConsumed(buf, pos);
+      }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 1) {
-            return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            ValidationResult objectiveResult = Objective.validateStructure(buffer, pos);
-            if (!objectiveResult.isValid()) {
-                return ValidationResult.error("Invalid Objective: " + objectiveResult.error());
-            }
-            pos += Objective.computeBytesConsumed(buffer, pos);
-        }
-        return ValidationResult.OK;
-    }
+      return pos - offset;
+   }
 
-    public TrackOrUpdateObjective clone() {
-        TrackOrUpdateObjective copy = new TrackOrUpdateObjective();
-        copy.objective = this.objective != null ? this.objective.clone() : null;
-        return copy;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 1L;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof TrackOrUpdateObjective)) {
-            return false;
-        }
-        TrackOrUpdateObjective other = (TrackOrUpdateObjective)obj;
-        return Objects.equals(this.objective, other.objective);
-    }
+   @Nullable
+   public static Objective getObjective(MemorySegment mem) {
+      return getObjective(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.objective);
-    }
+   @Nullable
+   public static Objective getObjective(MemorySegment mem, int offset) {
+      return hasObjective(mem, offset) ? Objective.toObject(mem, offset + 1) : null;
+   }
+
+   public static boolean hasObjective(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static TrackOrUpdateObjective toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static TrackOrUpdateObjective toObject(MemorySegment mem, int offset) {
+      if (offset + 1 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("TrackOrUpdateObjective", offset + 1, (int)mem.byteSize());
+      } else {
+         return new TrackOrUpdateObjective(hasObjective(mem, offset) ? Objective.toObject(mem, offset + 1) : null);
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.objective != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      if (this.objective != null) {
+         this.objective.serialize(buf);
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.objective != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      int varOffset = offset + 1;
+      if (this.objective != null) {
+         varOffset += this.objective.serialize(mem, varOffset);
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 1;
+      if (this.objective != null) {
+         size += this.objective.computeSize();
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 1) {
+         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         ValidationResult objectiveResult = Objective.validateStructure(buffer, pos);
+         if (!objectiveResult.isValid()) {
+            return ValidationResult.error("Invalid Objective: " + objectiveResult.error());
+         }
+
+         pos += Objective.computeBytesConsumed(buffer, pos);
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public TrackOrUpdateObjective clone() {
+      TrackOrUpdateObjective copy = new TrackOrUpdateObjective();
+      copy.objective = this.objective != null ? this.objective.clone() : null;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof TrackOrUpdateObjective other ? Objects.equals(this.objective, other.objective) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.objective);
+   }
 }
-

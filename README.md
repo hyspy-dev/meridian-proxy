@@ -328,8 +328,11 @@ hytale-proxy-forwarding/
 │           └── handler/                 # Built-in handlers
 │               ├── BackAuthHandler.java # Proxy → real server auth token exchange
 │               ├── FrontAuthHandler.java# Proxy → client auth token exchange + S2C buffering
-│               ├── ConnectObserver.java # Captures client identityToken from Pkt 0
-│               └── PacketHandler.java   # Plugin interface (FORWARD / DROP / HANDLED)
+│               ├── ConnectObserver.java # Captures client identityToken + logs referralSource from Pkt 0
+│               ├── RouteGuard.java      # Drops Pkt 18 ClientReferral, clears Pkt 223 ServerInfo.fallbackServer
+│               ├── ServerAccessLogger.java # Audit log for Pkts 250/251/252 (passwords redacted)
+│               ├── PhaseTracker.java    # Advances ProxySession.phase() on lifecycle trigger packets
+│               └── PacketHandler.java   # Plugin interface (FORWARD / MODIFIED / DROP / HANDLED)
 └── meridian-xray/                       # Example plugin module (built separately)
 ```
 
@@ -389,6 +392,9 @@ Raw bytes → [PacketCodec] → PacketFrame → [PacketRouter] → [PacketForwar
                                 │  ├── ConnectObserver      │
                                 │  ├── BackAuthHandler      │ (server-facing leg)
                                 │  ├── FrontAuthHandler     │ (client-facing leg)
+                                │  ├── RouteGuard           │ (S2C address rewrites)
+                                │  ├── ServerAccessLogger   │ (Pkt 250/251/252 audit)
+                                │  ├── PhaseTracker         │ (session lifecycle phase)
                                 │  └── (plugin modules)     │ ← e.g. meridian-xray
                                 └───────────────────────────┘
 ```
@@ -400,13 +406,16 @@ Raw bytes → [PacketCodec] → PacketFrame → [PacketRouter] → [PacketForwar
 | `ProxyServer` | Bootstraps QUIC server and client codecs. Parses CLI args. Initializes `HytaleAuthState`. |
 | `ProxyFrontendHandler` | Manages the QUIC connection lifecycle. Bridges client streams to backend streams with ordering guarantees. Wires up the per-stream pipeline. |
 | `PacketCodec` | Accumulates raw bytes, parses `[len\|id\|payload]` frames, emits `PacketFrame` objects. |
-| `PacketRouter` | Iterates registered `PacketHandler`s for each frame. If all return `FORWARD`, delegates to `PacketForwarder`. |
+| `PacketRouter` | Iterates registered `PacketHandler`s for each frame. If all return `FORWARD`, forwards the original raw frame. If any returns `MODIFIED`, re-serialises the (mutated) `Packet` via `PacketIO.writeFramedPacketWithInfo` — handles Zstd compression transparently. |
 | `PacketForwarder` | Writes framed packets to the target channel. Manages pending queue, target readiness polling, and S2C buffering. |
 | `ProxySession` | Per-stream-pair context shared between C2S and S2C handlers. Provides `sendToClient()` / `sendToServer()` API for packet injection from any handler. |
-| `PacketHandler` | Plugin interface. Returns `FORWARD` (pass-through), `DROP` (suppress), or `HANDLED` (async takeover). Receives `ProxySession` in every call. |
-| `ConnectObserver` | Implements `PacketHandler`. Captures the client's `identityToken` from Pkt 0 into `HytaleAuthState`, then forwards. |
+| `PacketHandler` | Plugin interface. Returns `FORWARD` (pass-through), `MODIFIED` (continue chain; router re-serialises the mutated Packet), `DROP` (suppress), or `HANDLED` (async takeover). Receives `ProxySession` in every call. |
+| `ConnectObserver` | Implements `PacketHandler`. Captures the client's `identityToken` and logs `referralSource` from Pkt 0 into `HytaleAuthState`, then forwards. |
 | `BackAuthHandler` | Implements `PacketHandler`. Intercepts Pkt 11 (S→C) and Pkt 12 (C→S) on the server-facing leg; performs BACK REST calls and emits the rewritten packets. |
 | `FrontAuthHandler` | Implements `PacketHandler`. Intercepts Pkt 11/12/13 on the client-facing leg; performs the FRONT REST call, drives S2C buffering and the `FlushBufferingEvent`. |
+| `RouteGuard` | Implements `PacketHandler`. Drops Pkt 18 `ClientReferral` (would redirect the client past the proxy) and clears `ServerInfo.fallbackServer` on Pkt 223 via `Action.MODIFIED`. |
+| `ServerAccessLogger` | Implements `PacketHandler`. Pass-through audit log for the singleplayer access protocol (Pkts 250/251/252); redacts passwords. |
+| `PhaseTracker` | Implements `PacketHandler`. Advances `ProxySession.phase()` (a `SessionPhase` enum) on Pkts 14/22/104/105 so modules can gate by lifecycle stage. Pass-through only. |
 | `HytaleAuthState` | Thread-safe container for token futures and certificate fingerprints. Shared between C2S and S2C handlers. |
 | `HytaleSessionApi` | Async HTTP client wrapping `POST /server-join/auth-token` and `POST /server-join/auth-grant` endpoints. |
 

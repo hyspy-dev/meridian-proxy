@@ -1,117 +1,200 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.buildertools;
 
 import meridian.protocol.ModelTransform;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BuilderToolSetEntityTransform
-implements Packet,
-ToServerPacket {
-    public static final int PACKET_ID = 402;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 54;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 54;
-    public static final int MAX_SIZE = 54;
-    public int entityId;
-    @Nullable
-    public ModelTransform modelTransform;
+public class BuilderToolSetEntityTransform implements Packet, ToServerPacket {
+   public static final int PACKET_ID = 402;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 55;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 55;
+   public static final int MAX_SIZE = 55;
+   public int entityId;
+   @Nullable
+   public ModelTransform modelTransform;
+   public boolean isSessionEnd;
 
-    @Override
-    public int getId() {
-        return 402;
-    }
+   @Override
+   public int getId() {
+      return 402;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public BuilderToolSetEntityTransform() {
-    }
+   public BuilderToolSetEntityTransform() {
+   }
 
-    public BuilderToolSetEntityTransform(int entityId, @Nullable ModelTransform modelTransform) {
-        this.entityId = entityId;
-        this.modelTransform = modelTransform;
-    }
+   public BuilderToolSetEntityTransform(int entityId, @Nullable ModelTransform modelTransform, boolean isSessionEnd) {
+      this.entityId = entityId;
+      this.modelTransform = modelTransform;
+      this.isSessionEnd = isSessionEnd;
+   }
 
-    public BuilderToolSetEntityTransform(@Nonnull BuilderToolSetEntityTransform other) {
-        this.entityId = other.entityId;
-        this.modelTransform = other.modelTransform;
-    }
+   public BuilderToolSetEntityTransform(@Nonnull BuilderToolSetEntityTransform other) {
+      this.entityId = other.entityId;
+      this.modelTransform = other.modelTransform;
+      this.isSessionEnd = other.isSessionEnd;
+   }
 
-    @Nonnull
-    public static BuilderToolSetEntityTransform deserialize(@Nonnull ByteBuf buf, int offset) {
-        BuilderToolSetEntityTransform obj = new BuilderToolSetEntityTransform();
-        byte nullBits = buf.getByte(offset);
-        obj.entityId = buf.getIntLE(offset + 1);
-        if ((nullBits & 1) != 0) {
-            obj.modelTransform = ModelTransform.deserialize(buf, offset + 5);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static BuilderToolSetEntityTransform deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 55) {
+         throw ProtocolException.bufferTooSmall("BuilderToolSetEntityTransform", 55, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 54;
-    }
+      BuilderToolSetEntityTransform obj = new BuilderToolSetEntityTransform();
+      byte nullBits = buf.getByte(offset);
+      obj.entityId = buf.getIntLE(offset + 1);
+      if ((nullBits & 1) != 0) {
+         obj.modelTransform = ModelTransform.deserialize(buf, offset + 5);
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.modelTransform != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeIntLE(this.entityId);
-        if (this.modelTransform != null) {
-            this.modelTransform.serialize(buf);
-        } else {
-            buf.writeZero(49);
-        }
-    }
+      obj.isSessionEnd = buf.getByte(offset + 54) != 0;
+      return obj;
+   }
 
-    @Override
-    public int computeSize() {
-        return 54;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 55;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 54) {
-            return ValidationResult.error("Buffer too small: expected at least 54 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 55L;
+   }
 
-    public BuilderToolSetEntityTransform clone() {
-        BuilderToolSetEntityTransform copy = new BuilderToolSetEntityTransform();
-        copy.entityId = this.entityId;
-        copy.modelTransform = this.modelTransform != null ? this.modelTransform.clone() : null;
-        return copy;
-    }
+   public static int getEntityId(MemorySegment mem) {
+      return getEntityId(mem, 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof BuilderToolSetEntityTransform)) {
-            return false;
-        }
-        BuilderToolSetEntityTransform other = (BuilderToolSetEntityTransform)obj;
-        return this.entityId == other.entityId && Objects.equals(this.modelTransform, other.modelTransform);
-    }
+   public static int getEntityId(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 1);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.entityId, this.modelTransform);
-    }
+   @Nullable
+   public static ModelTransform getModelTransform(MemorySegment mem) {
+      return getModelTransform(mem, 0);
+   }
+
+   @Nullable
+   public static ModelTransform getModelTransform(MemorySegment mem, int offset) {
+      return hasModelTransform(mem, offset) ? ModelTransform.toObject(mem, offset + 5) : null;
+   }
+
+   public static boolean getIsSessionEnd(MemorySegment mem) {
+      return getIsSessionEnd(mem, 0);
+   }
+
+   public static boolean getIsSessionEnd(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_BOOL, offset + 54);
+   }
+
+   public static boolean hasModelTransform(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static BuilderToolSetEntityTransform toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static BuilderToolSetEntityTransform toObject(MemorySegment mem, int offset) {
+      if (offset + 55 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("BuilderToolSetEntityTransform", offset + 55, (int)mem.byteSize());
+      } else {
+         return new BuilderToolSetEntityTransform(
+            mem.get(PacketIO.PROTO_INT, offset + 1),
+            hasModelTransform(mem, offset) ? ModelTransform.toObject(mem, offset + 5) : null,
+            mem.get(PacketIO.PROTO_BOOL, offset + 54)
+         );
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.modelTransform != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeIntLE(this.entityId);
+      if (this.modelTransform != null) {
+         this.modelTransform.serialize(buf);
+      } else {
+         buf.writeZero(49);
+      }
+
+      buf.writeByte(this.isSessionEnd ? 1 : 0);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.modelTransform != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_INT, offset + 1, this.entityId);
+      if (this.modelTransform != null) {
+         this.modelTransform.serialize(mem, offset + 5);
+      } else {
+         mem.asSlice(offset + 5, 49L).fill((byte)0);
+      }
+
+      mem.set(PacketIO.PROTO_BOOL, offset + 54, this.isSessionEnd);
+      return 55;
+   }
+
+   @Override
+   public int computeSize() {
+      return 55;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 55) {
+         return ValidationResult.error("Buffer too small: expected at least 55 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      return ValidationResult.OK;
+   }
+
+   public BuilderToolSetEntityTransform clone() {
+      BuilderToolSetEntityTransform copy = new BuilderToolSetEntityTransform();
+      copy.entityId = this.entityId;
+      copy.modelTransform = this.modelTransform != null ? this.modelTransform.clone() : null;
+      copy.isSessionEnd = this.isSessionEnd;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof BuilderToolSetEntityTransform other)
+            ? false
+            : this.entityId == other.entityId && Objects.equals(this.modelTransform, other.modelTransform) && this.isSessionEnd == other.isSessionEnd;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.entityId, this.modelTransform, this.isSessionEnd);
+   }
 }
-

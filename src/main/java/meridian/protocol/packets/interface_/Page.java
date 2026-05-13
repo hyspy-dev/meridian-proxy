@@ -1,40 +1,34 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.interface_;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum Page {
-    None(0),
-    Bench(1),
-    Inventory(2),
-    ToolsSettings(3),
-    Map(4),
-    MachinimaEditor(5),
-    ContentCreation(6),
-    Custom(7);
+   None(0),
+   Bench(1),
+   Inventory(2),
+   ToolsSettings(3),
+   Map(4),
+   MachinimaEditor(5),
+   ContentCreation(6),
+   Custom(7),
+   Serverside(8);
 
-    public static final Page[] VALUES;
-    private final int value;
+   public static final Page[] VALUES = values();
+   private final int value;
 
-    private Page(int value) {
-        this.value = value;
-    }
+   Page(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static Page fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("Page", value);
-    }
-
-    static {
-        VALUES = Page.values();
-    }
+   public static Page fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("Page", value);
+      }
+   }
 }
-

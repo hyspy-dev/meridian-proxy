@@ -1,83 +1,120 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
 public class Rangef {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 8;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 8;
-    public static final int MAX_SIZE = 8;
-    public float min;
-    public float max;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 8;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 8;
+   public static final int MAX_SIZE = 8;
+   public float min;
+   public float max;
 
-    public Rangef() {
-    }
+   public Rangef() {
+   }
 
-    public Rangef(float min, float max) {
-        this.min = min;
-        this.max = max;
-    }
+   public Rangef(float min, float max) {
+      this.min = min;
+      this.max = max;
+   }
 
-    public Rangef(@Nonnull Rangef other) {
-        this.min = other.min;
-        this.max = other.max;
-    }
+   public Rangef(@Nonnull Rangef other) {
+      this.min = other.min;
+      this.max = other.max;
+   }
 
-    @Nonnull
-    public static Rangef deserialize(@Nonnull ByteBuf buf, int offset) {
-        Rangef obj = new Rangef();
-        obj.min = buf.getFloatLE(offset + 0);
-        obj.max = buf.getFloatLE(offset + 4);
-        return obj;
-    }
+   @Nonnull
+   public static Rangef deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 8) {
+         throw ProtocolException.bufferTooSmall("Rangef", 8, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 8;
-    }
+      Rangef obj = new Rangef();
+      obj.min = buf.getFloatLE(offset + 0);
+      obj.max = buf.getFloatLE(offset + 4);
+      return obj;
+   }
 
-    public void serialize(@Nonnull ByteBuf buf) {
-        buf.writeFloatLE(this.min);
-        buf.writeFloatLE(this.max);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 8;
+   }
 
-    public int computeSize() {
-        return 8;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 8L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 8) {
-            return ValidationResult.error("Buffer too small: expected at least 8 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static float getMin(MemorySegment mem) {
+      return getMin(mem, 0);
+   }
 
-    public Rangef clone() {
-        Rangef copy = new Rangef();
-        copy.min = this.min;
-        copy.max = this.max;
-        return copy;
-    }
+   public static float getMin(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Rangef)) {
-            return false;
-        }
-        Rangef other = (Rangef)obj;
-        return this.min == other.min && this.max == other.max;
-    }
+   public static float getMax(MemorySegment mem) {
+      return getMax(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(Float.valueOf(this.min), Float.valueOf(this.max));
-    }
+   public static float getMax(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 4);
+   }
+
+   public static Rangef toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static Rangef toObject(MemorySegment mem, int offset) {
+      if (offset + 8 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("Rangef", offset + 8, (int)mem.byteSize());
+      } else {
+         return new Rangef(mem.get(PacketIO.PROTO_FLOAT, offset + 0), mem.get(PacketIO.PROTO_FLOAT, offset + 4));
+      }
+   }
+
+   public void serialize(@Nonnull ByteBuf buf) {
+      buf.writeFloatLE(this.min);
+      buf.writeFloatLE(this.max);
+   }
+
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      mem.set(PacketIO.PROTO_FLOAT, offset + 0, this.min);
+      mem.set(PacketIO.PROTO_FLOAT, offset + 4, this.max);
+      return 8;
+   }
+
+   public int computeSize() {
+      return 8;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 8 ? ValidationResult.error("Buffer too small: expected at least 8 bytes") : ValidationResult.OK;
+   }
+
+   public Rangef clone() {
+      Rangef copy = new Rangef();
+      copy.min = this.min;
+      copy.max = this.max;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof Rangef other) ? false : this.min == other.min && this.max == other.max;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.min, this.max);
+   }
 }
-

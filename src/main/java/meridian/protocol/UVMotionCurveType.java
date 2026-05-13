@@ -1,41 +1,34 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum UVMotionCurveType {
-    Constant(0),
-    IncreaseLinear(1),
-    IncreaseQuartIn(2),
-    IncreaseQuartInOut(3),
-    IncreaseQuartOut(4),
-    DecreaseLinear(5),
-    DecreaseQuartIn(6),
-    DecreaseQuartInOut(7),
-    DecreaseQuartOut(8);
+   Constant(0),
+   IncreaseLinear(1),
+   IncreaseQuartIn(2),
+   IncreaseQuartInOut(3),
+   IncreaseQuartOut(4),
+   DecreaseLinear(5),
+   DecreaseQuartIn(6),
+   DecreaseQuartInOut(7),
+   DecreaseQuartOut(8);
 
-    public static final UVMotionCurveType[] VALUES;
-    private final int value;
+   public static final UVMotionCurveType[] VALUES = values();
+   private final int value;
 
-    private UVMotionCurveType(int value) {
-        this.value = value;
-    }
+   UVMotionCurveType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static UVMotionCurveType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("UVMotionCurveType", value);
-    }
-
-    static {
-        VALUES = UVMotionCurveType.values();
-    }
+   public static UVMotionCurveType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("UVMotionCurveType", value);
+      }
+   }
 }
-

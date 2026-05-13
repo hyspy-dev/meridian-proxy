@@ -1,102 +1,138 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.buildertools;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class BuilderToolSetEntityScale
-implements Packet,
-ToServerPacket {
-    public static final int PACKET_ID = 420;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 8;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 8;
-    public static final int MAX_SIZE = 8;
-    public int entityId;
-    public float scale;
+public class BuilderToolSetEntityScale implements Packet, ToServerPacket {
+   public static final int PACKET_ID = 420;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 8;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 8;
+   public static final int MAX_SIZE = 8;
+   public int entityId;
+   public float scale;
 
-    @Override
-    public int getId() {
-        return 420;
-    }
+   @Override
+   public int getId() {
+      return 420;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public BuilderToolSetEntityScale() {
-    }
+   public BuilderToolSetEntityScale() {
+   }
 
-    public BuilderToolSetEntityScale(int entityId, float scale) {
-        this.entityId = entityId;
-        this.scale = scale;
-    }
+   public BuilderToolSetEntityScale(int entityId, float scale) {
+      this.entityId = entityId;
+      this.scale = scale;
+   }
 
-    public BuilderToolSetEntityScale(@Nonnull BuilderToolSetEntityScale other) {
-        this.entityId = other.entityId;
-        this.scale = other.scale;
-    }
+   public BuilderToolSetEntityScale(@Nonnull BuilderToolSetEntityScale other) {
+      this.entityId = other.entityId;
+      this.scale = other.scale;
+   }
 
-    @Nonnull
-    public static BuilderToolSetEntityScale deserialize(@Nonnull ByteBuf buf, int offset) {
-        BuilderToolSetEntityScale obj = new BuilderToolSetEntityScale();
-        obj.entityId = buf.getIntLE(offset + 0);
-        obj.scale = buf.getFloatLE(offset + 4);
-        return obj;
-    }
+   @Nonnull
+   public static BuilderToolSetEntityScale deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 8) {
+         throw ProtocolException.bufferTooSmall("BuilderToolSetEntityScale", 8, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 8;
-    }
+      BuilderToolSetEntityScale obj = new BuilderToolSetEntityScale();
+      obj.entityId = buf.getIntLE(offset + 0);
+      obj.scale = buf.getFloatLE(offset + 4);
+      return obj;
+   }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        buf.writeIntLE(this.entityId);
-        buf.writeFloatLE(this.scale);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 8;
+   }
 
-    @Override
-    public int computeSize() {
-        return 8;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 8L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 8) {
-            return ValidationResult.error("Buffer too small: expected at least 8 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static int getEntityId(MemorySegment mem) {
+      return getEntityId(mem, 0);
+   }
 
-    public BuilderToolSetEntityScale clone() {
-        BuilderToolSetEntityScale copy = new BuilderToolSetEntityScale();
-        copy.entityId = this.entityId;
-        copy.scale = this.scale;
-        return copy;
-    }
+   public static int getEntityId(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof BuilderToolSetEntityScale)) {
-            return false;
-        }
-        BuilderToolSetEntityScale other = (BuilderToolSetEntityScale)obj;
-        return this.entityId == other.entityId && this.scale == other.scale;
-    }
+   public static float getScale(MemorySegment mem) {
+      return getScale(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.entityId, Float.valueOf(this.scale));
-    }
+   public static float getScale(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_FLOAT, offset + 4);
+   }
+
+   public static BuilderToolSetEntityScale toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static BuilderToolSetEntityScale toObject(MemorySegment mem, int offset) {
+      if (offset + 8 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("BuilderToolSetEntityScale", offset + 8, (int)mem.byteSize());
+      } else {
+         return new BuilderToolSetEntityScale(mem.get(PacketIO.PROTO_INT, offset + 0), mem.get(PacketIO.PROTO_FLOAT, offset + 4));
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      buf.writeIntLE(this.entityId);
+      buf.writeFloatLE(this.scale);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      mem.set(PacketIO.PROTO_INT, offset + 0, this.entityId);
+      mem.set(PacketIO.PROTO_FLOAT, offset + 4, this.scale);
+      return 8;
+   }
+
+   @Override
+   public int computeSize() {
+      return 8;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 8 ? ValidationResult.error("Buffer too small: expected at least 8 bytes") : ValidationResult.OK;
+   }
+
+   public BuilderToolSetEntityScale clone() {
+      BuilderToolSetEntityScale copy = new BuilderToolSetEntityScale();
+      copy.entityId = this.entityId;
+      copy.scale = this.scale;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof BuilderToolSetEntityScale other) ? false : this.entityId == other.entityId && this.scale == other.scale;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.entityId, this.scale);
+   }
 }
-

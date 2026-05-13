@@ -1,135 +1,198 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.interaction;
 
 import meridian.protocol.ForkedChainId;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CancelInteractionChain
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 291;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 5;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 5;
-    public static final int MAX_SIZE = 1038;
-    public int chainId;
-    @Nullable
-    public ForkedChainId forkedId;
+public class CancelInteractionChain implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 291;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 5;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 5;
+   public static final int MAX_SIZE = 1038;
+   public int chainId;
+   @Nullable
+   public ForkedChainId forkedId;
 
-    @Override
-    public int getId() {
-        return 291;
-    }
+   @Override
+   public int getId() {
+      return 291;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public CancelInteractionChain() {
-    }
+   public CancelInteractionChain() {
+   }
 
-    public CancelInteractionChain(int chainId, @Nullable ForkedChainId forkedId) {
-        this.chainId = chainId;
-        this.forkedId = forkedId;
-    }
+   public CancelInteractionChain(int chainId, @Nullable ForkedChainId forkedId) {
+      this.chainId = chainId;
+      this.forkedId = forkedId;
+   }
 
-    public CancelInteractionChain(@Nonnull CancelInteractionChain other) {
-        this.chainId = other.chainId;
-        this.forkedId = other.forkedId;
-    }
+   public CancelInteractionChain(@Nonnull CancelInteractionChain other) {
+      this.chainId = other.chainId;
+      this.forkedId = other.forkedId;
+   }
 
-    @Nonnull
-    public static CancelInteractionChain deserialize(@Nonnull ByteBuf buf, int offset) {
-        CancelInteractionChain obj = new CancelInteractionChain();
-        byte nullBits = buf.getByte(offset);
-        obj.chainId = buf.getIntLE(offset + 1);
-        int pos = offset + 5;
-        if ((nullBits & 1) != 0) {
-            obj.forkedId = ForkedChainId.deserialize(buf, pos);
-            pos += ForkedChainId.computeBytesConsumed(buf, pos);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static CancelInteractionChain deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 5) {
+         throw ProtocolException.bufferTooSmall("CancelInteractionChain", 5, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 5;
-        if ((nullBits & 1) != 0) {
-            pos += ForkedChainId.computeBytesConsumed(buf, pos);
-        }
-        return pos - offset;
-    }
+      CancelInteractionChain obj = new CancelInteractionChain();
+      byte nullBits = buf.getByte(offset);
+      obj.chainId = buf.getIntLE(offset + 1);
+      int pos = offset + 5;
+      if ((nullBits & 1) != 0) {
+         obj.forkedId = ForkedChainId.deserialize(buf, pos);
+         pos += ForkedChainId.computeBytesConsumed(buf, pos);
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.forkedId != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeIntLE(this.chainId);
-        if (this.forkedId != null) {
-            this.forkedId.serialize(buf);
-        }
-    }
+      return obj;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 5;
-        if (this.forkedId != null) {
-            size += this.forkedId.computeSize();
-        }
-        return size;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 5;
+      if ((nullBits & 1) != 0) {
+         pos += ForkedChainId.computeBytesConsumed(buf, pos);
+      }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 5) {
-            return ValidationResult.error("Buffer too small: expected at least 5 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 5;
-        if ((nullBits & 1) != 0) {
-            ValidationResult forkedIdResult = ForkedChainId.validateStructure(buffer, pos);
-            if (!forkedIdResult.isValid()) {
-                return ValidationResult.error("Invalid ForkedId: " + forkedIdResult.error());
-            }
-            pos += ForkedChainId.computeBytesConsumed(buffer, pos);
-        }
-        return ValidationResult.OK;
-    }
+      return pos - offset;
+   }
 
-    public CancelInteractionChain clone() {
-        CancelInteractionChain copy = new CancelInteractionChain();
-        copy.chainId = this.chainId;
-        copy.forkedId = this.forkedId != null ? this.forkedId.clone() : null;
-        return copy;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 5L;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof CancelInteractionChain)) {
-            return false;
-        }
-        CancelInteractionChain other = (CancelInteractionChain)obj;
-        return this.chainId == other.chainId && Objects.equals(this.forkedId, other.forkedId);
-    }
+   public static int getChainId(MemorySegment mem) {
+      return getChainId(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.chainId, this.forkedId);
-    }
+   public static int getChainId(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 1);
+   }
+
+   @Nullable
+   public static ForkedChainId getForkedId(MemorySegment mem) {
+      return getForkedId(mem, 0);
+   }
+
+   @Nullable
+   public static ForkedChainId getForkedId(MemorySegment mem, int offset) {
+      return hasForkedId(mem, offset) ? ForkedChainId.toObject(mem, offset + 5) : null;
+   }
+
+   public static boolean hasForkedId(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static CancelInteractionChain toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static CancelInteractionChain toObject(MemorySegment mem, int offset) {
+      if (offset + 5 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("CancelInteractionChain", offset + 5, (int)mem.byteSize());
+      } else {
+         return new CancelInteractionChain(mem.get(PacketIO.PROTO_INT, offset + 1), hasForkedId(mem, offset) ? ForkedChainId.toObject(mem, offset + 5) : null);
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.forkedId != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeIntLE(this.chainId);
+      if (this.forkedId != null) {
+         this.forkedId.serialize(buf);
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.forkedId != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_INT, offset + 1, this.chainId);
+      int varOffset = offset + 5;
+      if (this.forkedId != null) {
+         varOffset += this.forkedId.serialize(mem, varOffset);
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 5;
+      if (this.forkedId != null) {
+         size += this.forkedId.computeSize();
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 5) {
+         return ValidationResult.error("Buffer too small: expected at least 5 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int pos = offset + 5;
+      if ((nullBits & 1) != 0) {
+         ValidationResult forkedIdResult = ForkedChainId.validateStructure(buffer, pos);
+         if (!forkedIdResult.isValid()) {
+            return ValidationResult.error("Invalid ForkedId: " + forkedIdResult.error());
+         }
+
+         pos += ForkedChainId.computeBytesConsumed(buffer, pos);
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public CancelInteractionChain clone() {
+      CancelInteractionChain copy = new CancelInteractionChain();
+      copy.chainId = this.chainId;
+      copy.forkedId = this.forkedId != null ? this.forkedId.clone() : null;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof CancelInteractionChain other) ? false : this.chainId == other.chainId && Objects.equals(this.forkedId, other.forkedId);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.chainId, this.forkedId);
+   }
 }
-

@@ -10,6 +10,9 @@ import meridian.proxy.handler.ConnectObserver;
 import meridian.proxy.handler.BackAuthHandler;
 import meridian.proxy.handler.FrontAuthHandler;
 import meridian.proxy.handler.PacketHandler;
+import meridian.proxy.handler.PhaseTracker;
+import meridian.proxy.handler.RouteGuard;
+import meridian.proxy.handler.ServerAccessLogger;
 import meridian.proxy.module.HandlerRegistry;
 import meridian.proxy.module.PacketHandlerFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -345,6 +348,9 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         handlers.add(new ConnectObserver(dir));
         handlers.add(new BackAuthHandler(dir, forwarder));
         handlers.add(new FrontAuthHandler(dir));
+        handlers.add(new RouteGuard(dir));
+        handlers.add(new ServerAccessLogger(dir));
+        handlers.add(new PhaseTracker(dir));
 
         for (PacketHandlerFactory factory : HandlerRegistry.getFactories()) {
             try {

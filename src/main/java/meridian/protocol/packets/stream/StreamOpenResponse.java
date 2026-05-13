@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.stream;
 
 import meridian.protocol.NetworkChannel;
@@ -10,151 +7,242 @@ import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
-import meridian.protocol.packets.stream.StreamType;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class StreamOpenResponse
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 461;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 3;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 3;
-    public static final int MAX_SIZE = 16384008;
-    @Nonnull
-    public StreamType type = StreamType.Game;
-    public boolean accepted;
-    @Nullable
-    public String rejectionReason;
+public class StreamOpenResponse implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 461;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 3;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 3;
+   public static final int MAX_SIZE = 16384008;
+   @Nonnull
+   public StreamType type = StreamType.Game;
+   public boolean accepted;
+   @Nullable
+   public String rejectionReason;
 
-    @Override
-    public int getId() {
-        return 461;
-    }
+   @Override
+   public int getId() {
+      return 461;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public StreamOpenResponse() {
-    }
+   public StreamOpenResponse() {
+   }
 
-    public StreamOpenResponse(@Nonnull StreamType type, boolean accepted, @Nullable String rejectionReason) {
-        this.type = type;
-        this.accepted = accepted;
-        this.rejectionReason = rejectionReason;
-    }
+   public StreamOpenResponse(@Nonnull StreamType type, boolean accepted, @Nullable String rejectionReason) {
+      this.type = type;
+      this.accepted = accepted;
+      this.rejectionReason = rejectionReason;
+   }
 
-    public StreamOpenResponse(@Nonnull StreamOpenResponse other) {
-        this.type = other.type;
-        this.accepted = other.accepted;
-        this.rejectionReason = other.rejectionReason;
-    }
+   public StreamOpenResponse(@Nonnull StreamOpenResponse other) {
+      this.type = other.type;
+      this.accepted = other.accepted;
+      this.rejectionReason = other.rejectionReason;
+   }
 
-    @Nonnull
-    public static StreamOpenResponse deserialize(@Nonnull ByteBuf buf, int offset) {
-        StreamOpenResponse obj = new StreamOpenResponse();
-        byte nullBits = buf.getByte(offset);
-        obj.type = StreamType.fromValue(buf.getByte(offset + 1));
-        obj.accepted = buf.getByte(offset + 2) != 0;
-        int pos = offset + 3;
-        if ((nullBits & 1) != 0) {
-            int rejectionReasonLen = VarInt.peek(buf, pos);
-            if (rejectionReasonLen < 0) {
-                throw ProtocolException.negativeLength("RejectionReason", rejectionReasonLen);
-            }
-            if (rejectionReasonLen > 4096000) {
-                throw ProtocolException.stringTooLong("RejectionReason", rejectionReasonLen, 4096000);
-            }
-            int rejectionReasonVarLen = VarInt.length(buf, pos);
-            obj.rejectionReason = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-            pos += rejectionReasonVarLen + rejectionReasonLen;
-        }
-        return obj;
-    }
+   @Nonnull
+   public static StreamOpenResponse deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 3) {
+         throw ProtocolException.bufferTooSmall("StreamOpenResponse", 3, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 3;
-        if ((nullBits & 1) != 0) {
-            int sl = VarInt.peek(buf, pos);
-            pos += VarInt.length(buf, pos) + sl;
-        }
-        return pos - offset;
-    }
+      StreamOpenResponse obj = new StreamOpenResponse();
+      byte nullBits = buf.getByte(offset);
+      obj.type = StreamType.fromValue(buf.getByte(offset + 1));
+      obj.accepted = buf.getByte(offset + 2) != 0;
+      int pos = offset + 3;
+      if ((nullBits & 1) != 0) {
+         int rejectionReasonLen = VarInt.peek(buf, pos);
+         if (rejectionReasonLen < 0) {
+            throw ProtocolException.invalidVarInt("RejectionReason");
+         }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.rejectionReason != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeByte(this.type.getValue());
-        buf.writeByte(this.accepted ? 1 : 0);
-        if (this.rejectionReason != null) {
-            PacketIO.writeVarString(buf, this.rejectionReason, 4096000);
-        }
-    }
+         int rejectionReasonVarLen = VarInt.size(rejectionReasonLen);
+         if (rejectionReasonLen > 4096000) {
+            throw ProtocolException.stringTooLong("RejectionReason", rejectionReasonLen, 4096000);
+         }
 
-    @Override
-    public int computeSize() {
-        int size = 3;
-        if (this.rejectionReason != null) {
-            size += PacketIO.stringSize(this.rejectionReason);
-        }
-        return size;
-    }
+         if (pos + rejectionReasonVarLen + rejectionReasonLen > buf.readableBytes()) {
+            throw ProtocolException.bufferTooSmall("RejectionReason", pos + rejectionReasonVarLen + rejectionReasonLen, buf.readableBytes());
+         }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 3) {
-            return ValidationResult.error("Buffer too small: expected at least 3 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 3;
-        if ((nullBits & 1) != 0) {
-            int rejectionReasonLen = VarInt.peek(buffer, pos);
-            if (rejectionReasonLen < 0) {
-                return ValidationResult.error("Invalid string length for RejectionReason");
-            }
-            if (rejectionReasonLen > 4096000) {
-                return ValidationResult.error("RejectionReason exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            if ((pos += rejectionReasonLen) > buffer.writerIndex()) {
-                return ValidationResult.error("Buffer overflow reading RejectionReason");
-            }
-        }
-        return ValidationResult.OK;
-    }
+         obj.rejectionReason = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
+         pos += rejectionReasonVarLen + rejectionReasonLen;
+      }
 
-    public StreamOpenResponse clone() {
-        StreamOpenResponse copy = new StreamOpenResponse();
-        copy.type = this.type;
-        copy.accepted = this.accepted;
-        copy.rejectionReason = this.rejectionReason;
-        return copy;
-    }
+      return obj;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof StreamOpenResponse)) {
-            return false;
-        }
-        StreamOpenResponse other = (StreamOpenResponse)obj;
-        return Objects.equals((Object)this.type, (Object)other.type) && this.accepted == other.accepted && Objects.equals(this.rejectionReason, other.rejectionReason);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 3;
+      if ((nullBits & 1) != 0) {
+         int sl = VarInt.peek(buf, pos);
+         pos += VarInt.size(sl) + sl;
+      }
 
-    public int hashCode() {
-        return Objects.hash(new Object[]{this.type, this.accepted, this.rejectionReason});
-    }
+      return pos - offset;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 3L;
+   }
+
+   public static StreamType getType(MemorySegment mem) {
+      return getType(mem, 0);
+   }
+
+   public static StreamType getType(MemorySegment mem, int offset) {
+      return StreamType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+   }
+
+   public static boolean getAccepted(MemorySegment mem) {
+      return getAccepted(mem, 0);
+   }
+
+   public static boolean getAccepted(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_BOOL, offset + 2);
+   }
+
+   @Nullable
+   public static String getRejectionReason(MemorySegment mem) {
+      return getRejectionReason(mem, 0);
+   }
+
+   @Nullable
+   public static String getRejectionReason(MemorySegment mem, int offset) {
+      return hasRejectionReason(mem, offset) ? PacketIO.readVarString("RejectionReason", mem, offset + 3, 4096000, PacketIO.UTF8) : null;
+   }
+
+   public static boolean hasRejectionReason(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static StreamOpenResponse toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static StreamOpenResponse toObject(MemorySegment mem, int offset) {
+      if (offset + 3 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("StreamOpenResponse", offset + 3, (int)mem.byteSize());
+      } else {
+         return new StreamOpenResponse(
+            StreamType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_BOOL, offset + 2),
+            hasRejectionReason(mem, offset) ? PacketIO.readVarString("RejectionReason", mem, offset + 3, 4096000, PacketIO.UTF8) : null
+         );
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.rejectionReason != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeByte(this.type.getValue());
+      buf.writeByte(this.accepted ? 1 : 0);
+      if (this.rejectionReason != null) {
+         PacketIO.writeVarString(buf, this.rejectionReason, 4096000);
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.rejectionReason != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
+      mem.set(PacketIO.PROTO_BOOL, offset + 2, this.accepted);
+      int varOffset = offset + 3;
+      if (this.rejectionReason != null) {
+         varOffset += PacketIO.writeVarString(mem, varOffset, this.rejectionReason, 4096000);
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 3;
+      if (this.rejectionReason != null) {
+         size += PacketIO.stringSize(this.rejectionReason);
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 3) {
+         return ValidationResult.error("Buffer too small: expected at least 3 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int v = buffer.getByte(offset + 1) & 255;
+      if (v >= 2) {
+         return ValidationResult.error("Invalid StreamType value for Type");
+      }
+
+      v = offset + 3;
+      if ((nullBits & 1) != 0) {
+         int rejectionReasonLen = VarInt.peek(buffer, v);
+         if (rejectionReasonLen < 0) {
+            return ValidationResult.error("Invalid string length for RejectionReason");
+         }
+
+         if (rejectionReasonLen > 4096000) {
+            return ValidationResult.error("RejectionReason exceeds max length 4096000");
+         }
+
+         v += VarInt.size(rejectionReasonLen);
+         v += rejectionReasonLen;
+         if (v > buffer.writerIndex()) {
+            return ValidationResult.error("Buffer overflow reading RejectionReason");
+         }
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public StreamOpenResponse clone() {
+      StreamOpenResponse copy = new StreamOpenResponse();
+      copy.type = this.type;
+      copy.accepted = this.accepted;
+      copy.rejectionReason = this.rejectionReason;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof StreamOpenResponse other)
+            ? false
+            : Objects.equals(this.type, other.type) && this.accepted == other.accepted && Objects.equals(this.rejectionReason, other.rejectionReason);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.type, this.accepted, this.rejectionReason);
+   }
 }
-

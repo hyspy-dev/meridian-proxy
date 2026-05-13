@@ -1,34 +1,27 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ChangeVelocityType {
-    Add(0),
-    Set(1);
+   Add(0),
+   Set(1);
 
-    public static final ChangeVelocityType[] VALUES;
-    private final int value;
+   public static final ChangeVelocityType[] VALUES = values();
+   private final int value;
 
-    private ChangeVelocityType(int value) {
-        this.value = value;
-    }
+   ChangeVelocityType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static ChangeVelocityType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("ChangeVelocityType", value);
-    }
-
-    static {
-        VALUES = ChangeVelocityType.values();
-    }
+   public static ChangeVelocityType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("ChangeVelocityType", value);
+      }
+   }
 }
-

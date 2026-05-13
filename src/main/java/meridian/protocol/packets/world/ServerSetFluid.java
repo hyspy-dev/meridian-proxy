@@ -1,120 +1,191 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.world;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class ServerSetFluid
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 142;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 17;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 17;
-    public static final int MAX_SIZE = 17;
-    public int x;
-    public int y;
-    public int z;
-    public int fluidId;
-    public byte fluidLevel;
+public class ServerSetFluid implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 142;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 17;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 17;
+   public static final int MAX_SIZE = 17;
+   public int x;
+   public int y;
+   public int z;
+   public int fluidId;
+   public byte fluidLevel;
 
-    @Override
-    public int getId() {
-        return 142;
-    }
+   @Override
+   public int getId() {
+      return 142;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Chunks;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Chunks;
+   }
 
-    public ServerSetFluid() {
-    }
+   public ServerSetFluid() {
+   }
 
-    public ServerSetFluid(int x, int y, int z, int fluidId, byte fluidLevel) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.fluidId = fluidId;
-        this.fluidLevel = fluidLevel;
-    }
+   public ServerSetFluid(int x, int y, int z, int fluidId, byte fluidLevel) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.fluidId = fluidId;
+      this.fluidLevel = fluidLevel;
+   }
 
-    public ServerSetFluid(@Nonnull ServerSetFluid other) {
-        this.x = other.x;
-        this.y = other.y;
-        this.z = other.z;
-        this.fluidId = other.fluidId;
-        this.fluidLevel = other.fluidLevel;
-    }
+   public ServerSetFluid(@Nonnull ServerSetFluid other) {
+      this.x = other.x;
+      this.y = other.y;
+      this.z = other.z;
+      this.fluidId = other.fluidId;
+      this.fluidLevel = other.fluidLevel;
+   }
 
-    @Nonnull
-    public static ServerSetFluid deserialize(@Nonnull ByteBuf buf, int offset) {
-        ServerSetFluid obj = new ServerSetFluid();
-        obj.x = buf.getIntLE(offset + 0);
-        obj.y = buf.getIntLE(offset + 4);
-        obj.z = buf.getIntLE(offset + 8);
-        obj.fluidId = buf.getIntLE(offset + 12);
-        obj.fluidLevel = buf.getByte(offset + 16);
-        return obj;
-    }
+   @Nonnull
+   public static ServerSetFluid deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 17) {
+         throw ProtocolException.bufferTooSmall("ServerSetFluid", 17, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 17;
-    }
+      ServerSetFluid obj = new ServerSetFluid();
+      obj.x = buf.getIntLE(offset + 0);
+      obj.y = buf.getIntLE(offset + 4);
+      obj.z = buf.getIntLE(offset + 8);
+      obj.fluidId = buf.getIntLE(offset + 12);
+      obj.fluidLevel = buf.getByte(offset + 16);
+      return obj;
+   }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        buf.writeIntLE(this.x);
-        buf.writeIntLE(this.y);
-        buf.writeIntLE(this.z);
-        buf.writeIntLE(this.fluidId);
-        buf.writeByte(this.fluidLevel);
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 17;
+   }
 
-    @Override
-    public int computeSize() {
-        return 17;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 17L;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 17) {
-            return ValidationResult.error("Buffer too small: expected at least 17 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static int getX(MemorySegment mem) {
+      return getX(mem, 0);
+   }
 
-    public ServerSetFluid clone() {
-        ServerSetFluid copy = new ServerSetFluid();
-        copy.x = this.x;
-        copy.y = this.y;
-        copy.z = this.z;
-        copy.fluidId = this.fluidId;
-        copy.fluidLevel = this.fluidLevel;
-        return copy;
-    }
+   public static int getX(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 0);
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof ServerSetFluid)) {
-            return false;
-        }
-        ServerSetFluid other = (ServerSetFluid)obj;
-        return this.x == other.x && this.y == other.y && this.z == other.z && this.fluidId == other.fluidId && this.fluidLevel == other.fluidLevel;
-    }
+   public static int getY(MemorySegment mem) {
+      return getY(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.x, this.y, this.z, this.fluidId, this.fluidLevel);
-    }
+   public static int getY(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 4);
+   }
+
+   public static int getZ(MemorySegment mem) {
+      return getZ(mem, 0);
+   }
+
+   public static int getZ(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 8);
+   }
+
+   public static int getFluidId(MemorySegment mem) {
+      return getFluidId(mem, 0);
+   }
+
+   public static int getFluidId(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 12);
+   }
+
+   public static byte getFluidLevel(MemorySegment mem) {
+      return getFluidLevel(mem, 0);
+   }
+
+   public static byte getFluidLevel(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_BYTE, offset + 16);
+   }
+
+   public static ServerSetFluid toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static ServerSetFluid toObject(MemorySegment mem, int offset) {
+      if (offset + 17 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("ServerSetFluid", offset + 17, (int)mem.byteSize());
+      } else {
+         return new ServerSetFluid(
+            mem.get(PacketIO.PROTO_INT, offset + 0),
+            mem.get(PacketIO.PROTO_INT, offset + 4),
+            mem.get(PacketIO.PROTO_INT, offset + 8),
+            mem.get(PacketIO.PROTO_INT, offset + 12),
+            mem.get(PacketIO.PROTO_BYTE, offset + 16)
+         );
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      buf.writeIntLE(this.x);
+      buf.writeIntLE(this.y);
+      buf.writeIntLE(this.z);
+      buf.writeIntLE(this.fluidId);
+      buf.writeByte(this.fluidLevel);
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      mem.set(PacketIO.PROTO_INT, offset + 0, this.x);
+      mem.set(PacketIO.PROTO_INT, offset + 4, this.y);
+      mem.set(PacketIO.PROTO_INT, offset + 8, this.z);
+      mem.set(PacketIO.PROTO_INT, offset + 12, this.fluidId);
+      mem.set(PacketIO.PROTO_BYTE, offset + 16, this.fluidLevel);
+      return 17;
+   }
+
+   @Override
+   public int computeSize() {
+      return 17;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 17 ? ValidationResult.error("Buffer too small: expected at least 17 bytes") : ValidationResult.OK;
+   }
+
+   public ServerSetFluid clone() {
+      ServerSetFluid copy = new ServerSetFluid();
+      copy.x = this.x;
+      copy.y = this.y;
+      copy.z = this.z;
+      copy.fluidId = this.fluidId;
+      copy.fluidLevel = this.fluidLevel;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof ServerSetFluid other)
+            ? false
+            : this.x == other.x && this.y == other.y && this.z == other.z && this.fluidId == other.fluidId && this.fluidLevel == other.fluidLevel;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.x, this.y, this.z, this.fluidId, this.fluidLevel);
+   }
 }
-

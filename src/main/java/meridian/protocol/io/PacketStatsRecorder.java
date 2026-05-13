@@ -1,79 +1,74 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.io;
 
-import meridian.protocol.io.NoopPacketStatsRecorder;
 import io.netty.util.AttributeKey;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public interface PacketStatsRecorder {
-    public static final AttributeKey<PacketStatsRecorder> CHANNEL_KEY = AttributeKey.valueOf("PacketStatsRecorder");
-    public static final PacketStatsRecorder NOOP = new NoopPacketStatsRecorder();
+   AttributeKey<PacketStatsRecorder> CHANNEL_KEY = AttributeKey.valueOf("PacketStatsRecorder");
+   PacketStatsRecorder NOOP = new NoopPacketStatsRecorder();
 
-    public void recordSend(int var1, int var2, int var3);
+   void recordSend(int var1, int var2, int var3);
 
-    public void recordReceive(int var1, int var2, int var3);
+   void recordReceive(int var1, int var2, int var3);
 
-    @Nonnull
-    public PacketStatsEntry getEntry(int var1);
+   @Nonnull
+   PacketStatsRecorder.PacketStatsEntry getEntry(int var1);
 
-    public record RecentStats(int count, long uncompressedTotal, long compressedTotal, int uncompressedMin, int uncompressedMax, int compressedMin, int compressedMax) {
-        public static final RecentStats EMPTY = new RecentStats(0, 0L, 0L, 0, 0, 0, 0);
-    }
+   interface PacketStatsEntry {
+      int RECENT_SECONDS = 30;
 
-    public static interface PacketStatsEntry {
-        public static final int RECENT_SECONDS = 30;
+      int getPacketId();
 
-        public int getPacketId();
+      @Nullable
+      String getName();
 
-        @Nullable
-        public String getName();
+      boolean hasData();
 
-        public boolean hasData();
+      int getSentCount();
 
-        public int getSentCount();
+      long getSentUncompressedTotal();
 
-        public long getSentUncompressedTotal();
+      long getSentCompressedTotal();
 
-        public long getSentCompressedTotal();
+      long getSentUncompressedMin();
 
-        public long getSentUncompressedMin();
+      long getSentUncompressedMax();
 
-        public long getSentUncompressedMax();
+      long getSentCompressedMin();
 
-        public long getSentCompressedMin();
+      long getSentCompressedMax();
 
-        public long getSentCompressedMax();
+      double getSentUncompressedAvg();
 
-        public double getSentUncompressedAvg();
+      double getSentCompressedAvg();
 
-        public double getSentCompressedAvg();
+      @Nonnull
+      PacketStatsRecorder.RecentStats getSentRecently();
 
-        @Nonnull
-        public RecentStats getSentRecently();
+      int getReceivedCount();
 
-        public int getReceivedCount();
+      long getReceivedUncompressedTotal();
 
-        public long getReceivedUncompressedTotal();
+      long getReceivedCompressedTotal();
 
-        public long getReceivedCompressedTotal();
+      long getReceivedUncompressedMin();
 
-        public long getReceivedUncompressedMin();
+      long getReceivedUncompressedMax();
 
-        public long getReceivedUncompressedMax();
+      long getReceivedCompressedMin();
 
-        public long getReceivedCompressedMin();
+      long getReceivedCompressedMax();
 
-        public long getReceivedCompressedMax();
+      double getReceivedUncompressedAvg();
 
-        public double getReceivedUncompressedAvg();
+      double getReceivedCompressedAvg();
 
-        public double getReceivedCompressedAvg();
+      @Nonnull
+      PacketStatsRecorder.RecentStats getReceivedRecently();
+   }
 
-        @Nonnull
-        public RecentStats getReceivedRecently();
-    }
+   record RecentStats(int count, long uncompressedTotal, long compressedTotal, int uncompressedMin, int uncompressedMax, int compressedMin, int compressedMax) {
+      public static final PacketStatsRecorder.RecentStats EMPTY = new PacketStatsRecorder.RecentStats(0, 0L, 0L, 0, 0, 0, 0);
+   }
 }
-

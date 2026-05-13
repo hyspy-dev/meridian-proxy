@@ -1,36 +1,29 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum AmbienceFXAltitude {
-    Normal(0),
-    Lowest(1),
-    Highest(2),
-    Random(3);
+   Normal(0),
+   Lowest(1),
+   Highest(2),
+   Random(3);
 
-    public static final AmbienceFXAltitude[] VALUES;
-    private final int value;
+   public static final AmbienceFXAltitude[] VALUES = values();
+   private final int value;
 
-    private AmbienceFXAltitude(int value) {
-        this.value = value;
-    }
+   AmbienceFXAltitude(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static AmbienceFXAltitude fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("AmbienceFXAltitude", value);
-    }
-
-    static {
-        VALUES = AmbienceFXAltitude.values();
-    }
+   public static AmbienceFXAltitude fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("AmbienceFXAltitude", value);
+      }
+   }
 }
-

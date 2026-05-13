@@ -1,160 +1,273 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.setup;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AssetPart
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 25;
-    public static final boolean IS_COMPRESSED = true;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 1;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 1;
-    public static final int MAX_SIZE = 4096006;
-    @Nullable
-    public byte[] part;
+public class AssetPart implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 25;
+   public static final boolean IS_COMPRESSED = true;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 1;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 1;
+   public static final int MAX_SIZE = 4096006;
+   @Nullable
+   public byte[] part;
 
-    @Override
-    public int getId() {
-        return 25;
-    }
+   @Override
+   public int getId() {
+      return 25;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public AssetPart() {
-    }
+   public AssetPart() {
+   }
 
-    public AssetPart(@Nullable byte[] part) {
-        this.part = part;
-    }
+   public AssetPart(@Nullable byte[] part) {
+      this.part = part;
+   }
 
-    public AssetPart(@Nonnull AssetPart other) {
-        this.part = other.part;
-    }
+   public AssetPart(@Nonnull AssetPart other) {
+      this.part = other.part;
+   }
 
-    @Nonnull
-    public static AssetPart deserialize(@Nonnull ByteBuf buf, int offset) {
-        AssetPart obj = new AssetPart();
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            int partCount = VarInt.peek(buf, pos);
-            if (partCount < 0) {
-                throw ProtocolException.negativeLength("Part", partCount);
-            }
-            if (partCount > 4096000) {
-                throw ProtocolException.arrayTooLong("Part", partCount, 4096000);
-            }
-            int partVarLen = VarInt.size(partCount);
-            if ((long)(pos + partVarLen) + (long)partCount * 1L > (long)buf.readableBytes()) {
-                throw ProtocolException.bufferTooSmall("Part", pos + partVarLen + partCount * 1, buf.readableBytes());
-            }
-            pos += partVarLen;
-            obj.part = new byte[partCount];
-            for (int i = 0; i < partCount; ++i) {
-                obj.part[i] = buf.getByte(pos + i * 1);
-            }
-            pos += partCount * 1;
-        }
-        return obj;
-    }
+   @Nonnull
+   public static AssetPart deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 1) {
+         throw ProtocolException.bufferTooSmall("AssetPart", 1, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            int arrLen = VarInt.peek(buf, pos);
-            pos += VarInt.length(buf, pos) + arrLen * 1;
-        }
-        return pos - offset;
-    }
+      AssetPart obj = new AssetPart();
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         int partCount = VarInt.peek(buf, pos);
+         if (partCount < 0) {
+            throw ProtocolException.invalidVarInt("Part");
+         }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.part != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        if (this.part != null) {
-            if (this.part.length > 4096000) {
-                throw ProtocolException.arrayTooLong("Part", this.part.length, 4096000);
-            }
-            VarInt.write(buf, this.part.length);
-            for (byte item : this.part) {
-                buf.writeByte(item);
-            }
-        }
-    }
+         int partVarLen = VarInt.size(partCount);
+         if (partCount > 4096000) {
+            throw ProtocolException.arrayTooLong("Part", partCount, 4096000);
+         }
 
-    @Override
-    public int computeSize() {
-        int size = 1;
-        if (this.part != null) {
-            size += VarInt.size(this.part.length) + this.part.length * 1;
-        }
-        return size;
-    }
+         if (pos + partVarLen + partCount * 1L > buf.readableBytes()) {
+            throw ProtocolException.bufferTooSmall("Part", pos + partVarLen + partCount * 1, buf.readableBytes());
+         }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 1) {
-            return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 1;
-        if ((nullBits & 1) != 0) {
-            int partCount = VarInt.peek(buffer, pos);
-            if (partCount < 0) {
-                return ValidationResult.error("Invalid array count for Part");
-            }
-            if (partCount > 4096000) {
-                return ValidationResult.error("Part exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            if ((pos += partCount * 1) > buffer.writerIndex()) {
-                return ValidationResult.error("Buffer overflow reading Part");
-            }
-        }
-        return ValidationResult.OK;
-    }
+         pos += partVarLen;
+         obj.part = new byte[partCount];
 
-    public AssetPart clone() {
-        AssetPart copy = new AssetPart();
-        copy.part = this.part != null ? Arrays.copyOf(this.part, this.part.length) : null;
-        return copy;
-    }
+         for (int i = 0; i < partCount; i++) {
+            obj.part[i] = buf.getByte(pos + i * 1);
+         }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof AssetPart)) {
-            return false;
-        }
-        AssetPart other = (AssetPart)obj;
-        return Arrays.equals(this.part, other.part);
-    }
+         pos += partCount * 1;
+      }
 
-    public int hashCode() {
-        int result = 1;
-        result = 31 * result + Arrays.hashCode(this.part);
-        return result;
-    }
+      return obj;
+   }
+
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         int arrLen = VarInt.peek(buf, pos);
+         pos += VarInt.size(arrLen) + arrLen * 1;
+      }
+
+      return pos - offset;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 1L;
+   }
+
+   @Nullable
+   public static byte[] getPart(MemorySegment mem) {
+      return getPart(mem, 0);
+   }
+
+   @Nullable
+   public static byte[] getPart(MemorySegment mem, int offset) {
+      if (!hasPart(mem, offset)) {
+         return null;
+      }
+
+      int off = offset + 1;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("Part", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.arrayTooLong("Part", len, 4096000);
+      }
+
+      int lenOffset = (int)(packed >>> 32);
+      if (off + lenOffset + len * 1L > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("Part", off + lenOffset + len * 1, (int)mem.byteSize());
+      }
+
+      off += lenOffset;
+      byte[] data = new byte[len];
+      MemorySegment.copy(mem, PacketIO.PROTO_BYTE, off, data, 0, len);
+      return data;
+   }
+
+   public static boolean hasPart(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static AssetPart toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static AssetPart toObject(MemorySegment mem, int offset) {
+      if (offset + 1 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("AssetPart", offset + 1, (int)mem.byteSize());
+      }
+
+      byte[] part = null;
+      if (hasPart(mem, offset)) {
+         int off = offset + 1;
+         long packed = VarInt.getWithLength(mem, off);
+         int len = (int)packed;
+         if (len < 0) {
+            throw ProtocolException.negativeLength("Part", len);
+         }
+
+         if (len > 4096000) {
+            throw ProtocolException.arrayTooLong("Part", len, 4096000);
+         }
+
+         int lenOffset = (int)(packed >>> 32);
+         if (off + lenOffset + len * 1L > mem.byteSize()) {
+            throw ProtocolException.bufferTooSmall("Part", off + lenOffset + len * 1, (int)mem.byteSize());
+         }
+
+         off += lenOffset;
+         part = new byte[len];
+         MemorySegment.copy(mem, PacketIO.PROTO_BYTE, off, part, 0, len);
+      }
+
+      return new AssetPart(part);
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.part != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      if (this.part != null) {
+         if (this.part.length > 4096000) {
+            throw ProtocolException.arrayTooLong("Part", this.part.length, 4096000);
+         }
+
+         VarInt.write(buf, this.part.length);
+
+         for (byte item : this.part) {
+            buf.writeByte(item);
+         }
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.part != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      int varOffset = offset + 1;
+      if (this.part != null) {
+         if (this.part.length > 4096000) {
+            throw ProtocolException.arrayTooLong("Part", this.part.length, 4096000);
+         }
+
+         varOffset += VarInt.set(mem, varOffset, this.part.length);
+         MemorySegment.copy(this.part, 0, mem, PacketIO.PROTO_BYTE, varOffset, this.part.length);
+         varOffset += this.part.length * 1;
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 1;
+      if (this.part != null) {
+         size += VarInt.size(this.part.length) + this.part.length * 1;
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 1) {
+         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int pos = offset + 1;
+      if ((nullBits & 1) != 0) {
+         int partCount = VarInt.peek(buffer, pos);
+         if (partCount < 0) {
+            return ValidationResult.error("Invalid array count for Part");
+         }
+
+         if (partCount > 4096000) {
+            return ValidationResult.error("Part exceeds max length 4096000");
+         }
+
+         pos += VarInt.size(partCount);
+         pos += partCount * 1;
+         if (pos > buffer.writerIndex()) {
+            return ValidationResult.error("Buffer overflow reading Part");
+         }
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public AssetPart clone() {
+      AssetPart copy = new AssetPart();
+      copy.part = this.part != null ? Arrays.copyOf(this.part, this.part.length) : null;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return obj instanceof AssetPart other ? Arrays.equals(this.part, other.part) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      int result = 1;
+      return 31 * result + Arrays.hashCode(this.part);
+   }
 }
-

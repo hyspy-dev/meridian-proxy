@@ -1,37 +1,30 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum RandomRotation {
-    None(0),
-    YawPitchRollStep1(1),
-    YawStep1(2),
-    YawStep1XZ(3),
-    YawStep90(4);
+   None(0),
+   YawPitchRollStep1(1),
+   YawStep1(2),
+   YawStep1XZ(3),
+   YawStep90(4);
 
-    public static final RandomRotation[] VALUES;
-    private final int value;
+   public static final RandomRotation[] VALUES = values();
+   private final int value;
 
-    private RandomRotation(int value) {
-        this.value = value;
-    }
+   RandomRotation(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static RandomRotation fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("RandomRotation", value);
-    }
-
-    static {
-        VALUES = RandomRotation.values();
-    }
+   public static RandomRotation fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("RandomRotation", value);
+      }
+   }
 }
-

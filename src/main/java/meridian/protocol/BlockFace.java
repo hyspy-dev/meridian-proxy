@@ -1,39 +1,32 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BlockFace {
-    None(0),
-    Up(1),
-    Down(2),
-    North(3),
-    South(4),
-    East(5),
-    West(6);
+   None(0),
+   Up(1),
+   Down(2),
+   North(3),
+   South(4),
+   East(5),
+   West(6);
 
-    public static final BlockFace[] VALUES;
-    private final int value;
+   public static final BlockFace[] VALUES = values();
+   private final int value;
 
-    private BlockFace(int value) {
-        this.value = value;
-    }
+   BlockFace(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static BlockFace fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("BlockFace", value);
-    }
-
-    static {
-        VALUES = BlockFace.values();
-    }
+   public static BlockFace fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("BlockFace", value);
+      }
+   }
 }
-

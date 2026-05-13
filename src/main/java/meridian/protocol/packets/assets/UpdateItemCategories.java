@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.assets;
 
 import meridian.protocol.ItemCategory;
@@ -8,175 +5,324 @@ import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.UpdateType;
+import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class UpdateItemCategories
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 56;
-    public static final boolean IS_COMPRESSED = true;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 2;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 2;
-    public static final int MAX_SIZE = 0x64000000;
-    @Nonnull
-    public UpdateType type = UpdateType.Init;
-    @Nullable
-    public ItemCategory[] itemCategories;
+public class UpdateItemCategories implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 56;
+   public static final boolean IS_COMPRESSED = true;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 2;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 2;
+   public static final int MAX_SIZE = 1677721600;
+   @Nonnull
+   public UpdateType type = UpdateType.Init;
+   @Nullable
+   public ItemCategory[] itemCategories;
 
-    @Override
-    public int getId() {
-        return 56;
-    }
+   @Override
+   public int getId() {
+      return 56;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public UpdateItemCategories() {
-    }
+   public UpdateItemCategories() {
+   }
 
-    public UpdateItemCategories(@Nonnull UpdateType type, @Nullable ItemCategory[] itemCategories) {
-        this.type = type;
-        this.itemCategories = itemCategories;
-    }
+   public UpdateItemCategories(@Nonnull UpdateType type, @Nullable ItemCategory[] itemCategories) {
+      this.type = type;
+      this.itemCategories = itemCategories;
+   }
 
-    public UpdateItemCategories(@Nonnull UpdateItemCategories other) {
-        this.type = other.type;
-        this.itemCategories = other.itemCategories;
-    }
+   public UpdateItemCategories(@Nonnull UpdateItemCategories other) {
+      this.type = other.type;
+      this.itemCategories = other.itemCategories;
+   }
 
-    @Nonnull
-    public static UpdateItemCategories deserialize(@Nonnull ByteBuf buf, int offset) {
-        UpdateItemCategories obj = new UpdateItemCategories();
-        byte nullBits = buf.getByte(offset);
-        obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-        int pos = offset + 2;
-        if ((nullBits & 1) != 0) {
-            int itemCategoriesCount = VarInt.peek(buf, pos);
-            if (itemCategoriesCount < 0) {
-                throw ProtocolException.negativeLength("ItemCategories", itemCategoriesCount);
+   @Nonnull
+   public static UpdateItemCategories deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 2) {
+         throw ProtocolException.bufferTooSmall("UpdateItemCategories", 2, buf.readableBytes() - offset);
+      }
+
+      UpdateItemCategories obj = new UpdateItemCategories();
+      byte nullBits = buf.getByte(offset);
+      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
+      int pos = offset + 2;
+      if ((nullBits & 1) != 0) {
+         int itemCategoriesCount = VarInt.peek(buf, pos);
+         if (itemCategoriesCount < 0) {
+            throw ProtocolException.invalidVarInt("ItemCategories");
+         }
+
+         int itemCategoriesVarLen = VarInt.size(itemCategoriesCount);
+         if (itemCategoriesCount > 4096000) {
+            throw ProtocolException.arrayTooLong("ItemCategories", itemCategoriesCount, 4096000);
+         }
+
+         if (pos + itemCategoriesVarLen + itemCategoriesCount * 6L > buf.readableBytes()) {
+            throw ProtocolException.bufferTooSmall("ItemCategories", pos + itemCategoriesVarLen + itemCategoriesCount * 6, buf.readableBytes());
+         }
+
+         pos += itemCategoriesVarLen;
+         obj.itemCategories = new ItemCategory[itemCategoriesCount];
+
+         for (int i = 0; i < itemCategoriesCount; i++) {
+            obj.itemCategories[i] = ItemCategory.deserialize(buf, pos);
+            pos += ItemCategory.computeBytesConsumed(buf, pos);
+         }
+      }
+
+      return obj;
+   }
+
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 2;
+      if ((nullBits & 1) != 0) {
+         int arrLen = VarInt.peek(buf, pos);
+         pos += VarInt.size(arrLen);
+
+         for (int i = 0; i < arrLen; i++) {
+            pos += ItemCategory.computeBytesConsumed(buf, pos);
+         }
+      }
+
+      return pos - offset;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 2L;
+   }
+
+   public static UpdateType getType(MemorySegment mem) {
+      return getType(mem, 0);
+   }
+
+   public static UpdateType getType(MemorySegment mem, int offset) {
+      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+   }
+
+   @Nullable
+   public static ItemCategory[] getItemCategories(MemorySegment mem) {
+      return getItemCategories(mem, 0);
+   }
+
+   @Nullable
+   public static ItemCategory[] getItemCategories(MemorySegment mem, int offset) {
+      if (!hasItemCategories(mem, offset)) {
+         return null;
+      }
+
+      int off = offset + 2;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("ItemCategories", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.arrayTooLong("ItemCategories", len, 4096000);
+      }
+
+      int lenOffset = (int)(packed >>> 32);
+      if (off + lenOffset + len > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("ItemCategories", off + lenOffset + len, (int)mem.byteSize());
+      }
+
+      off += lenOffset;
+      ItemCategory[] data = new ItemCategory[len];
+
+      for (int i = 0; i < len; i++) {
+         data[i] = ItemCategory.toObject(mem, off);
+         off += data[i].computeSize();
+      }
+
+      return data;
+   }
+
+   public static boolean hasItemCategories(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static UpdateItemCategories toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static UpdateItemCategories toObject(MemorySegment mem, int offset) {
+      if (offset + 2 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("UpdateItemCategories", offset + 2, (int)mem.byteSize());
+      }
+
+      ItemCategory[] itemCategories = null;
+      if (hasItemCategories(mem, offset)) {
+         int off = offset + 2;
+         long packed = VarInt.getWithLength(mem, off);
+         int len = (int)packed;
+         if (len < 0) {
+            throw ProtocolException.negativeLength("ItemCategories", len);
+         }
+
+         if (len > 4096000) {
+            throw ProtocolException.arrayTooLong("ItemCategories", len, 4096000);
+         }
+
+         int lenOffset = (int)(packed >>> 32);
+         if (off + lenOffset + len > mem.byteSize()) {
+            throw ProtocolException.bufferTooSmall("ItemCategories", off + lenOffset + len, (int)mem.byteSize());
+         }
+
+         off += lenOffset;
+         itemCategories = new ItemCategory[len];
+
+         for (int i = 0; i < len; i++) {
+            itemCategories[i] = ItemCategory.toObject(mem, off);
+            off += itemCategories[i].computeSize();
+         }
+      }
+
+      return new UpdateItemCategories(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), itemCategories);
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.itemCategories != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeByte(this.type.getValue());
+      if (this.itemCategories != null) {
+         if (this.itemCategories.length > 4096000) {
+            throw ProtocolException.arrayTooLong("ItemCategories", this.itemCategories.length, 4096000);
+         }
+
+         VarInt.write(buf, this.itemCategories.length);
+
+         for (ItemCategory item : this.itemCategories) {
+            item.serialize(buf);
+         }
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.itemCategories != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
+      int varOffset = offset + 2;
+      if (this.itemCategories != null) {
+         if (this.itemCategories.length > 4096000) {
+            throw ProtocolException.arrayTooLong("ItemCategories", this.itemCategories.length, 4096000);
+         }
+
+         varOffset += VarInt.set(mem, varOffset, this.itemCategories.length);
+         int itemCategoriesValueOffset = 0;
+
+         for (int i = 0; i < this.itemCategories.length; i++) {
+            itemCategoriesValueOffset += this.itemCategories[i].serialize(mem, varOffset + itemCategoriesValueOffset);
+         }
+
+         varOffset += itemCategoriesValueOffset;
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 2;
+      if (this.itemCategories != null) {
+         int itemCategoriesSize = 0;
+
+         for (ItemCategory elem : this.itemCategories) {
+            itemCategoriesSize += elem.computeSize();
+         }
+
+         size += VarInt.size(this.itemCategories.length) + itemCategoriesSize;
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 2) {
+         return ValidationResult.error("Buffer too small: expected at least 2 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int v = buffer.getByte(offset + 1) & 255;
+      if (v >= 3) {
+         return ValidationResult.error("Invalid UpdateType value for Type");
+      }
+
+      v = offset + 2;
+      if ((nullBits & 1) != 0) {
+         int itemCategoriesCount = VarInt.peek(buffer, v);
+         if (itemCategoriesCount < 0) {
+            return ValidationResult.error("Invalid array count for ItemCategories");
+         }
+
+         if (itemCategoriesCount > 4096000) {
+            return ValidationResult.error("ItemCategories exceeds max length 4096000");
+         }
+
+         v += VarInt.size(itemCategoriesCount);
+
+         for (int i = 0; i < itemCategoriesCount; i++) {
+            ValidationResult structResult = ItemCategory.validateStructure(buffer, v);
+            if (!structResult.isValid()) {
+               return ValidationResult.error("Invalid ItemCategory in ItemCategories[" + i + "]: " + structResult.error());
             }
-            if (itemCategoriesCount > 4096000) {
-                throw ProtocolException.arrayTooLong("ItemCategories", itemCategoriesCount, 4096000);
-            }
-            int itemCategoriesVarLen = VarInt.size(itemCategoriesCount);
-            if ((long)(pos + itemCategoriesVarLen) + (long)itemCategoriesCount * 6L > (long)buf.readableBytes()) {
-                throw ProtocolException.bufferTooSmall("ItemCategories", pos + itemCategoriesVarLen + itemCategoriesCount * 6, buf.readableBytes());
-            }
-            pos += itemCategoriesVarLen;
-            obj.itemCategories = new ItemCategory[itemCategoriesCount];
-            for (int i = 0; i < itemCategoriesCount; ++i) {
-                obj.itemCategories[i] = ItemCategory.deserialize(buf, pos);
-                pos += ItemCategory.computeBytesConsumed(buf, pos);
-            }
-        }
-        return obj;
-    }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 2;
-        if ((nullBits & 1) != 0) {
-            int arrLen = VarInt.peek(buf, pos);
-            pos += VarInt.length(buf, pos);
-            for (int i = 0; i < arrLen; ++i) {
-                pos += ItemCategory.computeBytesConsumed(buf, pos);
-            }
-        }
-        return pos - offset;
-    }
+            v += ItemCategory.computeBytesConsumed(buffer, v);
+         }
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.itemCategories != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeByte(this.type.getValue());
-        if (this.itemCategories != null) {
-            if (this.itemCategories.length > 4096000) {
-                throw ProtocolException.arrayTooLong("ItemCategories", this.itemCategories.length, 4096000);
-            }
-            VarInt.write(buf, this.itemCategories.length);
-            for (ItemCategory item : this.itemCategories) {
-                item.serialize(buf);
-            }
-        }
-    }
+      return ValidationResult.OK;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 2;
-        if (this.itemCategories != null) {
-            int itemCategoriesSize = 0;
-            for (ItemCategory elem : this.itemCategories) {
-                itemCategoriesSize += elem.computeSize();
-            }
-            size += VarInt.size(this.itemCategories.length) + itemCategoriesSize;
-        }
-        return size;
-    }
+   public UpdateItemCategories clone() {
+      UpdateItemCategories copy = new UpdateItemCategories();
+      copy.type = this.type;
+      copy.itemCategories = this.itemCategories != null ? Arrays.stream(this.itemCategories).map(e -> e.clone()).toArray(ItemCategory[]::new) : null;
+      return copy;
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 2) {
-            return ValidationResult.error("Buffer too small: expected at least 2 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 2;
-        if ((nullBits & 1) != 0) {
-            int itemCategoriesCount = VarInt.peek(buffer, pos);
-            if (itemCategoriesCount < 0) {
-                return ValidationResult.error("Invalid array count for ItemCategories");
-            }
-            if (itemCategoriesCount > 4096000) {
-                return ValidationResult.error("ItemCategories exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            for (int i = 0; i < itemCategoriesCount; ++i) {
-                ValidationResult structResult = ItemCategory.validateStructure(buffer, pos);
-                if (!structResult.isValid()) {
-                    return ValidationResult.error("Invalid ItemCategory in ItemCategories[" + i + "]: " + structResult.error());
-                }
-                pos += ItemCategory.computeBytesConsumed(buffer, pos);
-            }
-        }
-        return ValidationResult.OK;
-    }
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof UpdateItemCategories other)
+            ? false
+            : Objects.equals(this.type, other.type) && Arrays.equals(this.itemCategories, other.itemCategories);
+      }
+   }
 
-    public UpdateItemCategories clone() {
-        UpdateItemCategories copy = new UpdateItemCategories();
-        copy.type = this.type;
-        copy.itemCategories = this.itemCategories != null ? (ItemCategory[])Arrays.stream(this.itemCategories).map(e -> e.clone()).toArray(ItemCategory[]::new) : null;
-        return copy;
-    }
-
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof UpdateItemCategories)) {
-            return false;
-        }
-        UpdateItemCategories other = (UpdateItemCategories)obj;
-        return Objects.equals((Object)this.type, (Object)other.type) && Arrays.equals(this.itemCategories, other.itemCategories);
-    }
-
-    public int hashCode() {
-        int result = 1;
-        result = 31 * result + Objects.hashCode((Object)this.type);
-        result = 31 * result + Arrays.hashCode(this.itemCategories);
-        return result;
-    }
+   @Override
+   public int hashCode() {
+      int result = 1;
+      result = 31 * result + Objects.hashCode(this.type);
+      return 31 * result + Arrays.hashCode(this.itemCategories);
+   }
 }
-

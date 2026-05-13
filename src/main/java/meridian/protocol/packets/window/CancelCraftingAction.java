@@ -1,66 +1,74 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.window;
 
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
-import meridian.protocol.packets.window.WindowAction;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import javax.annotation.Nonnull;
 
-public class CancelCraftingAction
-extends WindowAction {
-    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-    public static final int FIXED_BLOCK_SIZE = 0;
-    public static final int VARIABLE_FIELD_COUNT = 0;
-    public static final int VARIABLE_BLOCK_START = 0;
-    public static final int MAX_SIZE = 0;
+public class CancelCraftingAction extends WindowAction {
+   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+   public static final int FIXED_BLOCK_SIZE = 0;
+   public static final int VARIABLE_FIELD_COUNT = 0;
+   public static final int VARIABLE_BLOCK_START = 0;
+   public static final int MAX_SIZE = 0;
 
-    @Nonnull
-    public static CancelCraftingAction deserialize(@Nonnull ByteBuf buf, int offset) {
-        CancelCraftingAction obj = new CancelCraftingAction();
-        return obj;
-    }
+   @Nonnull
+   public static CancelCraftingAction deserialize(@Nonnull ByteBuf buf, int offset) {
+      return new CancelCraftingAction();
+   }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        return 0;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      return 0;
+   }
 
-    @Override
-    public int serialize(@Nonnull ByteBuf buf) {
-        int startPos = buf.writerIndex();
-        return buf.writerIndex() - startPos;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 0L;
+   }
 
-    @Override
-    public int computeSize() {
-        return 0;
-    }
+   public static CancelCraftingAction toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 0) {
-            return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-        }
-        return ValidationResult.OK;
-    }
+   public static CancelCraftingAction toObject(MemorySegment mem, int offset) {
+      if (offset + 0 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("CancelCraftingAction", offset + 0, (int)mem.byteSize());
+      } else {
+         return new CancelCraftingAction();
+      }
+   }
 
-    public CancelCraftingAction clone() {
-        return new CancelCraftingAction();
-    }
+   @Override
+   public int serialize(@Nonnull ByteBuf buf) {
+      int startPos = buf.writerIndex();
+      return buf.writerIndex() - startPos;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof CancelCraftingAction)) {
-            return false;
-        }
-        CancelCraftingAction other = (CancelCraftingAction)obj;
-        return true;
-    }
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      return 0;
+   }
 
-    public int hashCode() {
-        return 0;
-    }
+   @Override
+   public int computeSize() {
+      return 0;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      return buffer.readableBytes() - offset < 0 ? ValidationResult.error("Buffer too small: expected at least 0 bytes") : ValidationResult.OK;
+   }
+
+   public CancelCraftingAction clone() {
+      return new CancelCraftingAction();
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      return this == obj ? true : obj instanceof CancelCraftingAction other;
+   }
+
+   @Override
+   public int hashCode() {
+      return 0;
+   }
 }
-

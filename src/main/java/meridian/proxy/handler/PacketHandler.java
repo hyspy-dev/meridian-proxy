@@ -29,8 +29,14 @@ public interface PacketHandler {
     default String name() { return getClass().getSimpleName(); }
 
     enum Action {
-        /** Continue the chain; if all handlers FORWARD, the packet is sent to the target. */
+        /** Continue the chain; if all handlers FORWARD, the original raw frame is sent to the target. */
         FORWARD,
+        /**
+         * Continue the chain, but mark the Packet object as mutated. After the chain finishes,
+         * the router re-serialises the Packet (including Zstd compression where applicable)
+         * and forwards the fresh frame instead of the original bytes.
+         */
+        MODIFIED,
         /** Stop and silently drop. */
         DROP,
         /** Stop. The handler is responsible for any substitute actions. */

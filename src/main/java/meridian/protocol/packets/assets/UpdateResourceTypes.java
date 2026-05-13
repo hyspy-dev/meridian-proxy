@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.assets;
 
 import meridian.protocol.NetworkChannel;
@@ -13,192 +10,358 @@ import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
 import meridian.protocol.io.VarInt;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class UpdateResourceTypes
-implements Packet,
-ToClientPacket {
-    public static final int PACKET_ID = 59;
-    public static final boolean IS_COMPRESSED = true;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 2;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 2;
-    public static final int MAX_SIZE = 0x64000000;
-    @Nonnull
-    public UpdateType type = UpdateType.Init;
-    @Nullable
-    public Map<String, ResourceType> resourceTypes;
+public class UpdateResourceTypes implements Packet, ToClientPacket {
+   public static final int PACKET_ID = 59;
+   public static final boolean IS_COMPRESSED = true;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 2;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 2;
+   public static final int MAX_SIZE = 1677721600;
+   @Nonnull
+   public UpdateType type = UpdateType.Init;
+   @Nullable
+   public Map<String, ResourceType> resourceTypes;
 
-    @Override
-    public int getId() {
-        return 59;
-    }
+   @Override
+   public int getId() {
+      return 59;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public UpdateResourceTypes() {
-    }
+   public UpdateResourceTypes() {
+   }
 
-    public UpdateResourceTypes(@Nonnull UpdateType type, @Nullable Map<String, ResourceType> resourceTypes) {
-        this.type = type;
-        this.resourceTypes = resourceTypes;
-    }
+   public UpdateResourceTypes(@Nonnull UpdateType type, @Nullable Map<String, ResourceType> resourceTypes) {
+      this.type = type;
+      this.resourceTypes = resourceTypes;
+   }
 
-    public UpdateResourceTypes(@Nonnull UpdateResourceTypes other) {
-        this.type = other.type;
-        this.resourceTypes = other.resourceTypes;
-    }
+   public UpdateResourceTypes(@Nonnull UpdateResourceTypes other) {
+      this.type = other.type;
+      this.resourceTypes = other.resourceTypes;
+   }
 
-    @Nonnull
-    public static UpdateResourceTypes deserialize(@Nonnull ByteBuf buf, int offset) {
-        UpdateResourceTypes obj = new UpdateResourceTypes();
-        byte nullBits = buf.getByte(offset);
-        obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-        int pos = offset + 2;
-        if ((nullBits & 1) != 0) {
-            int resourceTypesCount = VarInt.peek(buf, pos);
-            if (resourceTypesCount < 0) {
-                throw ProtocolException.negativeLength("ResourceTypes", resourceTypesCount);
+   @Nonnull
+   public static UpdateResourceTypes deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 2) {
+         throw ProtocolException.bufferTooSmall("UpdateResourceTypes", 2, buf.readableBytes() - offset);
+      }
+
+      UpdateResourceTypes obj = new UpdateResourceTypes();
+      byte nullBits = buf.getByte(offset);
+      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
+      int pos = offset + 2;
+      if ((nullBits & 1) != 0) {
+         int resourceTypesCount = VarInt.peek(buf, pos);
+         if (resourceTypesCount < 0) {
+            throw ProtocolException.invalidVarInt("ResourceTypes");
+         }
+
+         int resourceTypesVarLen = VarInt.size(resourceTypesCount);
+         if (resourceTypesCount > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("ResourceTypes", resourceTypesCount, 4096000);
+         }
+
+         pos += resourceTypesVarLen;
+         obj.resourceTypes = new HashMap<>(resourceTypesCount);
+
+         for (int i = 0; i < resourceTypesCount; i++) {
+            int keyLen = VarInt.peek(buf, pos);
+            if (keyLen < 0) {
+               throw ProtocolException.invalidVarInt("key");
             }
-            if (resourceTypesCount > 4096000) {
-                throw ProtocolException.dictionaryTooLarge("ResourceTypes", resourceTypesCount, 4096000);
-            }
-            pos += VarInt.size(resourceTypesCount);
-            obj.resourceTypes = new HashMap<String, ResourceType>(resourceTypesCount);
-            for (int i = 0; i < resourceTypesCount; ++i) {
-                int keyLen = VarInt.peek(buf, pos);
-                if (keyLen < 0) {
-                    throw ProtocolException.negativeLength("key", keyLen);
-                }
-                if (keyLen > 4096000) {
-                    throw ProtocolException.stringTooLong("key", keyLen, 4096000);
-                }
-                int keyVarLen = VarInt.length(buf, pos);
-                String key = PacketIO.readVarString(buf, pos);
-                ResourceType val = ResourceType.deserialize(buf, pos += keyVarLen + keyLen);
-                pos += ResourceType.computeBytesConsumed(buf, pos);
-                if (obj.resourceTypes.put(key, val) == null) continue;
-                throw ProtocolException.duplicateKey("resourceTypes", key);
-            }
-        }
-        return obj;
-    }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 2;
-        if ((nullBits & 1) != 0) {
-            int dictLen = VarInt.peek(buf, pos);
-            pos += VarInt.length(buf, pos);
-            for (int i = 0; i < dictLen; ++i) {
-                int sl = VarInt.peek(buf, pos);
-                pos += VarInt.length(buf, pos) + sl;
-                pos += ResourceType.computeBytesConsumed(buf, pos);
+            int keyVarLen = VarInt.size(keyLen);
+            if (keyLen > 4096000) {
+               throw ProtocolException.stringTooLong("key", keyLen, 4096000);
             }
-        }
-        return pos - offset;
-    }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.resourceTypes != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeByte(this.type.getValue());
-        if (this.resourceTypes != null) {
-            if (this.resourceTypes.size() > 4096000) {
-                throw ProtocolException.dictionaryTooLarge("ResourceTypes", this.resourceTypes.size(), 4096000);
+            if (pos + keyVarLen + keyLen > buf.readableBytes()) {
+               throw ProtocolException.bufferTooSmall("key", pos + keyVarLen + keyLen, buf.readableBytes());
             }
-            VarInt.write(buf, this.resourceTypes.size());
-            for (var e : this.resourceTypes.entrySet()) {
-                PacketIO.writeVarString(buf, e.getKey(), 4096000);
-                e.getValue().serialize(buf);
-            }
-        }
-    }
 
-    @Override
-    public int computeSize() {
-        int size = 2;
-        if (this.resourceTypes != null) {
-            int resourceTypesSize = 0;
-            for (var kvp : this.resourceTypes.entrySet()) {
-                resourceTypesSize += PacketIO.stringSize(kvp.getKey()) + kvp.getValue().computeSize();
+            String key = PacketIO.readVarString(buf, pos);
+            pos += keyVarLen + keyLen;
+            ResourceType val = ResourceType.deserialize(buf, pos);
+            pos += ResourceType.computeBytesConsumed(buf, pos);
+            if (obj.resourceTypes.put(key, val) != null) {
+               throw ProtocolException.duplicateKey("resourceTypes", key);
             }
-            size += VarInt.size(this.resourceTypes.size()) + resourceTypesSize;
-        }
-        return size;
-    }
+         }
+      }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 2) {
-            return ValidationResult.error("Buffer too small: expected at least 2 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 2;
-        if ((nullBits & 1) != 0) {
-            int resourceTypesCount = VarInt.peek(buffer, pos);
-            if (resourceTypesCount < 0) {
-                return ValidationResult.error("Invalid dictionary count for ResourceTypes");
-            }
-            if (resourceTypesCount > 4096000) {
-                return ValidationResult.error("ResourceTypes exceeds max length 4096000");
-            }
-            pos += VarInt.length(buffer, pos);
-            for (int i = 0; i < resourceTypesCount; ++i) {
-                int keyLen = VarInt.peek(buffer, pos);
-                if (keyLen < 0) {
-                    return ValidationResult.error("Invalid string length for key");
-                }
-                if (keyLen > 4096000) {
-                    return ValidationResult.error("key exceeds max length 4096000");
-                }
-                pos += VarInt.length(buffer, pos);
-                if ((pos += keyLen) > buffer.writerIndex()) {
-                    return ValidationResult.error("Buffer overflow reading key");
-                }
-                pos += ResourceType.computeBytesConsumed(buffer, pos);
-            }
-        }
-        return ValidationResult.OK;
-    }
+      return obj;
+   }
 
-    public UpdateResourceTypes clone() {
-        UpdateResourceTypes copy = new UpdateResourceTypes();
-        copy.type = this.type;
-        if (this.resourceTypes != null) {
-            HashMap<String, ResourceType> m = new HashMap<String, ResourceType>();
-            for (var e : this.resourceTypes.entrySet()) {
-                m.put(e.getKey(), e.getValue().clone());
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 2;
+      if ((nullBits & 1) != 0) {
+         int dictLen = VarInt.peek(buf, pos);
+         pos += VarInt.size(dictLen);
+
+         for (int i = 0; i < dictLen; i++) {
+            int sl = VarInt.peek(buf, pos);
+            pos += VarInt.size(sl) + sl;
+            pos += ResourceType.computeBytesConsumed(buf, pos);
+         }
+      }
+
+      return pos - offset;
+   }
+
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 2L;
+   }
+
+   public static UpdateType getType(MemorySegment mem) {
+      return getType(mem, 0);
+   }
+
+   public static UpdateType getType(MemorySegment mem, int offset) {
+      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+   }
+
+   @Nullable
+   public static Map<String, ResourceType> getResourceTypes(MemorySegment mem) {
+      return getResourceTypes(mem, 0);
+   }
+
+   @Nullable
+   public static Map<String, ResourceType> getResourceTypes(MemorySegment mem, int offset) {
+      if (!hasResourceTypes(mem, offset)) {
+         return null;
+      }
+
+      int off = offset + 2;
+      long packed = VarInt.getWithLength(mem, off);
+      int len = (int)packed;
+      if (len < 0) {
+         throw ProtocolException.negativeLength("ResourceTypes", len);
+      }
+
+      if (len > 4096000) {
+         throw ProtocolException.dictionaryTooLarge("ResourceTypes", len, 4096000);
+      }
+
+      Map<String, ResourceType> data = new HashMap<>(len);
+      off += (int)(packed >>> 32);
+
+      for (int i = 0; i < len; i++) {
+         long keyPacked = VarInt.getWithLength(mem, off);
+         int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
+         String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
+         off += nkey;
+         ResourceType value = ResourceType.toObject(mem, off);
+         off += value.computeSize();
+         if (data.put(key, value) != null) {
+            throw ProtocolException.duplicateKey("ResourceTypes", key);
+         }
+      }
+
+      return data;
+   }
+
+   public static boolean hasResourceTypes(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static UpdateResourceTypes toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static UpdateResourceTypes toObject(MemorySegment mem, int offset) {
+      if (offset + 2 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("UpdateResourceTypes", offset + 2, (int)mem.byteSize());
+      }
+
+      Map<String, ResourceType> resourceTypes = null;
+      if (hasResourceTypes(mem, offset)) {
+         int off = offset + 2;
+         long packed = VarInt.getWithLength(mem, off);
+         int len = (int)packed;
+         if (len < 0) {
+            throw ProtocolException.negativeLength("ResourceTypes", len);
+         }
+
+         if (len > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("ResourceTypes", len, 4096000);
+         }
+
+         resourceTypes = new HashMap<>(len);
+         off += (int)(packed >>> 32);
+
+         for (int i = 0; i < len; i++) {
+            long keyPacked = VarInt.getWithLength(mem, off);
+            int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
+            String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
+            off += nkey;
+            ResourceType value = ResourceType.toObject(mem, off);
+            off += value.computeSize();
+            if (resourceTypes.put(key, value) != null) {
+               throw ProtocolException.duplicateKey("ResourceTypes", key);
             }
-            copy.resourceTypes = m;
-        }
-        return copy;
-    }
+         }
+      }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof UpdateResourceTypes)) {
-            return false;
-        }
-        UpdateResourceTypes other = (UpdateResourceTypes)obj;
-        return Objects.equals((Object)this.type, (Object)other.type) && Objects.equals(this.resourceTypes, other.resourceTypes);
-    }
+      return new UpdateResourceTypes(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), resourceTypes);
+   }
 
-    public int hashCode() {
-        return Objects.hash(new Object[]{this.type, this.resourceTypes});
-    }
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.resourceTypes != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeByte(this.type.getValue());
+      if (this.resourceTypes != null) {
+         if (this.resourceTypes.size() > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("ResourceTypes", this.resourceTypes.size(), 4096000);
+         }
+
+         VarInt.write(buf, this.resourceTypes.size());
+
+         for (Entry<String, ResourceType> e : this.resourceTypes.entrySet()) {
+            PacketIO.writeVarString(buf, e.getKey(), 4096000);
+            e.getValue().serialize(buf);
+         }
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.resourceTypes != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
+      int varOffset = offset + 2;
+      if (this.resourceTypes != null) {
+         if (this.resourceTypes.size() > 4096000) {
+            throw ProtocolException.dictionaryTooLarge("ResourceTypes", this.resourceTypes.size(), 4096000);
+         }
+
+         varOffset += VarInt.set(mem, varOffset, this.resourceTypes.size());
+
+         for (Entry<String, ResourceType> e : this.resourceTypes.entrySet()) {
+            varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 16384000);
+            varOffset += e.getValue().serialize(mem, varOffset);
+         }
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 2;
+      if (this.resourceTypes != null) {
+         int resourceTypesSize = 0;
+
+         for (Entry<String, ResourceType> kvp : this.resourceTypes.entrySet()) {
+            resourceTypesSize += PacketIO.stringSize(kvp.getKey()) + kvp.getValue().computeSize();
+         }
+
+         size += VarInt.size(this.resourceTypes.size()) + resourceTypesSize;
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 2) {
+         return ValidationResult.error("Buffer too small: expected at least 2 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int v = buffer.getByte(offset + 1) & 255;
+      if (v >= 3) {
+         return ValidationResult.error("Invalid UpdateType value for Type");
+      }
+
+      v = offset + 2;
+      if ((nullBits & 1) != 0) {
+         int resourceTypesCount = VarInt.peek(buffer, v);
+         if (resourceTypesCount < 0) {
+            return ValidationResult.error("Invalid dictionary count for ResourceTypes");
+         }
+
+         if (resourceTypesCount > 4096000) {
+            return ValidationResult.error("ResourceTypes exceeds max length 4096000");
+         }
+
+         v += VarInt.size(resourceTypesCount);
+
+         for (int i = 0; i < resourceTypesCount; i++) {
+            int keyLen = VarInt.peek(buffer, v);
+            if (keyLen < 0) {
+               return ValidationResult.error("Invalid string length for key");
+            }
+
+            if (keyLen > 4096000) {
+               return ValidationResult.error("key exceeds max length 4096000");
+            }
+
+            v += VarInt.size(keyLen);
+            v += keyLen;
+            if (v > buffer.writerIndex()) {
+               return ValidationResult.error("Buffer overflow reading key");
+            }
+
+            v += ResourceType.computeBytesConsumed(buffer, v);
+         }
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public UpdateResourceTypes clone() {
+      UpdateResourceTypes copy = new UpdateResourceTypes();
+      copy.type = this.type;
+      if (this.resourceTypes != null) {
+         Map<String, ResourceType> m = new HashMap<>();
+
+         for (Entry<String, ResourceType> e : this.resourceTypes.entrySet()) {
+            m.put(e.getKey(), e.getValue().clone());
+         }
+
+         copy.resourceTypes = m;
+      }
+
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof UpdateResourceTypes other)
+            ? false
+            : Objects.equals(this.type, other.type) && Objects.equals(this.resourceTypes, other.resourceTypes);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.type, this.resourceTypes);
+   }
 }
-

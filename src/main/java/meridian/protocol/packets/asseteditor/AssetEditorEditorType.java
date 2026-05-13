@@ -1,39 +1,32 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.asseteditor;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum AssetEditorEditorType {
-    None(0),
-    Text(1),
-    JsonSource(2),
-    JsonConfig(3),
-    Model(4),
-    Texture(5),
-    Animation(6);
+   None(0),
+   Text(1),
+   JsonSource(2),
+   JsonConfig(3),
+   Model(4),
+   Texture(5),
+   Animation(6);
 
-    public static final AssetEditorEditorType[] VALUES;
-    private final int value;
+   public static final AssetEditorEditorType[] VALUES = values();
+   private final int value;
 
-    private AssetEditorEditorType(int value) {
-        this.value = value;
-    }
+   AssetEditorEditorType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static AssetEditorEditorType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("AssetEditorEditorType", value);
-    }
-
-    static {
-        VALUES = AssetEditorEditorType.values();
-    }
+   public static AssetEditorEditorType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("AssetEditorEditorType", value);
+      }
+   }
 }
-

@@ -6,6 +6,7 @@ import meridian.proxy.handler.PacketHandler;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.PacketStatsRecorder;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -60,6 +61,7 @@ public class PacketRouter extends ChannelInboundHandlerAdapter {
 
         try {
             Packet packet = tryDeserialize(frame);
+            boolean modified = false;
             if (packet != null) {
                 for (PacketHandler handler : handlers) {
                     PacketHandler.Action action = (direction == Direction.C2S)
@@ -68,16 +70,46 @@ public class PacketRouter extends ChannelInboundHandlerAdapter {
 
                     if (action == PacketHandler.Action.DROP) return;
                     if (action == PacketHandler.Action.HANDLED) return;
+                    if (action == PacketHandler.Action.MODIFIED) modified = true;
                 }
             }
-            
-            // If we got here, either deserialization failed or all handlers FORWARDed.
+
+            if (modified) {
+                ByteBuf reframed = reserialize(packet, frame);
+                if (reframed != null) {
+                    forwarder.forward(reframed);
+                    return;
+                }
+                // Fallback: re-serialisation failed, ship the original bytes.
+            }
+
+            // Either deserialization failed, no handler mutated the packet,
+            // or re-serialisation failed — forward the original frame.
             forwarder.forward(frame.reframe());
         } catch (Exception e) {
             log.error("Error in PacketRouter pipeline", e);
             forwarder.forward(frame.reframe());
         } finally {
             if (frame.payload().refCnt() > 0) frame.payload().release();
+        }
+    }
+
+    private ByteBuf reserialize(Packet packet, PacketFrame frame) {
+        PacketRegistry.PacketInfo info = (direction == Direction.C2S)
+                ? PacketRegistry.getToServerPacketById(frame.packetId())
+                : PacketRegistry.getToClientPacketById(frame.packetId());
+        if (info == null) {
+            log.warn("Cannot re-serialise packet {}: no PacketInfo", frame.packetId());
+            return null;
+        }
+        ByteBuf out = Unpooled.buffer(8 + Math.min(info.maxSize(), 1024));
+        try {
+            PacketIO.writeFramedPacketWithInfo(packet, info, out, out.alloc(), PacketStatsRecorder.NOOP);
+            return out;
+        } catch (Exception e) {
+            log.error("Re-serialisation of {} failed: {}", info.name(), e.toString());
+            out.release();
+            return null;
         }
     }
 
@@ -96,9 +128,9 @@ public class PacketRouter extends ChannelInboundHandlerAdapter {
             payload.markReaderIndex();
             Packet packet;
             if (info.compressed()) {
-                packet = PacketIO.readFramedPacketWithInfo(payload, payload.readableBytes(), info, PacketStatsRecorder.NOOP);
+                packet = PacketIO.readFramedPacketWithInfo(payload, payload.readableBytes(), payload.alloc(), info, PacketStatsRecorder.NOOP);
             } else {
-                packet = info.deserialize().apply(payload, payload.readerIndex());
+                packet = info.deserialize().deserialize(payload, payload.readerIndex());
             }
             payload.resetReaderIndex();
             return packet;

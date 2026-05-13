@@ -1,141 +1,218 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol.packets.asseteditor;
 
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
 import meridian.protocol.io.ValidationResult;
-import meridian.protocol.packets.asseteditor.AssetPath;
 import io.netty.buffer.ByteBuf;
+import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AssetEditorFetchAsset
-implements Packet,
-ToServerPacket {
-    public static final int PACKET_ID = 310;
-    public static final boolean IS_COMPRESSED = false;
-    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-    public static final int FIXED_BLOCK_SIZE = 6;
-    public static final int VARIABLE_FIELD_COUNT = 1;
-    public static final int VARIABLE_BLOCK_START = 6;
-    public static final int MAX_SIZE = 32768025;
-    public int token;
-    @Nullable
-    public AssetPath path;
-    public boolean isFromOpenedTab;
+public class AssetEditorFetchAsset implements Packet, ToServerPacket {
+   public static final int PACKET_ID = 310;
+   public static final boolean IS_COMPRESSED = false;
+   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+   public static final int FIXED_BLOCK_SIZE = 6;
+   public static final int VARIABLE_FIELD_COUNT = 1;
+   public static final int VARIABLE_BLOCK_START = 6;
+   public static final int MAX_SIZE = 32768025;
+   public int token;
+   @Nullable
+   public AssetPath path;
+   public boolean isFromOpenedTab;
 
-    @Override
-    public int getId() {
-        return 310;
-    }
+   @Override
+   public int getId() {
+      return 310;
+   }
 
-    @Override
-    public NetworkChannel getChannel() {
-        return NetworkChannel.Default;
-    }
+   @Override
+   public NetworkChannel getChannel() {
+      return NetworkChannel.Default;
+   }
 
-    public AssetEditorFetchAsset() {
-    }
+   public AssetEditorFetchAsset() {
+   }
 
-    public AssetEditorFetchAsset(int token, @Nullable AssetPath path, boolean isFromOpenedTab) {
-        this.token = token;
-        this.path = path;
-        this.isFromOpenedTab = isFromOpenedTab;
-    }
+   public AssetEditorFetchAsset(int token, @Nullable AssetPath path, boolean isFromOpenedTab) {
+      this.token = token;
+      this.path = path;
+      this.isFromOpenedTab = isFromOpenedTab;
+   }
 
-    public AssetEditorFetchAsset(@Nonnull AssetEditorFetchAsset other) {
-        this.token = other.token;
-        this.path = other.path;
-        this.isFromOpenedTab = other.isFromOpenedTab;
-    }
+   public AssetEditorFetchAsset(@Nonnull AssetEditorFetchAsset other) {
+      this.token = other.token;
+      this.path = other.path;
+      this.isFromOpenedTab = other.isFromOpenedTab;
+   }
 
-    @Nonnull
-    public static AssetEditorFetchAsset deserialize(@Nonnull ByteBuf buf, int offset) {
-        AssetEditorFetchAsset obj = new AssetEditorFetchAsset();
-        byte nullBits = buf.getByte(offset);
-        obj.token = buf.getIntLE(offset + 1);
-        obj.isFromOpenedTab = buf.getByte(offset + 5) != 0;
-        int pos = offset + 6;
-        if ((nullBits & 1) != 0) {
-            obj.path = AssetPath.deserialize(buf, pos);
-            pos += AssetPath.computeBytesConsumed(buf, pos);
-        }
-        return obj;
-    }
+   @Nonnull
+   public static AssetEditorFetchAsset deserialize(@Nonnull ByteBuf buf, int offset) {
+      if (buf.readableBytes() - offset < 6) {
+         throw ProtocolException.bufferTooSmall("AssetEditorFetchAsset", 6, buf.readableBytes() - offset);
+      }
 
-    public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-        byte nullBits = buf.getByte(offset);
-        int pos = offset + 6;
-        if ((nullBits & 1) != 0) {
-            pos += AssetPath.computeBytesConsumed(buf, pos);
-        }
-        return pos - offset;
-    }
+      AssetEditorFetchAsset obj = new AssetEditorFetchAsset();
+      byte nullBits = buf.getByte(offset);
+      obj.token = buf.getIntLE(offset + 1);
+      obj.isFromOpenedTab = buf.getByte(offset + 5) != 0;
+      int pos = offset + 6;
+      if ((nullBits & 1) != 0) {
+         obj.path = AssetPath.deserialize(buf, pos);
+         pos += AssetPath.computeBytesConsumed(buf, pos);
+      }
 
-    @Override
-    public void serialize(@Nonnull ByteBuf buf) {
-        int nullBits = 0;
-        if (this.path != null) {
-            nullBits = (byte)(nullBits | 1);
-        }
-        buf.writeByte(nullBits);
-        buf.writeIntLE(this.token);
-        buf.writeByte(this.isFromOpenedTab ? 1 : 0);
-        if (this.path != null) {
-            this.path.serialize(buf);
-        }
-    }
+      return obj;
+   }
 
-    @Override
-    public int computeSize() {
-        int size = 6;
-        if (this.path != null) {
-            size += this.path.computeSize();
-        }
-        return size;
-    }
+   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
+      byte nullBits = buf.getByte(offset);
+      int pos = offset + 6;
+      if ((nullBits & 1) != 0) {
+         pos += AssetPath.computeBytesConsumed(buf, pos);
+      }
 
-    public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-        if (buffer.readableBytes() - offset < 6) {
-            return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-        }
-        byte nullBits = buffer.getByte(offset);
-        int pos = offset + 6;
-        if ((nullBits & 1) != 0) {
-            ValidationResult pathResult = AssetPath.validateStructure(buffer, pos);
-            if (!pathResult.isValid()) {
-                return ValidationResult.error("Invalid Path: " + pathResult.error());
-            }
-            pos += AssetPath.computeBytesConsumed(buffer, pos);
-        }
-        return ValidationResult.OK;
-    }
+      return pos - offset;
+   }
 
-    public AssetEditorFetchAsset clone() {
-        AssetEditorFetchAsset copy = new AssetEditorFetchAsset();
-        copy.token = this.token;
-        copy.path = this.path != null ? this.path.clone() : null;
-        copy.isFromOpenedTab = this.isFromOpenedTab;
-        return copy;
-    }
+   public static boolean isBufferTooSmall(MemorySegment mem) {
+      return mem.byteSize() < 6L;
+   }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof AssetEditorFetchAsset)) {
-            return false;
-        }
-        AssetEditorFetchAsset other = (AssetEditorFetchAsset)obj;
-        return this.token == other.token && Objects.equals(this.path, other.path) && this.isFromOpenedTab == other.isFromOpenedTab;
-    }
+   public static int getToken(MemorySegment mem) {
+      return getToken(mem, 0);
+   }
 
-    public int hashCode() {
-        return Objects.hash(this.token, this.path, this.isFromOpenedTab);
-    }
+   public static int getToken(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_INT, offset + 1);
+   }
+
+   @Nullable
+   public static AssetPath getPath(MemorySegment mem) {
+      return getPath(mem, 0);
+   }
+
+   @Nullable
+   public static AssetPath getPath(MemorySegment mem, int offset) {
+      return hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 6) : null;
+   }
+
+   public static boolean getIsFromOpenedTab(MemorySegment mem) {
+      return getIsFromOpenedTab(mem, 0);
+   }
+
+   public static boolean getIsFromOpenedTab(MemorySegment mem, int offset) {
+      return mem.get(PacketIO.PROTO_BOOL, offset + 5);
+   }
+
+   public static boolean hasPath(MemorySegment mem, int offset) {
+      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+      return (b & 1) != 0;
+   }
+
+   public static AssetEditorFetchAsset toObject(MemorySegment mem) {
+      return toObject(mem, 0);
+   }
+
+   public static AssetEditorFetchAsset toObject(MemorySegment mem, int offset) {
+      if (offset + 6 > mem.byteSize()) {
+         throw ProtocolException.bufferTooSmall("AssetEditorFetchAsset", offset + 6, (int)mem.byteSize());
+      } else {
+         return new AssetEditorFetchAsset(
+            mem.get(PacketIO.PROTO_INT, offset + 1),
+            hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 6) : null,
+            mem.get(PacketIO.PROTO_BOOL, offset + 5)
+         );
+      }
+   }
+
+   @Override
+   public void serialize(@Nonnull ByteBuf buf) {
+      byte nullBits = 0;
+      if (this.path != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      buf.writeByte(nullBits);
+      buf.writeIntLE(this.token);
+      buf.writeByte(this.isFromOpenedTab ? 1 : 0);
+      if (this.path != null) {
+         this.path.serialize(buf);
+      }
+   }
+
+   @Override
+   public int serialize(@Nonnull MemorySegment mem, int offset) {
+      byte nullBits = 0;
+      if (this.path != null) {
+         nullBits = (byte)(nullBits | 1);
+      }
+
+      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+      mem.set(PacketIO.PROTO_INT, offset + 1, this.token);
+      mem.set(PacketIO.PROTO_BOOL, offset + 5, this.isFromOpenedTab);
+      int varOffset = offset + 6;
+      if (this.path != null) {
+         varOffset += this.path.serialize(mem, varOffset);
+      }
+
+      return varOffset - offset;
+   }
+
+   @Override
+   public int computeSize() {
+      int size = 6;
+      if (this.path != null) {
+         size += this.path.computeSize();
+      }
+
+      return size;
+   }
+
+   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
+      if (buffer.readableBytes() - offset < 6) {
+         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
+      }
+
+      byte nullBits = buffer.getByte(offset);
+      int pos = offset + 6;
+      if ((nullBits & 1) != 0) {
+         ValidationResult pathResult = AssetPath.validateStructure(buffer, pos);
+         if (!pathResult.isValid()) {
+            return ValidationResult.error("Invalid Path: " + pathResult.error());
+         }
+
+         pos += AssetPath.computeBytesConsumed(buffer, pos);
+      }
+
+      return ValidationResult.OK;
+   }
+
+   public AssetEditorFetchAsset clone() {
+      AssetEditorFetchAsset copy = new AssetEditorFetchAsset();
+      copy.token = this.token;
+      copy.path = this.path != null ? this.path.clone() : null;
+      copy.isFromOpenedTab = this.isFromOpenedTab;
+      return copy;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      } else {
+         return !(obj instanceof AssetEditorFetchAsset other)
+            ? false
+            : this.token == other.token && Objects.equals(this.path, other.path) && this.isFromOpenedTab == other.isFromOpenedTab;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(this.token, this.path, this.isFromOpenedTab);
+   }
 }
-

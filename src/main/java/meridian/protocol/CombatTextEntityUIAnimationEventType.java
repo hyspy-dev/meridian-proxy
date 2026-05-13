@@ -1,35 +1,28 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum CombatTextEntityUIAnimationEventType {
-    Scale(0),
-    Position(1),
-    Opacity(2);
+   Scale(0),
+   Position(1),
+   Opacity(2);
 
-    public static final CombatTextEntityUIAnimationEventType[] VALUES;
-    private final int value;
+   public static final CombatTextEntityUIAnimationEventType[] VALUES = values();
+   private final int value;
 
-    private CombatTextEntityUIAnimationEventType(int value) {
-        this.value = value;
-    }
+   CombatTextEntityUIAnimationEventType(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static CombatTextEntityUIAnimationEventType fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("CombatTextEntityUIAnimationEventType", value);
-    }
-
-    static {
-        VALUES = CombatTextEntityUIAnimationEventType.values();
-    }
+   public static CombatTextEntityUIAnimationEventType fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("CombatTextEntityUIAnimationEventType", value);
+      }
+   }
 }
-

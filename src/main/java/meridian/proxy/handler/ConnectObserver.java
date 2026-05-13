@@ -21,8 +21,9 @@ public class ConnectObserver implements PacketHandler {
         if (direction != Direction.C2S) return Action.FORWARD;
 
         if (packet instanceof Connect c) {
-            log.info("[C2S] Pkt 0 Connect: uuid={} username={} hasIdentityToken={}",
-                    c.uuid, c.username, c.identityToken != null);
+            log.info("[C2S] Pkt 0 Connect: clientType={} clientVersion={} language={} hasIdentityToken={} referralSource={}",
+                    c.clientType, c.clientVersion, c.language, c.identityToken != null,
+                    c.referralSource != null ? (c.referralSource.host + ":" + (c.referralSource.port & 0xFFFF)) : "none");
             if (c.identityToken != null) {
                 session.authState().setClientIdentityToken(c.identityToken);
             } else {

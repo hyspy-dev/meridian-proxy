@@ -1,35 +1,28 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ParticleCollisionAction {
-    Expire(0),
-    LastFrame(1),
-    Linger(2);
+   Expire(0),
+   LastFrame(1),
+   Linger(2);
 
-    public static final ParticleCollisionAction[] VALUES;
-    private final int value;
+   public static final ParticleCollisionAction[] VALUES = values();
+   private final int value;
 
-    private ParticleCollisionAction(int value) {
-        this.value = value;
-    }
+   ParticleCollisionAction(int value) {
+      this.value = value;
+   }
 
-    public int getValue() {
-        return this.value;
-    }
+   public int getValue() {
+      return this.value;
+   }
 
-    public static ParticleCollisionAction fromValue(int value) {
-        if (value >= 0 && value < VALUES.length) {
-            return VALUES[value];
-        }
-        throw ProtocolException.invalidEnumValue("ParticleCollisionAction", value);
-    }
-
-    static {
-        VALUES = ParticleCollisionAction.values();
-    }
+   public static ParticleCollisionAction fromValue(int value) {
+      if (value >= 0 && value < VALUES.length) {
+         return VALUES[value];
+      } else {
+         throw ProtocolException.invalidEnumValue("ParticleCollisionAction", value);
+      }
+   }
 }
-
