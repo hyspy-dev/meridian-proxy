@@ -20,6 +20,7 @@ hs_err_pid*
 .project
 .settings/
 .vscode/
+.claude/
 
 # Local libraries (if we want to exclude them, usually good to Keep if manual)
 # src/lib/java/*.jar 
