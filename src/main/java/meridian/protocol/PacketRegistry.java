@@ -117,6 +117,8 @@ import meridian.protocol.packets.auth.ServerAuthToken;
 import meridian.protocol.packets.buildertools.BuilderToolArgUpdate;
 import meridian.protocol.packets.buildertools.BuilderToolEntityAction;
 import meridian.protocol.packets.buildertools.BuilderToolExtrudeAction;
+import meridian.protocol.packets.buildertools.BuilderToolGMaskPreset;
+import meridian.protocol.packets.buildertools.BuilderToolGMaskPresetLoadResponse;
 import meridian.protocol.packets.buildertools.BuilderToolGeneralAction;
 import meridian.protocol.packets.buildertools.BuilderToolHideAnchors;
 import meridian.protocol.packets.buildertools.BuilderToolLaserPointer;
@@ -252,6 +254,7 @@ import meridian.protocol.packets.player.TriggerVolumeToolSetCooldown;
 import meridian.protocol.packets.player.TriggerVolumeToolSetKeepLoaded;
 import meridian.protocol.packets.player.TriggerVolumeToolSetTargetTypes;
 import meridian.protocol.packets.player.TriggerVolumeToolUngroup;
+import meridian.protocol.packets.player.UpdateMemoriesCount;
 import meridian.protocol.packets.player.UpdateMemoriesFeatureStatus;
 import meridian.protocol.packets.player.UpdateMovementSettings;
 import meridian.protocol.packets.player.UpdateTriggerVolumeDisplay;
@@ -1673,6 +1676,19 @@ public final class PacketRegistry {
       );
       register(
          PacketRegistry.PacketDirection.ToClient,
+         NetworkChannel.Default,
+         120,
+         "UpdateMemoriesCount",
+         UpdateMemoriesCount.class,
+         4,
+         4,
+         false,
+         UpdateMemoriesCount::validateStructure,
+         UpdateMemoriesCount::deserialize,
+         UpdateMemoriesCount::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToClient,
          NetworkChannel.Chunks,
          131,
          "SetChunk",
@@ -2691,8 +2707,8 @@ public final class PacketRegistry {
          240,
          "UpdateWorldMapSettings",
          UpdateWorldMapSettings.class,
-         20,
-         1677721600,
+         19,
+         19,
          false,
          UpdateWorldMapSettings::validateStructure,
          UpdateWorldMapSettings::deserialize,
@@ -4153,6 +4169,32 @@ public final class PacketRegistry {
          BuilderToolPrefabPreview::validateStructure,
          BuilderToolPrefabPreview::deserialize,
          BuilderToolPrefabPreview::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToClient,
+         NetworkChannel.Default,
+         430,
+         "BuilderToolGMaskPreset",
+         BuilderToolGMaskPreset.class,
+         2,
+         32768020,
+         false,
+         BuilderToolGMaskPreset::validateStructure,
+         BuilderToolGMaskPreset::deserialize,
+         BuilderToolGMaskPreset::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToServer,
+         NetworkChannel.Default,
+         431,
+         "BuilderToolGMaskPresetLoadResponse",
+         BuilderToolGMaskPresetLoadResponse.class,
+         1,
+         16384006,
+         false,
+         BuilderToolGMaskPresetLoadResponse::validateStructure,
+         BuilderToolGMaskPresetLoadResponse::deserialize,
+         BuilderToolGMaskPresetLoadResponse::toObject
       );
       register(
          PacketRegistry.PacketDirection.ToServer,
