@@ -59,9 +59,6 @@ public class HytaleSessionApi {
                 .build();
         return http.sendAsync(req, HttpResponse.BodyHandlers.ofString()).thenApply(resp -> {
             if (resp.statusCode() / 100 != 2) {
-                if (resp.statusCode() == 403) {
-                    System.err.println("\u001B[31m[ERROR] Session keys have EXPIRED. Please restart your Hytale client!\u001B[0m");
-                }
                 throw new RuntimeException("HTTP " + resp.statusCode() + " from " + path + ": " + resp.body());
             }
             return resp.body();

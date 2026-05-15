@@ -19,11 +19,15 @@ public record ProxyConfig(
         String identityToken,
         boolean showGui,
         boolean autoWrap,
+        boolean standalone,
         String backendJarPath,
         String[] originalArgs
 ) {
     public static final String BACKEND_JAR = "_HytaleServer.jar";
     public static final String READY_SIGNAL = ">> Singleplayer Ready <<";
+    /** Default local bind port for standalone mode. Matches Hytale's stock server port so
+     *  the user can type just "localhost" or "127.0.0.1" in Hytale's Direct Connect UI. */
+    public static final int STANDALONE_LOCAL_PORT = 5520;
 
     /**
      * Prints the "magic" progress bars to stdout for launcher compatibility.
@@ -109,10 +113,36 @@ public record ProxyConfig(
         }
         boolean autoWrap = remoteHost.equals("127.0.0.1") && backendJar.exists();
 
-        return new ProxyConfig(remoteHost, remotePort, localPort, clientToken, serverToken, identityToken, showGui, autoWrap, backendJar.getAbsolutePath(), args);
+        // Standalone (GUI) mode = no auth tokens supplied and not invoked by the launcher.
+        // --remote / --bind are optional connection overrides and must NOT disable the GUI;
+        // only --backup-dir is a genuine launcher signal. With no tokens and no --backup-dir
+        // the proxy shows the GUI and waits for Connect.
+        boolean hasAnyToken = clientToken != null || serverToken != null || identityToken != null;
+        boolean launchedByLauncher = findArg(args, "--backup-dir") != null;
+        boolean standalone = !hasAnyToken && !launchedByLauncher;
+
+        return new ProxyConfig(remoteHost, remotePort, localPort, clientToken, serverToken, identityToken, showGui, autoWrap, standalone, backendJar.getAbsolutePath(), args);
     }
 
-    private static String findArg(String[] args, String key) {
+    /** Build a config for a GUI-driven standalone session, using session tokens
+     *  freshly derived from the running Hytale game process. */
+    public static ProxyConfig forStandaloneConnect(String remoteHost, int remotePort, int localPort,
+                                                    String clientToken, String serverToken, String identityToken) {
+        return new ProxyConfig(remoteHost, remotePort, localPort,
+                clientToken, serverToken, identityToken,
+                true, false, false, null, new String[0]);
+    }
+
+    /** Returns a copy with the server-scope tokens replaced — used when they were
+     *  derived via /game-session/child rather than supplied directly. */
+    public ProxyConfig withServerTokens(String serverToken, String identityToken) {
+        return new ProxyConfig(remoteHost, remotePort, localPort,
+                clientToken, serverToken, identityToken,
+                showGui, autoWrap, standalone, backendJarPath, originalArgs);
+    }
+
+    /** Returns the value of {@code key} (as {@code key value} or {@code key=value}) or null. */
+    public static String findArg(String[] args, String key) {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals(key) && i < args.length - 1)
                 return args[i + 1];

@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import meridian.proxy.auth.GameProcessSnooper;
 import meridian.proxy.module.ModuleManager;
 import meridian.proxy.module.ModuleManager.ModuleEntry;
 
@@ -33,6 +34,16 @@ public final class LogWindow {
     private static JPanel settingsContainer;
     private static JLabel settingsTitle;
     private static JPanel settingsContent;
+
+    private static JPanel authBar;
+    private static JLabel gameStatusDot;
+    private static JLabel gameStatusText;
+    private static JButton gameRefreshBtn;
+    private static JTextField remoteField;
+    private static JTextField localPortField;
+    private static JTextField sessionTokenField;
+    private static JButton connectButton;
+    private static volatile boolean standaloneMode = false;
 
     private LogWindow() {}
 
@@ -226,6 +237,9 @@ public final class LogWindow {
         splitPane.setBorder(null);
 
         frame.setLayout(new BorderLayout());
+        authBar = buildAuthBar();
+        authBar.setVisible(false); // hidden until enterStandaloneMode() is called
+        frame.add(authBar, BorderLayout.NORTH);
         frame.add(splitPane, BorderLayout.CENTER);
         frame.add(buildStatusBar(), BorderLayout.SOUTH);
 
@@ -240,6 +254,278 @@ public final class LogWindow {
 
         frame.setVisible(true);
         updateModuleList();
+    }
+
+    private static JPanel buildAuthBar() {
+        JPanel bar = new JPanel();
+        bar.setLayout(new BoxLayout(bar, BoxLayout.Y_AXIS));
+        bar.setBackground(new Color(32, 32, 32));
+        bar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(50, 50, 50)));
+
+        javax.swing.event.DocumentListener docListener = new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateConnectEnabled(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateConnectEnabled(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateConnectEnabled(); }
+        };
+
+        // --- Row 1: game status | remote | local port | connect ---
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 6));
+        row1.setOpaque(false);
+
+        row1.add(buildGameStatusCell());
+        row1.add(verticalSeparator());
+
+        JLabel remoteLabel = new JLabel("Remote:");
+        remoteLabel.setForeground(new Color(200, 200, 200));
+        remoteLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        row1.add(remoteLabel);
+
+        remoteField = new JTextField(20);
+        remoteField.setToolTipText("Target server, e.g. 1.2.3.4:5520 or play.example.com:5520");
+        remoteField.getDocument().addDocumentListener(docListener);
+        row1.add(remoteField);
+
+        JLabel localLabel = new JLabel("Local port:");
+        localLabel.setForeground(new Color(200, 200, 200));
+        localLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        row1.add(localLabel);
+
+        localPortField = new JTextField(String.valueOf(meridian.proxy.core.ProxyConfig.STANDALONE_LOCAL_PORT), 5);
+        localPortField.setToolTipText("Local bind port; default 5520 matches Hytale's expected server port");
+        localPortField.getDocument().addDocumentListener(docListener);
+        row1.add(localPortField);
+
+        connectButton = new JButton("Connect");
+        connectButton.setFocusPainted(false);
+        connectButton.setMargin(new Insets(2, 14, 2, 14));
+        connectButton.addActionListener(e -> performConnect());
+        connectButton.setEnabled(false);
+        row1.add(connectButton);
+
+        // --- Row 2: session token (auto-filled by snoop, or pasted manually) ---
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 2));
+        row2.setOpaque(false);
+
+        JLabel tokenLabel = new JLabel("Session token:");
+        tokenLabel.setForeground(new Color(200, 200, 200));
+        tokenLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        row2.add(tokenLabel);
+
+        sessionTokenField = new JTextField(52);
+        sessionTokenField.setToolTipText("Auto-filled from the running Hytale game; or paste a player session token manually");
+        sessionTokenField.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        sessionTokenField.getDocument().addDocumentListener(docListener);
+        row2.add(sessionTokenField);
+
+        bar.add(row1);
+        bar.add(row2);
+
+        refreshGameStatus();
+        return bar;
+    }
+
+    private static JLabel verticalSeparator() {
+        JLabel sep = new JLabel("│");
+        sep.setForeground(new Color(60, 60, 60));
+        return sep;
+    }
+
+    private static void performConnect() {
+        String text = remoteField.getText().trim();
+        String host;
+        int remotePort;
+        int localPort;
+        try {
+            int idx = text.lastIndexOf(':');
+            if (idx <= 0 || idx >= text.length() - 1) throw new IllegalArgumentException("expected host:port");
+            host = text.substring(0, idx);
+            remotePort = Integer.parseInt(text.substring(idx + 1));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, "Bad remote address. Use host:port.", "Connect", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            localPort = Integer.parseInt(localPortField.getText().trim());
+            if (localPort < 1 || localPort > 65535) throw new IllegalArgumentException();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, "Bad local port. Use 1-65535.", "Connect", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String sessionToken = sessionTokenField.getText().trim();
+        if (sessionToken.isEmpty()) {
+            JOptionPane.showMessageDialog(frame,
+                    "No session token. Start the Hytale game and click Refresh, or paste a player session token.",
+                    "Connect", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        connectButton.setEnabled(false);
+        connectButton.setText("Deriving session…");
+        Thread.startVirtualThread(() -> {
+            try {
+                meridian.proxy.ProxyServer.connectStandalone(host, remotePort, localPort, sessionToken);
+            } catch (Throwable ex) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Connect failed", JOptionPane.ERROR_MESSAGE);
+                    connectButton.setText("Connect");
+                    updateConnectEnabled();
+                });
+            }
+        });
+    }
+
+    /** Called from ProxyServer.start() when bind fails (port in use, permission denied, etc.) */
+    public static void onProxyFailed(String message) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(frame, message, "Proxy failed to start", JOptionPane.ERROR_MESSAGE);
+            if (standaloneMode && authBar != null) {
+                authBar.setVisible(true);
+                if (connectButton != null) {
+                    connectButton.setText("Connect");
+                    updateConnectEnabled();
+                }
+            }
+        });
+    }
+
+    /** Called from ProxyServer.start() once the listener is bound — hide auth bar in standalone, log target. */
+    public static void onProxyStarted(String remoteHost, int remotePort, int localPort) {
+        SwingUtilities.invokeLater(() -> {
+            if (authBar != null) authBar.setVisible(false);
+            if (frame != null) {
+                frame.setTitle("Meridian Proxy " + Version.VERSION + " — " + remoteHost + ":" + remotePort
+                        + " (listening on localhost:" + localPort + ")");
+            }
+        });
+    }
+
+    /** Called from ProxyServer.start()'s finally — re-show auth bar in standalone mode. */
+    public static void onProxyStopped() {
+        SwingUtilities.invokeLater(() -> {
+            if (frame != null) {
+                frame.setTitle("Meridian Proxy " + Version.VERSION + " — Management");
+            }
+            if (standaloneMode && authBar != null) {
+                authBar.setVisible(true);
+                if (connectButton != null) {
+                    connectButton.setText("Connect");
+                    updateConnectEnabled();
+                }
+            }
+        });
+    }
+
+    /**
+     * Called by ProxyServer.main() when standalone mode is detected. Optional CLI
+     * overrides pre-fill the connection fields; both may be null.
+     *
+     * @param remoteHint value of {@code --remote} (host:port), or null
+     * @param bindHint   value of {@code --bind} (host:port or bare port), or null
+     */
+    public static void enterStandaloneMode(String remoteHint, String bindHint) {
+        standaloneMode = true;
+        SwingUtilities.invokeLater(() -> {
+            if (authBar != null) authBar.setVisible(true);
+            if (remoteHint != null && !remoteHint.isBlank() && remoteField != null) {
+                remoteField.setText(remoteHint.trim());
+            }
+            if (bindHint != null && !bindHint.isBlank() && localPortField != null) {
+                String b = bindHint.trim();
+                int colon = b.lastIndexOf(':');
+                String port = colon >= 0 ? b.substring(colon + 1) : b;
+                if (!port.isBlank()) localPortField.setText(port);
+            }
+            updateConnectEnabled();
+        });
+    }
+
+    private static void updateConnectEnabled() {
+        if (connectButton == null || remoteField == null || sessionTokenField == null) return;
+        boolean hostFilled = remoteField.getText().trim().contains(":");
+        boolean tokenPresent = !sessionTokenField.getText().trim().isEmpty();
+        connectButton.setEnabled(tokenPresent && hostFilled);
+        if (!tokenPresent) {
+            connectButton.setToolTipText("Start the Hytale game and click Refresh, or paste a session token");
+        } else if (!hostFilled) {
+            connectButton.setToolTipText("Enter remote host:port");
+        } else {
+            connectButton.setToolTipText(null);
+        }
+    }
+
+    private static JPanel buildGameStatusCell() {
+        JPanel cell = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        cell.setOpaque(false);
+
+        gameStatusDot = new JLabel("●");
+        gameStatusDot.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        gameStatusDot.setForeground(new Color(120, 120, 120));
+
+        JLabel title = new JLabel("Hytale game:");
+        title.setForeground(new Color(200, 200, 200));
+        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+
+        gameStatusText = new JLabel("checking…");
+        gameStatusText.setForeground(new Color(160, 160, 160));
+        gameStatusText.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+
+        gameRefreshBtn = new JButton("Refresh");
+        gameRefreshBtn.setFocusPainted(false);
+        gameRefreshBtn.setMargin(new Insets(2, 8, 2, 8));
+        gameRefreshBtn.setToolTipText("Re-scan for a running Hytale game process");
+        gameRefreshBtn.addActionListener(e -> refreshGameStatus());
+
+        cell.add(gameStatusDot);
+        cell.add(title);
+        cell.add(gameStatusText);
+        cell.add(gameRefreshBtn);
+        return cell;
+    }
+
+    /** Scans for a running Hytale game process and reflects the result on the auth bar. */
+    public static void refreshGameStatus() {
+        if (gameStatusDot == null) return;
+        SwingUtilities.invokeLater(() -> {
+            gameStatusDot.setForeground(new Color(120, 120, 120));
+            gameStatusText.setText("scanning…");
+        });
+        Thread.startVirtualThread(() -> {
+            String text;
+            Color dot;
+            String foundToken = null;
+            try {
+                var creds = GameProcessSnooper.findRunningGameSession();
+                if (creds.isPresent()) {
+                    String profile = creds.get().profileUuid() != null
+                            ? creds.get().profileUuid().toString().substring(0, 8)
+                            : "session detected";
+                    text = "running — " + profile;
+                    dot = new Color(111, 207, 151);
+                    foundToken = creds.get().sessionToken();
+                } else {
+                    text = "not running — paste a session token below, or open the launcher and Play";
+                    dot = new Color(195, 25, 76);
+                }
+            } catch (UnsupportedOperationException e) {
+                text = e.getMessage();
+                dot = new Color(220, 180, 40);
+            } catch (Exception e) {
+                text = "scan failed: " + e.getMessage();
+                dot = new Color(195, 25, 76);
+            }
+            String tt = text;
+            Color td = dot;
+            String tokenToFill = foundToken;
+            SwingUtilities.invokeLater(() -> {
+                gameStatusDot.setForeground(td);
+                gameStatusText.setText(tt);
+                // Auto-fill the token field when the snoop succeeds; leave a
+                // manually-typed token untouched when it doesn't.
+                if (tokenToFill != null && sessionTokenField != null) {
+                    sessionTokenField.setText(tokenToFill);
+                }
+                updateConnectEnabled();
+            });
+        });
     }
 
     private static JPanel buildStatusBar() {
