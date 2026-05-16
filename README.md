@@ -8,6 +8,8 @@ authenticated session on both sides.
 > For educational and research purposes only. Not affiliated with Hypixel Studios
 > or Hytale.
 
+**Community & support:** [Discord](https://discord.gg/kApV2z2Qmw)
+
 ---
 
 ## Quick Start
@@ -42,12 +44,37 @@ account, so it reuses the running game's session. Full setup for each mode:
 - **[Launch Modes](docs/launch-modes.md)** — setup guide for all three modes
 - **[Architecture](docs/architecture.md)** — connection flow, auth, packet protocol, pipeline
 - **[Plugin Modules](docs/modules.md)** — writing and loading extension JARs
+- **[Updating](docs/updating.md)** — what to rebuild when something changes, and how the proxy flags staleness
+- **[Releasing](docs/releasing.md)** — versioning, tags, and the Hytale-update workflow
 - **[Troubleshooting](docs/troubleshooting.md)** — common errors and fixes
+
+## Extending Meridian
+
+Meridian is layered Maven artifacts:
+
+- **`meridian-api`** — the stable module SPI. Protocol-neutral; survives Hytale updates.
+- **`meridian-protocol`** — Hytale packet classes. BETA — changes with every Hytale build.
+- **`meridian-proxy`** — the proxy implementation (this uber-jar).
+- **`meridian-core`** — a Layer-1 module: headless game state, published as `meridian-core-api`.
+
+Two ways to build a module:
+
+- **Layer-2 module** — the normal case (xray, esp, ...). Depend on `meridian-api`
+  plus the Layer-1 `*-api` you need (e.g. `meridian-core-api`), both `provided`.
+  **Do not** depend on `meridian-protocol` — a Hytale update cannot break you.
+- **Layer-1 framework** — raw-packet access (packet loggers, new core services).
+  Depend on `meridian-api` + `meridian-protocol`; you absorb protocol churn yourself.
+
+See [docs/modules.md](docs/modules.md) to write one, [docs/architecture.md](docs/architecture.md)
+for the layering model.
+
+**Hytale compatibility:** a proxy build embeds one `meridian-protocol` version,
+targeting one Hytale build range — see [docs/releasing.md](docs/releasing.md).
 
 ## Platform Support
 
 A single uber-jar runs cross-platform — it bundles the native QUIC codec for every
-supported OS. Java 21+ is required everywhere.
+supported OS. Java 22+ is required to run it.
 
 | Platform | Runs the proxy | Game-session auto-detect (Mode 2) |
 |----------|:--------------:|:---------------------------------:|
@@ -66,33 +93,33 @@ is no aarch64 build at this version, so ARM platforms have no working QUIC trans
 
 ## Build
 
-Requires **Java 21+** and **Maven 3.8+**. The build itself is platform-agnostic —
-the produced jar carries natives for all supported platforms regardless of where
-it was built.
+Requires **Java 22+** and **Maven 3.8+**. The build is platform-agnostic — the
+produced jar carries natives for all supported platforms regardless of where it
+was built.
 
 ```bash
 cd meridian-proxy
 mvn clean package -DskipTests
 ```
 
-Produces `target/meridian-proxy-<version>-all.jar` — the uber-jar built by
-`maven-shade-plugin`. Run that one (the thin jar alongside it is not runnable
-standalone).
+This is a multi-module reactor — it builds `meridian-api`, `meridian-protocol` and
+`meridian-proxy`. The runnable uber-jar (built by `maven-shade-plugin`) is:
 
-`<version>` comes from `git describe --tags` at build time: `v1.0.0` on a tag,
-`v1.0.0-3-gabc1234` between tags, `-dirty` with uncommitted changes. The same
-string appears in the window title and the `Implementation-Version` manifest entry.
+```
+meridian-proxy/target/meridian-proxy-<version>-all.jar
+```
+
+Run that one — the thin jars alongside it are not runnable standalone.
+
+`<version>` comes from `git describe --tags` at build time: `proxy-v1.5.0` on a tag,
+`…-3-gabc1234` between tags, `-dirty` with uncommitted changes. The same string
+appears in the window title and the `Implementation-Version` manifest entry.
 
 ### Releasing
 
-```bash
-git tag v1.0.1
-git push --tags
-mvn clean package -DskipTests
-# upload target/meridian-proxy-v1.0.1-all.jar to GitHub Releases
-```
-
-`pom.xml` is not touched — the tag drives the version.
+Meridian's artifacts are versioned and tagged independently
+(`api-v…`, `protocol-v…`, `proxy-v…`). The full scheme, tag conventions and the
+Hytale-update workflow are in **[docs/releasing.md](docs/releasing.md)**.
 
 ## License
 

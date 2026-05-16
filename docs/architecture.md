@@ -37,8 +37,8 @@ The proxy operates as two independent QUIC endpoints sharing a common authentica
 | **QuicConfig** | Builds the QUIC server & client codecs |
 | **ModuleManager** | Dynamic loading of external JAR modules |
 | **Frontend (`ProxyServer` + `ProxyFrontendHandler`)** | Acts as a Hytale server to the client |
-| **Backend (QUIC client bootstrap in `ProxyServer`)** | Acts as a Hytale client to the real server |
-| **HandlerRegistry** | Manages the chain of packet processors |
+| **Backend (QUIC client bootstrap in `ProxyFrontendHandler`)** | Acts as a Hytale client to the real server |
+| **HandlerRegistry** | Per-run instance (owned by `ModuleManager`) holding module packet-handler factories, keyed by `Direction` + `HandlerPosition` |
 
 ## Connection Topology
 
@@ -285,7 +285,7 @@ original raw frame unchanged — the stream is never corrupted.
 | `PacketCodec` | Accumulates raw bytes, parses `[len\|id\|payload]` frames, emits `PacketFrame` objects. |
 | `PacketRouter` | Iterates registered `PacketHandler`s for each frame. `FORWARD` → ships the original raw frame; `MODIFIED` → re-serialises the mutated `Packet` (Zstd-aware). |
 | `PacketForwarder` | Writes framed packets to the target channel. Manages pending queue, target readiness polling, and S2C buffering. |
-| `ProxySession` | Per-stream-pair context shared between C2S and S2C handlers. `sendToClient()` / `sendToServer()` for packet injection. |
+| `ProxySession` (api interface) / `ProxySessionImpl` (internal) | Per-stream-pair context shared between C2S and S2C handlers. Modules see the interface — `sendToClient()` / `sendToServer()`, `sendAndAwait()`, attachments; the impl adds channel wiring and auth state. |
 | `PacketHandler` | Plugin interface. Returns `FORWARD` / `MODIFIED` / `DROP` / `HANDLED`. Receives `ProxySession` in every call. |
 | `ConnectObserver` | Captures the client's `identityToken` and logs `referralSource` from Pkt 0. |
 | `BackAuthHandler` | Intercepts Pkt 11 (S→C) and Pkt 12 (C→S) on the server-facing leg; performs BACK REST calls. |
@@ -303,40 +303,60 @@ original raw frame unchanged — the stream is never corrupted.
 | Parameter | Value | Notes |
 |-----------|-------|-------|
 | `maxIdleTimeout` | 30,000 ms | Matches Hytale default |
-| `initialMaxData` | 10 MB | Connection-level flow control |
-| `initialMaxStreamData` | 1 MB | Per-stream flow control |
-| `initialMaxStreamsBidi` | 8 | Bidirectional stream limit |
-| `initialMaxStreamsUni` | 8 | Unidirectional stream limit |
+| `initialMaxData` | 64 MB | Connection-level flow control |
+| `initialMaxStreamData` | 16 MB | Per-stream flow control |
+| `initialMaxStreamsBidi` | 128 | Bidirectional stream limit |
+| `initialMaxStreamsUni` | 128 | Unidirectional stream limit |
 | `congestionControl` | BBR | Bandwidth-optimized algorithm |
 | `applicationProtocols` | `hytale/2`, `hytale/1` | ALPN negotiation |
+| `SO_RCVBUF` / `SO_SNDBUF` | 8 MB / 4 MB | UDP socket buffers, set on both datagram channels |
+
+The flow-control windows and UDP socket buffers are kept generous on purpose:
+the Hytale setup payload (block-type catalog + assets) arrives as a multi-megabyte
+burst. With OS-default UDP buffers the kernel drops datagrams whenever the event
+loop hiccups, which QUIC sees as loss → retransmit storm → setup timeout.
 
 ## Project Structure
 
+The repository is a **3-module Maven build** (Java 22, uber-jar via shade).
+`meridian-core` — a Layer-1 module — lives in its own repository.
+
 ```
-meridian-proxy/
-├── pom.xml                              # Maven build (Java 21+, uber-jar via shade)
-└── src/main/java/meridian/
-    ├── protocol/                        # Decompiled Hytale packet definitions
-    │   ├── io/                          # PacketIO (framing + Zstd), VarInt, Netty codecs
-    │   ├── packets/                     # AuthGrant, AuthToken, Connect, JoinWorld, …
-    │   └── PacketRegistry.java           # ID ↔ Class mappings, compression flag, max size
-    └── proxy/
-        ├── ProxyServer.java             # Entry point. Run-mode dispatch, QUIC bootstrap.
-        ├── ProxyFrontendHandler.java    # QUIC connection lifecycle, stream bridging
-        ├── HytaleAuthState.java         # Shared token/fingerprint state across handlers
-        ├── HytaleSessionApi.java        # Async REST client for sessions.hytale.com
-        ├── LogWindow.java               # Swing window + standalone connection bar
-        ├── auth/                        # Standalone-mode session sourcing
-        │   ├── GameProcessSnooper.java  # Reads tokens from a running game process
-        │   └── LauncherSessionMinter.java # /game-session/child server-token derivation
-        ├── core/                        # Pipeline infrastructure
-        │   ├── ProxyConfig.java         # CLI/env resolution, run-mode detection
-        │   ├── QuicConfig.java          # Server/client QUIC codec builders
-        │   ├── LauncherBridge.java      # _HytaleServer.jar subprocess orchestration
-        │   ├── ProxySession.java        # Per-stream-pair context (packet injection)
-        │   ├── PacketCodec.java         # Raw-byte ↔ PacketFrame framing
-        │   ├── PacketRouter.java        # Runs the typed PacketHandler chain
-        │   └── PacketForwarder.java     # Writes frames to the target + S2C buffering
-        ├── module/                      # Extension API — see modules.md
-        └── handler/                     # Built-in PacketHandlers
+meridian-proxy/                          # git root — parent (aggregator) POM
+├── pom.xml                              # packaging=pom; lists the three modules
+│
+├── meridian-api/                        # stable module SPI — meridian.api.*
+│   └── module/   ProxyModule, ModuleContext, Scheduler, ModuleManifest
+│       packet/   PacketHandler, PacketHandlerFactory, Direction, HandlerPosition, Packet
+│       session/  ProxySession, SessionPhase, SessionInfo
+│       event/    EventBus, EventPriority, ProxyEvent, PhaseChangedEvent, …
+│       service/  ServiceRegistry
+│       settings/ SettingsSpec, SettingNode
+│
+├── meridian-protocol/                   # decompiled Hytale packet model — meridian.protocol.*
+│   └── io/             PacketIO (framing + Zstd), VarInt
+│       packets/        AuthGrant, Connect, UpdateBlockTypes, …
+│       PacketRegistry  ID ↔ Class, compression flag, max size
+│
+└── meridian-proxy/                      # the implementation — builds the runnable uber-jar
+    └── src/main/java/meridian/internal/ # never exposed to modules
+        ├── ProxyServer            # entry point, QUIC bootstrap, run-mode dispatch
+        ├── ProxyFrontendHandler   # QUIC lifecycle, stream bridging, backend connect
+        ├── HytaleAuthState        # shared token/fingerprint state
+        ├── HytaleSessionApi       # async REST client for sessions.hytale.com
+        ├── LogWindow              # Swing window + standalone connection bar
+        ├── StandaloneState        # state.json — last host:port
+        ├── auth/                  # GameProcessSnooper, LauncherSessionMinter
+        ├── core/                  # ProxyConfig, QuicConfig, LauncherBridge,
+        │                          #   PacketCodec/Router/Forwarder/Frame, ProxySessionImpl
+        ├── module/                # ModuleManager, HandlerRegistry, ModuleContextImpl, SchedulerImpl
+        ├── handler/               # built-in PacketHandlers
+        ├── event/                 # EventBusImpl
+        ├── service/               # ServiceRegistryImpl
+        ├── settings/              # SettingsStore (per-module settings.json)
+        └── gui/                   # SettingsRenderer (renders SettingsSpec to Swing)
 ```
+
+`meridian-api` and `meridian-protocol` are published artifacts modules depend on
+(`provided`); `meridian.internal.*` is implementation-private. Module authoring,
+the `module.json` schema and the Layer-1 / Layer-2 split: [modules.md](modules.md).

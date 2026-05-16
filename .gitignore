@@ -24,3 +24,6 @@ hs_err_pid*
 
 # Local libraries (if we want to exclude them, usually good to Keep if manual)
 # src/lib/java/*.jar 
+
+
+tools/

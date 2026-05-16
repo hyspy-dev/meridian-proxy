@@ -1,80 +1,122 @@
 # Plugin Modules
 
-The proxy is a **base for layered modules** — the built-in auth handling is just
-the first `PacketHandler`. Custom logic (world-save, analytics, client-side mods,
-CTF / research tooling) plugs in via external JAR modules.
+Meridian is a layered module platform. Custom logic — world tooling, client-side
+mods, analytics, CTF / research — ships as external JAR modules loaded at runtime.
 
-See [meridian-xray](../../meridian-xray) for a working reference implementation.
+See [meridian-xray](../../meridian-xray) for a working Layer-2 reference, and the
+**Extending Meridian** section of the [README](../README.md) for the artifact
+layout.
+
+## Two kinds of module
+
+| | Depends on (`provided`) | Sees raw packets? | Hytale-update exposure |
+|--|--|--|--|
+| **Layer 2** (normal) | `meridian-api` + a Layer-1 `*-api` (e.g. `meridian-core-api`) | no | none — protocol-neutral |
+| **Layer 1** (framework) | `meridian-api` + `meridian-protocol` | yes | absorbs protocol churn itself |
+
+Most modules are Layer 2: they talk to a Layer-1 service (`meridian-core`'s
+`WorldState`, ...) and never touch `meridian-protocol`, so a Hytale update cannot
+break them. Only build Layer 1 when you genuinely need raw packets. See
+[updating.md](updating.md) for what that exposure means.
 
 ## Loading
 
-Modules are **per-server** — isolated so behavior from one world cannot spill into
-another. They are loaded dynamically from:
+Modules are **per-server** — isolated so one server's modules cannot run for
+another. The directory depends on the launch mode:
 
+- **Launcher mode:** `…\Saves\<world>\modules\`
+- **Standalone:** `<jar-dir>\<host_port>\modules\` (e.g. `…\45.12.34.56_5520\modules\`)
+
+All module JARs load into one shared class loader. Load order is the topological
+sort of `dependsOn` (a module always loads after its dependencies); `order.json`
+next to the JARs breaks ties and is editable from the Management UI.
+
+## `module.json`
+
+Every module JAR **must** contain `module.json` in its archive root:
+
+```json
+{
+  "name": "Meridian Xray",
+  "version": "2.0.0",
+  "main": "meridian.xray.XrayModule",
+  "priority": 100,
+  "minProxyVersion": "1.0.0",
+  "maxProxyVersion": "2.0.0",
+  "updateUrl": "https://github.com/you/your-module/releases",
+  "dependsOn": { "meridian-core": ">=0.1.0" },
+  "requires": {
+    "packets": ["UpdateBlockTypes"],
+    "services": ["meridian.core.api.WorldState"]
+  }
+}
 ```
-%AppData%\Roaming\Hytale\UserData\Saves\<servername>\modules
+
+| Field | Required | Meaning |
+|-------|----------|---------|
+| `name` | yes | Unique module id; used as the key in other modules' `dependsOn` |
+| `version` | yes | Module SemVer |
+| `main` | yes | FQCN of the `ProxyModule` implementation (no-args constructor) |
+| `priority` | no (100) | Lower loads earlier, within one `dependsOn` level |
+| `minProxyVersion` / `maxProxyVersion` | no | Proxy SemVer range; checked **before** classloading. Legacy aliases: `minCoreVersion` / `maxCoreVersion` |
+| `updateUrl` | no | Shown to the user if the proxy skips this module as incompatible — strongly recommended |
+| `dependsOn` | no | Map of module-name → SemVer range. Missing/out-of-range → this module is skipped with a WARN |
+| `requires.packets` | no | Protocol packet names a **Layer-1** module needs; absent from the protocol → skipped + WARN |
+| `requires.services` | no | Service FQCNs a **Layer-2** module expects in the `ServiceRegistry` |
+
+Every incompatibility is a WARN + skip — nothing crashes the proxy.
+
+## `ProxyModule` and `ModuleContext`
+
+```java
+public class MyModule implements ProxyModule {
+    @Override public void onEnable(ModuleContext ctx) { /* wire everything here */ }
+    @Override public void onDisable() {}   // optional
+}
 ```
 
-Load order is persisted in `order.json` next to the JARs.
+`ModuleContext` is the whole API surface a module gets:
 
-## Creating a module
+| Method | Purpose |
+|--------|---------|
+| `getLogger()` | slf4j logger scoped to the module |
+| `registerHandler(Direction, HandlerPosition, PacketHandlerFactory)` | Add a packet handler (Layer-1 / raw-packet) |
+| `registerSettings(SettingsSpec)` | Declarative settings UI; the proxy renders it and persists to `<dataDir>/settings.json` |
+| `events()` | `EventBus` — subscribe to `PhaseChangedEvent`, ... |
+| `services()` | `ServiceRegistry` — `provide()` (Layer 1) / `require()` (Layer 2) |
+| `scheduler()` | Tickers / deferred tasks; futures auto-cancelled on shutdown |
+| `offloadExecutor()` | Virtual-thread executor for blocking work — never block `handle*()` |
+| `getDataDir()` | Per-module data directory |
+| `onShutdown(Runnable)` | Finalizer run at process shutdown |
+| `getCoreVersion()` | Running proxy version — for soft feature detection only |
 
-1. It must be a standard `.jar` file.
-2. It **must contain a `module.json` manifest** in the archive root:
+`registerSettings(JPanel)` still exists but is `@Deprecated` — use `SettingsSpec`.
 
-   ```json
-   {
-     "name": "Xray",
-     "version": "1.0",
-     "main": "com.mypackage.MyModule",
-     "priority": 100,
-     "minCoreVersion": "1.0.0",
-     "maxCoreVersion": "1.5.0"
-   }
-   ```
-
-   - `priority` — lower loads earlier; default `100`.
-   - `minCoreVersion` / `maxCoreVersion` — **optional** inclusive bounds, compared
-     against the core's `git describe` version (only `MAJOR.MINOR.PATCH` is used —
-     git suffixes ignored). Outside the range, the module is skipped *before*
-     classloading with a clear `WARN`. Use these for hard compatibility — anything
-     that would otherwise crash with `NoSuchMethodError`.
-
-3. The `main` class must implement `ProxyModule`.
-
-## Soft feature detection
-
-For optional behavior the module can enable when the core is new enough (but
-doesn't strictly require), use `ModuleContext.getCoreVersion()` from `onEnable()`:
+## Consuming a Layer-1 service (the Layer-2 path)
 
 ```java
 @Override
 public void onEnable(ModuleContext ctx) {
-    ctx.getLogger().info("Running on core {}", ctx.getCoreVersion());
-    // Enable an extra hook only on 1.1.0+
-    if (SemVer.inRange(SemVer.parse(ctx.getCoreVersion()), "1.1.0", null)) {
-        ctx.registerHandler(new OptionalNewApiHandler());
-    }
-    ctx.registerHandler(new BaselineHandler());
+    WorldState world = ctx.services().require(WorldState.class);
+    ctx.events().subscribe(PhaseChangedEvent.class, EventPriority.NORMAL, e -> { ... });
+    ctx.registerSettings(SettingsSpec.builder()
+            .bool("enabled", "Enable", false, v -> { /* ... */ })
+            .build());
 }
 ```
 
-Rule of thumb: the **declarative gate in `module.json` is the primary mechanism** —
-it runs before classloading and protects against missing APIs. `getCoreVersion()`
-is purely for adapting behavior when the module *can* work either way.
+`dependsOn` guarantees the service provider (`meridian-core`) is enabled first.
 
-## PacketHandler contract
+## `PacketHandler` contract (Layer-1)
 
-A handler returns one of:
+A handler registered via `registerHandler` returns one of:
 
 | Action | Meaning |
 |--------|---------|
 | `FORWARD` | Pass-through — the original raw frame is shipped |
 | `MODIFIED` | Continue the chain; the router re-serialises the mutated `Packet` |
-| `DROP` | Suppress the packet entirely |
-| `HANDLED` | Async takeover — the handler is responsible for any response |
+| `DROP` | Suppress the packet |
+| `HANDLED` | Takeover — the handler is responsible for any response |
 
-Every call receives a `ProxySession`, which exposes `sendToClient()` /
-`sendToServer()` for packet injection from any handler. See
-[architecture.md](architecture.md#pipeline-architecture) for where handlers sit
-in the pipeline.
+`HandlerPosition` (`EARLY` / `NORMAL` / `LATE` / `MONITOR`) orders handlers within
+the chain; `MONITOR` is observe-only. See [architecture.md](architecture.md#pipeline-architecture).
