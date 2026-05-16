@@ -1,7 +1,9 @@
 package meridian.api.settings;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -20,17 +22,33 @@ import java.util.regex.Pattern;
  *     .bool("enabled", "Enable X-Ray", false, v -> enabled = v)
  *     .build());
  * }</pre>
+ *
+ * <p>By default every setting is persisted. Call {@link Builder#ephemeral()}
+ * right after declaring a setting to opt it out: its value is never written to
+ * disk and it always starts from its declared initial value. Useful for
+ * session-only toggles (an active camera mode, an X-Ray switch) that should not
+ * survive a restart.
  */
 public final class SettingsSpec {
     private final List<SettingNode> nodes;
+    private final Set<String> nonPersistentKeys;
 
-    private SettingsSpec(List<SettingNode> nodes) {
+    private SettingsSpec(List<SettingNode> nodes, Set<String> nonPersistentKeys) {
         this.nodes = List.copyOf(nodes);
+        this.nonPersistentKeys = Set.copyOf(nonPersistentKeys);
     }
 
     /** Top-level nodes of this spec, in declaration order. */
     public List<SettingNode> nodes() {
         return nodes;
+    }
+
+    /**
+     * Keys of settings that must not be persisted — see {@link Builder#ephemeral()}.
+     * Includes keys gathered from nested sections.
+     */
+    public Set<String> nonPersistentKeys() {
+        return nonPersistentKeys;
     }
 
     public static Builder builder() {
@@ -40,10 +58,13 @@ public final class SettingsSpec {
     /** Fluent builder for a {@link SettingsSpec}. */
     public static final class Builder {
         private final List<SettingNode> nodes = new ArrayList<>();
+        private final Set<String> nonPersistentKeys = new HashSet<>();
 
         /** Adds a named group whose children come from {@code content}. */
         public Builder section(String name, SettingsSpec content) {
             nodes.add(new SettingNode.Section(name, content.nodes()));
+            // A nested section may itself mark children ephemeral — carry those up.
+            nonPersistentKeys.addAll(content.nonPersistentKeys());
             return this;
         }
 
@@ -91,8 +112,42 @@ public final class SettingsSpec {
             return this;
         }
 
+        /**
+         * Marks the most recently declared setting as non-persistent: its value
+         * is never written to {@code settings.json} and it always starts from
+         * its declared initial value. When applied to a {@code section(...)} it
+         * marks every setting inside it.
+         *
+         * @throws IllegalStateException if no setting has been declared yet
+         */
+        public Builder ephemeral() {
+            if (nodes.isEmpty()) {
+                throw new IllegalStateException("ephemeral() called before any setting was declared");
+            }
+            collectKeys(nodes.get(nodes.size() - 1), nonPersistentKeys);
+            return this;
+        }
+
         public SettingsSpec build() {
-            return new SettingsSpec(nodes);
+            return new SettingsSpec(nodes, nonPersistentKeys);
+        }
+
+        private static void collectKeys(SettingNode node, Set<String> out) {
+            switch (node) {
+                case SettingNode.Section s -> {
+                    for (SettingNode child : s.children()) {
+                        collectKeys(child, out);
+                    }
+                }
+                case SettingNode.Bool b -> out.add(b.key());
+                case SettingNode.IntValue i -> out.add(i.key());
+                case SettingNode.Text t -> out.add(t.key());
+                case SettingNode.EnumChoice<?> e -> out.add(e.key());
+                case SettingNode.StringList l -> out.add(l.key());
+                case SettingNode.RegexList r -> out.add(r.key());
+                case SettingNode.ColorValue c -> out.add(c.key());
+                case SettingNode.PlayerList p -> out.add(p.key());
+            }
         }
     }
 }

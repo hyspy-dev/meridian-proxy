@@ -22,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -77,8 +78,9 @@ public final class SettingsRenderer {
 
     private static JComponent renderSection(SettingNode.Section section, SettingsStore store) {
         JPanel panel = column();
-        Border line = BorderFactory.createTitledBorder(
+        TitledBorder line = BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(70, 70, 70)), section.name());
+        line.setTitleColor(FG);
         panel.setBorder(line);
         for (SettingNode child : section.children()) {
             panel.add(renderNode(child, store));

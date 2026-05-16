@@ -75,6 +75,7 @@ final class ModuleContextImpl implements ModuleContext {
     @Override
     public void registerSettings(SettingsSpec spec) {
         SettingsStore store = new SettingsStore(getDataDir().resolve("settings.json"));
+        spec.nonPersistentKeys().forEach(store::markEphemeral);
         this.settingsPanel = SettingsRenderer.render(spec, store);
         logger.info("Registered declarative settings ({} top-level node(s)).", spec.nodes().size());
     }
