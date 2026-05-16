@@ -265,22 +265,23 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         long nextId = nextExpectedMap.get(type);
 
         if (id == nextId) {
-            createTargetStream(sourceStream, targetConn, nextExpectedMap, bufferMap);
+            createTargetStream(sourceStream, targetConn, nextExpectedMap, bufferMap, isServerInitiated);
         } else if (id > nextId) {
             log.info("Bridge: Stream {} arrives ahead of {}. Buffering.", id, nextId);
             bufferMap.get(type).put(id, sourceStream);
         } else {
             // Already processed or skipped? Should not happen in strict sequential proto.
             log.info("Bridge: Stream {} already processed (expected >= {}). Link immediately.", id, nextId);
-            bridgeStreamNow(sourceStream, targetConn);
+            bridgeStreamNow(sourceStream, targetConn, isServerInitiated);
         }
     }
 
     private void createTargetStream(QuicStreamChannel sourceStream,
             QuicChannel targetConn,
             Map<QuicStreamType, Long> nextExpectedMap,
-            Map<QuicStreamType, SortedMap<Long, QuicStreamChannel>> bufferMap) {
-        bridgeStreamNow(sourceStream, targetConn);
+            Map<QuicStreamType, SortedMap<Long, QuicStreamChannel>> bufferMap,
+            boolean isServerInitiated) {
+        bridgeStreamNow(sourceStream, targetConn, isServerInitiated);
 
         QuicStreamType type = sourceStream.type();
         long nextId = nextExpectedMap.get(type) + 4;
@@ -290,13 +291,14 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         while (!buffer.isEmpty() && buffer.firstKey() == nextId) {
             QuicStreamChannel buffered = buffer.remove(nextId);
             log.info("Bridge: Draining buffered stream {}.", nextId);
-            bridgeStreamNow(buffered, targetConn);
+            bridgeStreamNow(buffered, targetConn, isServerInitiated);
             nextId += 4;
             nextExpectedMap.put(type, nextId);
         }
     }
 
-    private void bridgeStreamNow(QuicStreamChannel sourceStream, QuicChannel targetConn) {
+    private void bridgeStreamNow(QuicStreamChannel sourceStream, QuicChannel targetConn,
+            boolean isServerInitiated) {
         if (!targetConn.isActive()) {
             log.warn("Bridge: Cannot link stream {} -> target connection inactive.", sourceStream.streamId());
             return;
@@ -304,7 +306,16 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         targetConn.createStream(sourceStream.type(), new ChannelInitializer<QuicStreamChannel>() {
             @Override
             protected void initChannel(QuicStreamChannel targetStream) {
-                linkStreams(sourceStream, targetStream);
+                // linkStreams(clientFacingStream, serverFacingStream). A
+                // client-initiated stream's source faces the client; a
+                // server-initiated one (e.g. the chunk / world-map streams)
+                // faces the server, so the arguments must be swapped — otherwise
+                // its S2C data runs through a C2S router and is dropped.
+                if (isServerInitiated) {
+                    linkStreams(targetStream, sourceStream);
+                } else {
+                    linkStreams(sourceStream, targetStream);
+                }
             }
         });
     }
