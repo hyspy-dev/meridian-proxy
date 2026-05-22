@@ -222,6 +222,7 @@ import meridian.protocol.packets.player.ClientReady;
 import meridian.protocol.packets.player.ClientTeleport;
 import meridian.protocol.packets.player.DamageInfo;
 import meridian.protocol.packets.player.DisplayDebug;
+import meridian.protocol.packets.player.HideTriggerVolumePastePrefabPreview;
 import meridian.protocol.packets.player.JoinWorld;
 import meridian.protocol.packets.player.LoadHotbar;
 import meridian.protocol.packets.player.MouseInteraction;
@@ -234,6 +235,7 @@ import meridian.protocol.packets.player.SetBlockPlacementOverride;
 import meridian.protocol.packets.player.SetClientId;
 import meridian.protocol.packets.player.SetGameMode;
 import meridian.protocol.packets.player.SetMovementStates;
+import meridian.protocol.packets.player.ShowTriggerVolumePastePrefabPreview;
 import meridian.protocol.packets.player.SyncPlayerPreferences;
 import meridian.protocol.packets.player.TriggerVolumeToolCreate;
 import meridian.protocol.packets.player.TriggerVolumeToolCreateResponse;
@@ -247,9 +249,11 @@ import meridian.protocol.packets.player.TriggerVolumeToolMove;
 import meridian.protocol.packets.player.TriggerVolumeToolMultiMove;
 import meridian.protocol.packets.player.TriggerVolumeToolResize;
 import meridian.protocol.packets.player.TriggerVolumeToolSelect;
+import meridian.protocol.packets.player.TriggerVolumeToolSelection;
 import meridian.protocol.packets.player.TriggerVolumeToolSetActivationDelay;
 import meridian.protocol.packets.player.TriggerVolumeToolSetCancelDelayedOnExit;
 import meridian.protocol.packets.player.TriggerVolumeToolSetColor;
+import meridian.protocol.packets.player.TriggerVolumeToolSetConditionTiming;
 import meridian.protocol.packets.player.TriggerVolumeToolSetCooldown;
 import meridian.protocol.packets.player.TriggerVolumeToolSetKeepLoaded;
 import meridian.protocol.packets.player.TriggerVolumeToolSetTargetTypes;
@@ -4281,7 +4285,7 @@ public final class PacketRegistry {
          "AddOrUpdateTriggerVolumeDisplay",
          AddOrUpdateTriggerVolumeDisplay.class,
          0,
-         65536098,
+         65536099,
          false,
          AddOrUpdateTriggerVolumeDisplay::validateStructure,
          AddOrUpdateTriggerVolumeDisplay::deserialize,
@@ -4559,6 +4563,58 @@ public final class PacketRegistry {
          TriggerVolumeToolDuplicate::validateStructure,
          TriggerVolumeToolDuplicate::deserialize,
          TriggerVolumeToolDuplicate::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToServer,
+         NetworkChannel.Default,
+         506,
+         "TriggerVolumeToolSetConditionTiming",
+         TriggerVolumeToolSetConditionTiming.class,
+         1,
+         16384006,
+         false,
+         TriggerVolumeToolSetConditionTiming::validateStructure,
+         TriggerVolumeToolSetConditionTiming::deserialize,
+         TriggerVolumeToolSetConditionTiming::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToClient,
+         NetworkChannel.Default,
+         507,
+         "TriggerVolumeToolSelection",
+         TriggerVolumeToolSelection.class,
+         1,
+         1677721600,
+         false,
+         TriggerVolumeToolSelection::validateStructure,
+         TriggerVolumeToolSelection::deserialize,
+         TriggerVolumeToolSelection::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToClient,
+         NetworkChannel.Default,
+         508,
+         "ShowTriggerVolumePastePrefabPreview",
+         ShowTriggerVolumePastePrefabPreview.class,
+         21,
+         1677721600,
+         true,
+         ShowTriggerVolumePastePrefabPreview::validateStructure,
+         ShowTriggerVolumePastePrefabPreview::deserialize,
+         ShowTriggerVolumePastePrefabPreview::toObject
+      );
+      register(
+         PacketRegistry.PacketDirection.ToClient,
+         NetworkChannel.Default,
+         509,
+         "HideTriggerVolumePastePrefabPreview",
+         HideTriggerVolumePastePrefabPreview.class,
+         0,
+         0,
+         false,
+         HideTriggerVolumePastePrefabPreview::validateStructure,
+         HideTriggerVolumePastePrefabPreview::deserialize,
+         HideTriggerVolumePastePrefabPreview::toObject
       );
       register(
          PacketRegistry.PacketDirection.ToClient,
