@@ -1,8 +1,11 @@
 package meridian.api.settings;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -36,10 +39,16 @@ import java.util.regex.Pattern;
 public final class SettingsSpec {
     private final List<SettingNode> nodes;
     private final Set<String> persistentKeys;
+    private final Map<SettingNode, EnabledControl> enabledControls;
 
-    private SettingsSpec(List<SettingNode> nodes, Set<String> persistentKeys) {
+    private SettingsSpec(List<SettingNode> nodes, Set<String> persistentKeys,
+                         Map<SettingNode, EnabledControl> enabledControls) {
         this.nodes = List.copyOf(nodes);
         this.persistentKeys = Set.copyOf(persistentKeys);
+        // IdentityHashMap retained — keys are SettingNode references; equality
+        // by identity is what lets nested sections merge without conflict.
+        Map<SettingNode, EnabledControl> copy = new IdentityHashMap<>(enabledControls);
+        this.enabledControls = java.util.Collections.unmodifiableMap(copy);
     }
 
     /** Top-level nodes of this spec, in declaration order. */
@@ -56,6 +65,16 @@ public final class SettingsSpec {
         return persistentKeys;
     }
 
+    /**
+     * Per-node {@link EnabledControl}s attached via
+     * {@link Builder#enabled(EnabledControl)}. Keyed by node reference; the
+     * renderer looks each rendered node up here to decide whether to wire
+     * programmatic disable.
+     */
+    public Map<SettingNode, EnabledControl> enabledControls() {
+        return enabledControls;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -64,13 +83,15 @@ public final class SettingsSpec {
     public static final class Builder {
         private final List<SettingNode> nodes = new ArrayList<>();
         private final Set<String> persistentKeys = new HashSet<>();
+        private final Map<SettingNode, EnabledControl> enabledControls = new IdentityHashMap<>();
 
         /** Adds a named group whose children come from {@code content}. */
         public Builder section(String name, SettingsSpec content) {
             nodes.add(new SettingNode.Section(name, content.nodes()));
-            // A nested section may itself have opted children into persistence —
-            // carry those decisions up.
+            // A nested section may itself have opted children into persistence
+            // or attached EnabledControls — carry those decisions up.
             persistentKeys.addAll(content.persistentKeys());
+            enabledControls.putAll(content.enabledControls());
             return this;
         }
 
@@ -138,6 +159,16 @@ public final class SettingsSpec {
         }
 
         /**
+         * Adds a read-only single-line live label — the proxy polls
+         * {@code source} on its UI timer and shows the returned string after
+         * {@code label}. See {@link SettingNode.LiveText}.
+         */
+        public Builder liveText(String label, Supplier<String> source) {
+            nodes.add(new SettingNode.LiveText(label, source));
+            return this;
+        }
+
+        /**
          * Adds a read-only list whose rows come from {@code source}. The proxy
          * polls the supplier on its UI timer — see {@link SettingNode.LiveList}.
          */
@@ -154,6 +185,24 @@ public final class SettingsSpec {
         public Builder liveList(String label, Supplier<List<String>> source,
                                 IntConsumer onRowClick) {
             nodes.add(new SettingNode.LiveList(label, source, onRowClick));
+            return this;
+        }
+
+        /**
+         * Attaches an {@link EnabledControl} to the most recently declared
+         * node. The control's {@link EnabledControl#set} then toggles the
+         * widget's enabled state (and the state of any wrapper components —
+         * field labels grey out with their fields, section children grey out
+         * with their section). Works on any widget, including buttons,
+         * live-text, live-lists and entire sections.
+         *
+         * @throws IllegalStateException if no setting has been declared yet
+         */
+        public Builder enabled(EnabledControl control) {
+            if (nodes.isEmpty()) {
+                throw new IllegalStateException("enabled() called before any setting was declared");
+            }
+            enabledControls.put(nodes.get(nodes.size() - 1), control);
             return this;
         }
 
@@ -197,7 +246,7 @@ public final class SettingsSpec {
         }
 
         public SettingsSpec build() {
-            return new SettingsSpec(nodes, persistentKeys);
+            return new SettingsSpec(nodes, persistentKeys, enabledControls);
         }
 
         private static boolean findKey(List<SettingNode> nodes, String key) {
@@ -221,10 +270,11 @@ public final class SettingsSpec {
                 case SettingNode.RegexList r -> r.key();
                 case SettingNode.ColorValue c -> c.key();
                 case SettingNode.PlayerList p -> p.key();
-                // Keyless nodes — sections, buttons, live-lists.
+                // Keyless nodes — sections, buttons, live-lists, live-text.
                 case SettingNode.Section ignored -> null;
                 case SettingNode.Button ignored -> null;
                 case SettingNode.LiveList ignored -> null;
+                case SettingNode.LiveText ignored -> null;
             };
         }
 
@@ -244,6 +294,7 @@ public final class SettingsSpec {
                 case SettingNode.ColorValue c -> out.add(c.key());
                 case SettingNode.PlayerList p -> out.add(p.key());
                 case SettingNode.LiveList ignored -> { /* read-only, no key */ }
+                case SettingNode.LiveText ignored -> { /* read-only, no key */ }
                 case SettingNode.Button ignored -> { /* action only, no key */ }
             }
         }

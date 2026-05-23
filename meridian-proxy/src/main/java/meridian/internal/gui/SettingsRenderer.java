@@ -1,5 +1,6 @@
 package meridian.internal.gui;
 
+import meridian.api.settings.EnabledControl;
 import meridian.api.settings.SettingNode;
 import meridian.api.settings.SettingsSpec;
 import meridian.internal.settings.SettingsStore;
@@ -73,13 +74,42 @@ public final class SettingsRenderer {
     public static JPanel render(SettingsSpec spec, SettingsStore store, String updateUrl) {
         JPanel root = column();
         for (SettingNode node : spec.nodes()) {
-            root.add(renderNode(node, store));
+            // renderNode already wires its own EnabledControl — no double-wire.
+            root.add(renderNode(node, store, spec));
         }
         if (updateUrl != null && !updateUrl.isBlank()) {
             root.add(Box.createVerticalStrut(8));
             root.add(renderUpdateLink(updateUrl));
         }
         return root;
+    }
+
+    /**
+     * If the spec declared an {@link EnabledControl} for {@code node}, wires
+     * it to recursively toggle every Swing component under {@code rendered}.
+     * Container.setEnabled doesn't propagate to children — labels need to grey
+     * out alongside their fields, so we walk the tree on each toggle.
+     */
+    private static void wireEnabled(SettingNode node, JComponent rendered, SettingsSpec spec) {
+        EnabledControl control = spec.enabledControls().get(node);
+        if (control == null) return;
+        control.__wireUiSetter(b -> {
+            Runnable apply = () -> setEnabledRecursively(rendered, b);
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                apply.run();
+            } else {
+                javax.swing.SwingUtilities.invokeLater(apply);
+            }
+        });
+    }
+
+    private static void setEnabledRecursively(java.awt.Component c, boolean enabled) {
+        c.setEnabled(enabled);
+        if (c instanceof java.awt.Container container) {
+            for (java.awt.Component child : container.getComponents()) {
+                setEnabledRecursively(child, enabled);
+            }
+        }
     }
 
     /** Back-compat overload — no footer link. */
@@ -104,9 +134,9 @@ public final class SettingsRenderer {
         return wrapper;
     }
 
-    private static JComponent renderNode(SettingNode node, SettingsStore store) {
-        return switch (node) {
-            case SettingNode.Section s -> renderSection(s, store);
+    private static JComponent renderNode(SettingNode node, SettingsStore store, SettingsSpec spec) {
+        JComponent rendered = switch (node) {
+            case SettingNode.Section s -> renderSection(s, store, spec);
             case SettingNode.Bool b -> renderBool(b, store);
             case SettingNode.IntValue i -> renderInt(i, store);
             case SettingNode.Text t -> renderText(t, store);
@@ -116,20 +146,24 @@ public final class SettingsRenderer {
             case SettingNode.ColorValue c -> renderColor(c, store);
             case SettingNode.PlayerList p -> renderPlayerList(p, store);
             case SettingNode.LiveList l -> renderLiveList(l);
+            case SettingNode.LiveText t -> renderLiveText(t);
             case SettingNode.Button b -> renderButton(b);
         };
+        wireEnabled(node, rendered, spec);
+        return rendered;
     }
 
     // ------------------------------------------------------------------
 
-    private static JComponent renderSection(SettingNode.Section section, SettingsStore store) {
+    private static JComponent renderSection(SettingNode.Section section, SettingsStore store,
+                                            SettingsSpec spec) {
         JPanel panel = column();
         TitledBorder line = BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(70, 70, 70)), section.name());
         line.setTitleColor(FG);
         panel.setBorder(line);
         for (SettingNode child : section.children()) {
-            panel.add(renderNode(child, store));
+            panel.add(renderNode(child, store, spec));
         }
         return panel;
     }
@@ -377,6 +411,34 @@ public final class SettingsRenderer {
 
     private static String escapeHtml(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private static JComponent renderLiveText(SettingNode.LiveText t) {
+        JLabel value = label("");
+        // Slightly more breathing room than the default JLabel; pair it with
+        // the caption label in a flow so it sits next to it.
+        value.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+
+        String[] last = {null};
+        Runnable refresh = () -> {
+            String text = t.source().get();
+            if (text == null) text = "";
+            if (!text.equals(last[0])) {
+                last[0] = text;
+                value.setText(text);
+            }
+        };
+        refresh.run();
+
+        Timer timer = new Timer(LIVE_LIST_POLL_MS, e -> refresh.run());
+        timer.setRepeats(true);
+        value.addAncestorListener(new AncestorListener() {
+            @Override public void ancestorAdded(AncestorEvent e) { timer.start(); }
+            @Override public void ancestorRemoved(AncestorEvent e) { timer.stop(); }
+            @Override public void ancestorMoved(AncestorEvent e) {}
+        });
+
+        return labeled(t.label(), value);
     }
 
     /** Poll cadence for {@link SettingNode.LiveList} — twice a second. */

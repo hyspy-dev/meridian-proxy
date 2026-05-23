@@ -73,6 +73,19 @@ public sealed interface SettingNode {
     record Button(String label, Runnable onClick) implements SettingNode {}
 
     /**
+     * Read-only live single-line text — the proxy polls {@code source} on a
+     * UI timer and shows the returned string as a label next to {@code label}.
+     * No persistence, no edit; the natural channel for a status line, a
+     * counter, or any single dynamic value.
+     *
+     * @param label  shown in front of the value
+     * @param source called on the UI thread at the proxy's poll cadence; must
+     *               be cheap and thread-safe — read a volatile field, don't
+     *               compute on every call
+     */
+    record LiveText(String label, Supplier<String> source) implements SettingNode {}
+
+    /**
      * Read-only live list — the proxy polls {@code source} on a UI timer and
      * shows each returned string as a row. No persistence, no edit; modules
      * use it to surface dynamic info (nearest entities/blocks, etc.).

@@ -107,6 +107,7 @@ Every leaf takes a `key`, a human-readable `label`, an `initial` value, and an
 | `.playerList(key, label, Consumer<List<UUID>>)` | UUID list (autocomplete if a registry exists) | none |
 | `.button(label, Runnable)` | Push-button — no key, no persistence | none |
 | `.liveList(label, Supplier<List<String>>[, IntConsumer onRowClick])` | Read-only list polled on a timer, optional row click | none |
+| `.liveText(label, Supplier<String>)` | Read-only single-line label polled on a timer | none |
 
 ### Example
 
@@ -162,6 +163,50 @@ Currently supported on `.string(...)`. Add overloads for other widgets when a
 real use case shows up — the pattern in
 [SettingsRenderer.renderText](../meridian-proxy/src/main/java/meridian/internal/gui/SettingsRenderer.java)
 is straightforward to follow.
+
+## Programmatic enable / disable
+
+Any widget — checkbox, spinner, text field, button, live list, live text, a
+whole section — can be greyed out from code via an `EnabledControl`:
+
+```java
+private final EnabledControl convertEnabled = new EnabledControl(true);
+
+SettingsSpec.builder()
+        .button("Convert", this::startConvert).enabled(convertEnabled)
+        .liveText("Status", () -> status)
+        .build();
+
+// later, on the worker thread:
+convertEnabled.set(false);   // greys out the button while the job runs
+// ...
+convertEnabled.set(true);    // re-enable when done
+```
+
+`enabled(control)` chains right after a setting and binds the control to the
+last-declared node. `control.set(boolean)` is safe from any thread — the
+renderer hops to the EDT and recursively toggles every Swing child under the
+node so labels grey out alongside their fields and section children grey out
+alongside their section. The initial state of the control is applied on the
+first paint, so you can disable a setting before the panel is even shown.
+
+## Single live label
+
+A `liveText` is a one-line read-only label that the proxy polls on a UI timer
+(twice per second). Pair it with a button for a "task + status" pattern:
+
+```java
+private volatile String status = "Idle.";
+
+SettingsSpec.builder()
+        .button("Run", () -> { status = "Running…"; doWork(); status = "Done."; })
+        .liveText("Status", () -> status)
+        .build();
+```
+
+Same contract as `liveList`: the supplier runs on the EDT, so it must be
+cheap (read a volatile field, don't compute). Use for single dynamic values
+— a status line, a counter, current ping. Multiple lines → use `liveList`.
 
 ## Buttons
 
