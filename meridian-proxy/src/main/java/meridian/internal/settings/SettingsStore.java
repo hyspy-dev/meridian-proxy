@@ -23,10 +23,11 @@ import java.util.Set;
  * (Boolean / Double / String / List); {@code SettingsRenderer} coerces them
  * back to the type each setting expects.
  *
- * <p>Keys registered via {@link #markEphemeral} are session-only: {@link #set}
- * keeps them in memory but never writes them to disk, and any such key found in
- * an existing file is dropped on the next save. The setting therefore always
- * starts from its declared initial value.
+ * <p><b>Persistence is opt-in.</b> The store starts with an empty whitelist;
+ * {@link #markPersistent} adds keys to it. Only whitelisted keys survive a
+ * {@link #set}; everything else is session-only — kept by the widget and
+ * module state in memory but never written to disk. Stale keys found in the
+ * file on load are dropped on the next save.
  */
 public final class SettingsStore {
     private static final Logger log = LoggerFactory.getLogger(SettingsStore.class);
@@ -34,7 +35,7 @@ public final class SettingsStore {
 
     private final Path file;
     private final Map<String, Object> values;
-    private final Set<String> ephemeralKeys = new HashSet<>();
+    private final Set<String> persistentKeys = new HashSet<>();
 
     public SettingsStore(Path file) {
         this.file = file;
@@ -56,22 +57,26 @@ public final class SettingsStore {
     }
 
     /**
-     * Marks {@code key} as non-persistent. Any value already loaded for it from
-     * disk is discarded so the setting falls back to its declared initial.
+     * Whitelists {@code key} for disk persistence — subsequent {@link #set}
+     * calls write it through to {@code settings.json}.
      */
-    public void markEphemeral(String key) {
-        ephemeralKeys.add(key);
-        values.remove(key);
+    public void markPersistent(String key) {
+        persistentKeys.add(key);
     }
 
-    /** Raw stored value for {@code key}, or {@code null} if never persisted. */
+    /**
+     * Raw stored value for {@code key}, or {@code null} if it isn't persistent
+     * or was never written. Persistent keys with a previously-saved value are
+     * returned; non-persistent keys always read as {@code null} so the
+     * renderer falls back to the declared initial.
+     */
     public Object get(String key) {
-        return values.get(key);
+        return persistentKeys.contains(key) ? values.get(key) : null;
     }
 
-    /** Stores {@code value} under {@code key} and flushes to disk (unless ephemeral). */
+    /** Stores {@code value} under {@code key} and flushes to disk if it's persistent. */
     public void set(String key, Object value) {
-        if (ephemeralKeys.contains(key)) {
+        if (!persistentKeys.contains(key)) {
             // Session-only setting — do not retain or write it.
             return;
         }
@@ -84,6 +89,9 @@ public final class SettingsStore {
             if (file.getParent() != null) {
                 Files.createDirectories(file.getParent());
             }
+            // Drop any orphan keys the spec doesn't recognise as persistent —
+            // they would otherwise hang around indefinitely from older builds.
+            values.keySet().removeIf(k -> !persistentKeys.contains(k));
             try (Writer writer = Files.newBufferedWriter(file)) {
                 GSON.toJson(values, writer);
             }

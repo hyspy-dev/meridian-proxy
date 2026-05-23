@@ -37,6 +37,8 @@ final class ModuleContextImpl implements ModuleContext {
     private final ServiceRegistry serviceRegistry;
     private final Executor offloadExecutor;
     private final SchedulerImpl scheduler;
+    /** From {@code module.json#updateUrl}; appended as a footer link by the settings renderer. */
+    private final String updateUrl;
     private final List<Runnable> shutdownHooks = new CopyOnWriteArrayList<>();
 
     private volatile boolean dataDirReady;
@@ -45,7 +47,8 @@ final class ModuleContextImpl implements ModuleContext {
 
     ModuleContextImpl(String moduleName, Path dataDir, HandlerRegistry handlerRegistry,
                       EventBus eventBus, ServiceRegistry serviceRegistry,
-                      Executor offloadExecutor, SchedulerImpl scheduler) {
+                      Executor offloadExecutor, SchedulerImpl scheduler,
+                      String updateUrl) {
         this.moduleName = moduleName;
         this.logger = LoggerFactory.getLogger(moduleName);
         this.dataDir = dataDir;
@@ -54,6 +57,7 @@ final class ModuleContextImpl implements ModuleContext {
         this.serviceRegistry = serviceRegistry;
         this.offloadExecutor = offloadExecutor;
         this.scheduler = scheduler;
+        this.updateUrl = updateUrl;
     }
 
     @Override
@@ -75,15 +79,19 @@ final class ModuleContextImpl implements ModuleContext {
     @Override
     public void registerSettings(SettingsSpec spec) {
         SettingsStore store = new SettingsStore(getDataDir().resolve("settings.json"));
-        spec.nonPersistentKeys().forEach(store::markEphemeral);
-        this.settingsPanel = SettingsRenderer.render(spec, store);
-        logger.info("Registered declarative settings ({} top-level node(s)).", spec.nodes().size());
+        spec.persistentKeys().forEach(store::markPersistent);
+        this.settingsPanel = SettingsRenderer.render(spec, store, updateUrl);
+        logger.info("Registered declarative settings ({} top-level node(s), "
+                + "{} key(s) persistent).", spec.nodes().size(), spec.persistentKeys().size());
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void registerSettings(JPanel panel) {
-        this.settingsPanel = panel;
+        // Raw panel path doesn't know our typed widgets — but the update link
+        // is independent of the spec, so wrap the panel into a column and
+        // append the link below it.
+        this.settingsPanel = SettingsRenderer.wrapWithUpdateLink(panel, updateUrl);
         logger.info("Registered settings panel (deprecated JPanel path).");
     }
 

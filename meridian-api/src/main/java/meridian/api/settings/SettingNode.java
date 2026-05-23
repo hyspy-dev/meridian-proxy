@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
@@ -28,9 +29,17 @@ public sealed interface SettingNode {
     record IntValue(String key, String label, int min, int max, int initial,
                     Consumer<Integer> onChange) implements SettingNode {}
 
-    /** Free text field. */
+    /**
+     * Free text field. When {@code binding} is non-null the module can mutate
+     * the field's value from code — see {@link SettingBinding}.
+     */
     record Text(String key, String label, String initial,
-                Consumer<String> onChange) implements SettingNode {}
+                Consumer<String> onChange,
+                SettingBinding<String> binding) implements SettingNode {
+        public Text(String key, String label, String initial, Consumer<String> onChange) {
+            this(key, label, initial, onChange, null);
+        }
+    }
 
     /** One-of-enum choice (combo box). */
     record EnumChoice<E extends Enum<E>>(String key, String label, Class<E> type, E initial,
@@ -55,4 +64,31 @@ public sealed interface SettingNode {
      */
     record PlayerList(String key, String label,
                       Consumer<List<UUID>> onChange) implements SettingNode {}
+
+    /**
+     * Clickable button. No persistence — buttons are pure actions. The
+     * {@code onClick} runs on the Swing EDT; offload anything blocking to
+     * {@code ctx.offloadExecutor()} or {@code ctx.scheduler()}.
+     */
+    record Button(String label, Runnable onClick) implements SettingNode {}
+
+    /**
+     * Read-only live list — the proxy polls {@code source} on a UI timer and
+     * shows each returned string as a row. No persistence, no edit; modules
+     * use it to surface dynamic info (nearest entities/blocks, etc.).
+     *
+     * @param label       shown above the list
+     * @param source      called on the UI thread at the proxy's poll cadence;
+     *                    must be cheap and thread-safe — read a volatile
+     *                    snapshot field, do not scan on every call
+     * @param onRowClick  optional row-click handler (may be {@code null}); the
+     *                    proxy calls it with the row index that was clicked.
+     *                    The module is responsible for mapping the index back
+     *                    to whatever payload it needs — typically by reading
+     *                    the same volatile snapshot {@code source} pulled
+     *                    from, parallelised with a payload list of the same
+     *                    length
+     */
+    record LiveList(String label, Supplier<List<String>> source,
+                    IntConsumer onRowClick) implements SettingNode {}
 }

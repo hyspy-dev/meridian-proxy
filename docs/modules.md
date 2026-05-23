@@ -81,7 +81,7 @@ public class MyModule implements ProxyModule {
 |--------|---------|
 | `getLogger()` | slf4j logger scoped to the module |
 | `registerHandler(Direction, HandlerPosition, PacketHandlerFactory)` | Add a packet handler (Layer-1 / raw-packet) |
-| `registerSettings(SettingsSpec)` | Declarative settings UI; the proxy renders it and persists to `<dataDir>/settings.json` |
+| `registerSettings(SettingsSpec)` | Declarative settings UI; the proxy renders it and persists to `<dataDir>/settings.json`. Full reference: [settings.md](settings.md) |
 | `events()` | `EventBus` — subscribe to `PhaseChangedEvent`, ... |
 | `services()` | `ServiceRegistry` — `provide()` (Layer 1) / `require()` (Layer 2) |
 | `scheduler()` | Tickers / deferred tasks; futures auto-cancelled on shutdown |

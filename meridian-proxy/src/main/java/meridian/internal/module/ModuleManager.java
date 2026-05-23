@@ -410,7 +410,7 @@ public class ModuleManager {
         Path dataDir = currentPluginsDir.resolve(meta.name).resolve("data");
         SchedulerImpl scheduler = new SchedulerImpl(meta.name);
         ModuleContextImpl context = new ModuleContextImpl(meta.name, dataDir, handlerRegistry,
-                eventBus, serviceRegistry, offloadExecutor, scheduler);
+                eventBus, serviceRegistry, offloadExecutor, scheduler, meta.updateUrl);
         ModuleEntry entry = new ModuleEntry(meta.name, meta.version, module, context);
 
         module.onEnable(context);
