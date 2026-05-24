@@ -27,3 +27,7 @@ hs_err_pid*
 
 
 tools/
+
+# Internal-only design notes — kept locally for reference but not part of the
+# public docs surface. Nothing in the source tree references these.
+docs/private/

@@ -9,7 +9,7 @@ changes, what has to be rebuilt — and how the proxy tells the user it is stale
 Hytale  ──►  meridian-protocol  ──►  meridian-proxy
                                └──►  meridian-core (impl)  ──►  meridian-core-api
                                                                       │
-                          Layer-2 modules (xray, ...)  ◄──────────────┘
+                          Layer-2 modules (camera-tweaks, …)  ◄───────┘
                           depend on meridian-api + *-core-api only
 ```
 
@@ -21,7 +21,7 @@ mappers in `meridian-proxy` and `meridian-core`. It does **not** cross the
 
 | You changed… | Rebuild | Untouched |
 |--------------|---------|-----------|
-| A Hytale packet → `meridian-protocol` | `meridian-proxy`, `meridian-core` | Layer-2 modules (xray) |
+| A Hytale packet → `meridian-protocol` | `meridian-proxy`, `meridian-core` | Layer-2 modules (camera-tweaks, etc.) |
 | `meridian-core` mapper (`*-impl`) only | `meridian-core` | proxy, Layer-2 modules |
 | `meridian-core-api` — **additive** (new method/type) | `meridian-core` | Layer-2 modules keep working; recompile only to *use* the new API |
 | `meridian-core-api` — **breaking** | `meridian-core` + every consumer | — (deliberate major bump) |
@@ -45,8 +45,8 @@ Build order is always upstream-first — see [README](../README.md#build).
 | `meridian-api`, `meridian-core-api` | rarely | deliberate API evolution |
 | Layer-2 modules | only on a deliberate `*-api` major bump | their own authors |
 
-Reacting to a Hytale update is automated by
-[`tools/regen-protocol.ps1`](../tools/regen-protocol.ps1); the full procedure is in
+The full procedure for reacting to a Hytale update — decompile, diff, apply,
+fix mappers — is in
 [releasing.md](releasing.md#reacting-to-a-hytale-update).
 
 ## How the proxy tells the user it is stale
@@ -80,11 +80,11 @@ Declare where users should get updates in your `module.json`:
 
 ```json
 {
-  "name": "Meridian Xray",
-  "version": "2.0.0",
-  "main": "meridian.xray.XrayModule",
-  "dependsOn": { "meridian-core": ">=0.1.0" },
-  "updateUrl": "https://github.com/hyspy-dev/meridian-xray/releases"
+  "name": "Meridian Minimap",
+  "version": "0.1.0",
+  "main": "meridian.minimap.MinimapModule",
+  "dependsOn": { "meridian-core": ">=0.2.0" },
+  "updateUrl": "https://github.com/hyspy-dev/meridian-minimap/releases"
 }
 ```
 

@@ -86,9 +86,9 @@ most settings; persistence is the exception.
 
 Live examples in the tree:
 
-- [XrayModule.java](../../meridian-xray/src/main/java/meridian/xray/XrayModule.java) — every setting session-only.
-- [EspModule.java](../../meridian-esp/src/main/java/meridian/esp/EspModule.java) — radii and the name filter persistent, the on/off toggles aren't.
+- [MinimapModule.java](../../meridian-minimap/src/main/java/meridian/minimap/MinimapModule.java) — `position` and `zoom` persistent, every per-element show/hide too.
 - [CameraTweaksModule.java](../../meridian-camera-tweaks/src/main/java/meridian/cameratweaks/CameraTweaksModule.java) — the active mode is session-only, every distance/shift is persistent.
+- [BlueprintModule.java](../../meridian-blueprint/src/main/java/meridian/blueprint/BlueprintModule.java) — `layerWindow` persistent, the live-list and action buttons are session-only.
 
 ## Setting types
 
@@ -231,11 +231,11 @@ entered. They can sit anywhere in the spec, including inside sections.
 
 ```java
 SettingsSpec.builder()
-        .section("Entity ESP", SettingsSpec.builder()
+        .section("Entity overlay", SettingsSpec.builder()
                 .bool("entityEnabled", "Enabled", false, v -> entityEnabled = v)
                 .int_("entityRadius", "Radius", 1, 512, 64, v -> entityRadius = v)
                 .build())
-        .section("Block ESP", SettingsSpec.builder()
+        .section("Block overlay", SettingsSpec.builder()
                 .bool("blockEnabled", "Enabled", false, v -> blockEnabled = v)
                 .string("blockName", "Block name", "", v -> blockName = v)
                 .build())
@@ -309,8 +309,7 @@ Settings are owned by one module, but a row click in module A can mutate a
 field in module B if both go through a shared **service** in the registry —
 no direct dependency between the modules.
 
-Pattern used by ESP → interaction-test for the "click a row, X/Y/Z snap to it"
-behaviour:
+Pattern used for a "click a row, X/Y/Z snap to that target" behaviour:
 
 1. Layer-1 module exposes a pub/sub service (e.g. `SelectionBus`) via
    `services().provide(...)`.

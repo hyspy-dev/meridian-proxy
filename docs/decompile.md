@@ -14,8 +14,11 @@ It ships in the unpacked-server repo next to the server jars:
 ```
 hytale-server-unpacked/
 ├── vineflower-1.12.0.jar
-├── history/                 # one <version>.jar per Hytale build
-│   ├── 0.5.0-pre.8.jar
+├── versions.json             # symbolic tag ↔ dated build mapping
+├── history/                  # one <version>.jar per Hytale build
+│   ├── 0.5.0-pre.8.jar       # legacy SemVer-ish naming
+│   ├── 2026.01.13-dcad8778f.jar
+│   ├── 2026.05.07-5efa15f6d.jar
 │   └── ...
 └── src/                      # decompiled tree (output)
 ```
@@ -48,4 +51,13 @@ changes the output and invalidates every future diff — don't.
 
 ## Current sync point
 
-`meridian-protocol` currently mirrors Hytale server build **`0.5.0-pre.8`**.
+`meridian-protocol` currently mirrors Hytale server **`pre-release-45`**
+(in the new {@code YYYY.MM.DD-<commit>} naming the server-tree now uses;
+`versions.json` in `Hytale-Server-Unpacked-latest/hytale-server-unpacked/`
+maps the symbolic tag to the actual dated build).
+
+> **Versioning note.** Hytale builds prior to 2026-01 used `0.5.0-pre.N`.
+> Newer builds drop the SemVer-ish prefix and ship as `YYYY.MM.DD-<hash>`
+> with `pre-release-N` / `release-N` tags in `versions.json`. When
+> bumping the sync point, prefer the `pre-release-N` tag — it's stable
+> across re-runs of the unpack pipeline; the dated hash is per-build.

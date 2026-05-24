@@ -24,10 +24,12 @@ matches your setup.
 
 ## Mode 1 — Server-jar replacement
 
-You replace the game's bundled server file (`HytaleServer.jar` in the Hytale install
-directory) with the proxy jar. The Hytale launcher is untouched — it simply runs the
-proxy in place of the real server when you start a single-player world, passing it
-the tokens via environment variables.
+Mode 1 plugs into the Hytale launcher's documented single-player flow — the
+launcher invokes whichever `HytaleServer.jar` sits in the install's server
+directory and hands it the session tokens via environment variables. By
+swapping that jar for the proxy you let the launcher start the proxy
+automatically; the proxy re-invokes the real server jar for genuine local
+play.
 
 ### Setup (one-time)
 

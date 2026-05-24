@@ -1,12 +1,13 @@
 # Meridian Proxy
 
-A transparent man-in-the-middle proxy for Hytale game traffic. It intercepts the
-QUIC connection between the Hytale client and a dedicated server, enabling
-real-time packet inspection, modification, and injection while keeping a fully
-authenticated session on both sides.
+A pluggable QUIC proxy for the Hytale game protocol. It sits between the
+client and a dedicated server, keeping the session fully authenticated on
+both sides, and exposes a plugin SDK so external JAR modules can build tools
+on top of the live packet stream — minimaps, world capture, HUD overlays,
+diagnostics, research utilities.
 
-> For educational and research purposes only. Not affiliated with Hypixel Studios
-> or Hytale.
+> Research framework. Not affiliated with Hypixel Studios or Hytale. Use
+> responsibly and in accordance with the game's terms of service.
 
 **Community & support:** [Discord](https://discord.gg/kApV2z2Qmw)
 
@@ -59,9 +60,10 @@ Meridian is layered Maven artifacts:
 
 Two ways to build a module:
 
-- **Layer-2 module** — the normal case (xray, esp, ...). Depend on `meridian-api`
-  plus the Layer-1 `*-api` you need (e.g. `meridian-core-api`), both `provided`.
-  **Do not** depend on `meridian-protocol` — a Hytale update cannot break you.
+- **Layer-2 module** — the normal case (a minimap, a world-capture tool, a
+  diagnostics overlay). Depend on `meridian-api` plus the Layer-1 `*-api` you
+  need (e.g. `meridian-core-api`), both `provided`. **Do not** depend on
+  `meridian-protocol` — a Hytale update cannot break you.
 - **Layer-1 framework** — raw-packet access (packet loggers, new core services).
   Depend on `meridian-api` + `meridian-protocol`; you absorb protocol churn yourself.
 

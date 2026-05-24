@@ -9,7 +9,7 @@ The proxy operates as two independent QUIC endpoints sharing a common authentica
 
 ```
 ┌──────────────┐          ┌───────────────────────────────────┐          ┌──────────────┐
-│              │   QUIC   │            MITM Proxy             │   QUIC   │              │
+│              │   QUIC   │         Meridian Proxy            │   QUIC   │              │
 │    Hytale    │◄────────►│                                   │◄────────►│    Hytale    │
 │    Client    │  TLS 1.3 │  ┌─────────┐     ┌────────────┐   │  TLS 1.3 │    Server    │
 │              │          │  │ Frontend│     │  Backend   │   │          │  (Dedicated) │
@@ -94,15 +94,16 @@ sequenceDiagram
     participant S as Server
 
     C->>P: Pkt 0 Connect (uuid, username, identityToken)
-    Note over P: Captures identityToken<br/>Stores in HytaleAuthState
+    Note over P: Reads identityToken<br/>Stores in HytaleAuthState
     P->>S: Pkt 0 Connect (forwarded as-is)
     S->>P: Pkt 11 AuthGrant (authGrant, serverIdentityToken)
-    Note over P: Intercepted, not forwarded.<br/>Triggers BACK + FRONT auth in parallel.
+    Note over P: Held for relay processing.<br/>Triggers BACK + FRONT auth in parallel.
 ```
 
-### Phase 2: Token Exchange
+### Phase 2: Session Bridging
 
-When the proxy intercepts Pkt 11 from the real server, it runs the token exchange:
+When the proxy receives Pkt 11 from the real server, it runs the token exchange
+that produces matching credentials for each leg:
 
 ```
 ┌─────────── BACK (proxy → real server) ────────────┐
@@ -135,9 +136,9 @@ sequenceDiagram
     P->>S: Pkt 12 AuthToken (backAccessToken, backServerGrant)
     P->>C: Pkt 11 AuthGrant (frontAuthGrant, server identity token)
     S->>P: Pkt 13 ServerAuthToken (serverAccessToken, ?passwordChallenge)
-    Note over P: Intercepted. Captures passwordChallenge.<br/>Enables S2C buffering.
+    Note over P: Held for relay. Captures passwordChallenge.<br/>Enables S2C buffering.
     C->>P: Pkt 12 AuthToken (clientAccessToken, clientServerGrant)
-    Note over P: Intercepted, not forwarded to server.
+    Note over P: Held — re-issued to server with proxy's pair.
 
     Note over P: 4th REST call:
     Note over P: POST /server-join/auth-token<br/>Bearer: server-scope session<br/>Body: { clientServerGrant, fp }
@@ -188,12 +189,12 @@ Every packet on every QUIC stream uses the same binary framing:
 
 | ID | Name | Direction | Proxy Action |
 |----|------|-----------|--------------|
-| 0 | `Connect` | C→S | Parse `identityToken`, capture in `HytaleAuthState`, forward |
+| 0 | `Connect` | C→S | Parse `identityToken`, store in `HytaleAuthState`, forward |
 | 3 | `Ping` | S→C | Forward (keep-alive) |
 | 4 | `Pong` | C→S | Forward (keep-alive) |
-| 11 | `AuthGrant` | S→C | **Intercept**. Trigger BACK + FRONT auth. Do NOT forward. |
-| 12 | `AuthToken` | C→S | **Intercept**. Exchange client's server grant. Do NOT forward. |
-| 13 | `ServerAuthToken` | S→C | **Intercept**. Capture `passwordChallenge`. Do NOT forward. |
+| 11 | `AuthGrant` | S→C | **Re-issue**. Trigger BACK + FRONT auth. Proxy emits its own version downstream. |
+| 12 | `AuthToken` | C→S | **Re-issue**. Exchange client's server grant. Proxy emits its own version upstream. |
+| 13 | `ServerAuthToken` | S→C | **Re-issue**. Capture `passwordChallenge`. Proxy emits its own version downstream. |
 | 15 | `PasswordResponse` | C→S | Forward with logging |
 | 16 | `PasswordAccepted` | S→C | Forward with logging |
 | 17 | `PasswordRejected` | S→C | Forward with logging |
@@ -227,7 +228,7 @@ Stream arrives at proxy:
 A critical synchronization mechanism prevents an auth-time race condition.
 
 **Problem**: The real server sends `Pkt 13` (ServerAuthToken) and immediately follows
-it with `Pkt 20` (WorldSettings). The proxy must intercept Pkt 13 and run an async
+it with `Pkt 20` (WorldSettings). The proxy must hold Pkt 13 and run an async
 REST call to craft its own version. If Pkt 20 reaches the client before the proxy's
 Pkt 13, the client enters an invalid state and times out after 30 seconds.
 
@@ -270,7 +271,7 @@ Raw bytes → [PacketCodec] → PacketFrame → [PacketRouter] → [PacketForwar
                                 │  ├── RouteGuard           │ (S2C address rewrites)
                                 │  ├── ServerAccessLogger   │ (Pkt 250/251/252 audit)
                                 │  ├── PhaseTracker         │ (session lifecycle phase)
-                                │  └── (plugin modules)     │ ← e.g. meridian-xray
+                                │  └── (plugin modules)     │ ← e.g. meridian-minimap
                                 └───────────────────────────┘
 ```
 
@@ -288,9 +289,9 @@ original raw frame unchanged — the stream is never corrupted.
 | `ProxySession` (api interface) / `ProxySessionImpl` (internal) | Per-stream-pair context shared between C2S and S2C handlers. Modules see the interface — `sendToClient()` / `sendToServer()`, `sendAndAwait()`, attachments; the impl adds channel wiring and auth state. |
 | `PacketHandler` | Plugin interface. Returns `FORWARD` / `MODIFIED` / `DROP` / `HANDLED`. Receives `ProxySession` in every call. |
 | `ConnectObserver` | Captures the client's `identityToken` and logs `referralSource` from Pkt 0. |
-| `BackAuthHandler` | Intercepts Pkt 11 (S→C) and Pkt 12 (C→S) on the server-facing leg; performs BACK REST calls. |
-| `FrontAuthHandler` | Intercepts Pkt 11/12/13 on the client-facing leg; performs the FRONT REST call, drives S2C buffering and `FlushBufferingEvent`. |
-| `RouteGuard` | Drops Pkt 18 `ClientReferral` and clears `ServerInfo.fallbackServer` on Pkt 223. |
+| `BackAuthHandler` | Handles Pkt 11 (S→C) and Pkt 12 (C→S) on the server-facing leg; performs BACK REST calls. |
+| `FrontAuthHandler` | Handles Pkt 11/12/13 on the client-facing leg; performs the FRONT REST call, drives S2C buffering and `FlushBufferingEvent`. |
+| `RouteGuard` | Pins the connection to the proxy: rewrites referral / fallback addresses so the client doesn't re-resolve to the upstream server during the session. |
 | `ServerAccessLogger` | Pass-through audit log for the singleplayer access protocol (Pkts 250/251/252); redacts passwords. |
 | `PhaseTracker` | Advances `ProxySession.phase()` on lifecycle trigger packets so modules can gate by stage. |
 | `HytaleAuthState` | Thread-safe container for token futures and certificate fingerprints. |

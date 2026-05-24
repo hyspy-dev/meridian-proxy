@@ -3,9 +3,9 @@
 Meridian is a layered module platform. Custom logic — world tooling, client-side
 mods, analytics, CTF / research — ships as external JAR modules loaded at runtime.
 
-See [meridian-xray](../../meridian-xray) for a working Layer-2 reference, and the
-**Extending Meridian** section of the [README](../README.md) for the artifact
-layout.
+See [meridian-camera-tweaks](../../meridian-camera-tweaks) for a working
+Layer-2 reference, and the **Extending Meridian** section of the
+[README](../README.md) for the artifact layout.
 
 ## Two kinds of module
 
@@ -37,17 +37,17 @@ Every module JAR **must** contain `module.json` in its archive root:
 
 ```json
 {
-  "name": "Meridian Xray",
-  "version": "2.0.0",
-  "main": "meridian.xray.XrayModule",
+  "name": "Meridian Minimap",
+  "version": "0.1.0",
+  "main": "meridian.minimap.MinimapModule",
   "priority": 100,
   "minProxyVersion": "1.0.0",
   "maxProxyVersion": "2.0.0",
   "updateUrl": "https://github.com/you/your-module/releases",
-  "dependsOn": { "meridian-core": ">=0.1.0" },
+  "dependsOn": { "meridian-core": ">=0.2.0" },
   "requires": {
-    "packets": ["UpdateBlockTypes"],
-    "services": ["meridian.core.api.WorldState"]
+    "packets": ["CustomHud", "UpdateWorldMap", "ClientMovement", "JoinWorld"],
+    "services": ["meridian.core.api.EntityTracker"]
   }
 }
 ```
