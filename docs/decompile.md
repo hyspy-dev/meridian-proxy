@@ -51,10 +51,13 @@ changes the output and invalidates every future diff — don't.
 
 ## Current sync point
 
-`meridian-protocol` currently mirrors Hytale server **`pre-release-45`**
+`meridian-protocol` currently mirrors Hytale server **`release-14`**
 (in the new {@code YYYY.MM.DD-<commit>} naming the server-tree now uses;
 `versions.json` in `Hytale-Server-Unpacked-latest/hytale-server-unpacked/`
-maps the symbolic tag to the actual dated build).
+maps the symbolic tag to the actual dated build). Wire-format-wise this
+is identical to `pre-release-45` — same CRC `1316766548`, same build 100,
+same packet/struct/enum counts; the only protocol-tree diff is added
+range validation in `ViewRadius` (still 4-byte intLE).
 
 > **Versioning note.** Hytale builds prior to 2026-01 used `0.5.0-pre.N`.
 > Newer builds drop the SemVer-ish prefix and ship as `YYYY.MM.DD-<hash>`
