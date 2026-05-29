@@ -83,7 +83,7 @@ public class ProxyServer {
 
         SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
         QuicSslContext sslContext = QuicSslContextBuilder.forServer(ssc.key(), null, ssc.cert())
-                .applicationProtocols("hytale/2", "hytale/1")
+                .applicationProtocols("hytale/3", "hytale/2")
                 .clientAuth(ClientAuth.NONE)
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .build();

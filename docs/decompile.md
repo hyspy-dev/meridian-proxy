@@ -51,13 +51,17 @@ changes the output and invalidates every future diff — don't.
 
 ## Current sync point
 
-`meridian-protocol` currently mirrors Hytale server **`release-14`**
-(in the new {@code YYYY.MM.DD-<commit>} naming the server-tree now uses;
-`versions.json` in `Hytale-Server-Unpacked-latest/hytale-server-unpacked/`
-maps the symbolic tag to the actual dated build). Wire-format-wise this
-is identical to `pre-release-45` — same CRC `1316766548`, same build 100,
-same packet/struct/enum counts; the only protocol-tree diff is added
-range validation in `ViewRadius` (still 4-byte intLE).
+`meridian-protocol` currently mirrors Hytale server **`pre-release-48`**
+(`0.6.0-pre.1`, commit `7ce9c4a4d`; `versions.json` in
+`Hytale-Server-Unpacked-latest/hytale-server-unpacked/` maps the symbolic
+tag to the actual dated build). Protocol version `3`, build `101`,
+CRC `-2125278700`, ALPN `hytale/3`. The packet/struct/enum counts are
+unchanged from `release-15` (326/386/155); the `release-15 → pre-release-48`
+protocol-tree diff was confined to `ProtocolSettings` (CRC/version/build),
+`QuicApplicationErrorCode` (new `Crash(7)`) and `ChannelConnection`
+(new `clearPacketTimeout()`, `closeApplicationConnection(..., FormattedMessage)`).
+See [`PROTOCOL-CHANGES-release15-to-pre48.md`](../../../Hytale-Server-Unpacked-latest/hytale-server-unpacked/PROTOCOL-CHANGES-release15-to-pre48.md)
+for the full write-up.
 
 > **Versioning note.** Hytale builds prior to 2026-01 used `0.5.0-pre.N`.
 > Newer builds drop the SemVer-ish prefix and ship as `YYYY.MM.DD-<hash>`
