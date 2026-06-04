@@ -25,6 +25,11 @@ import meridian.internal.module.ModuleManager.SkippedModule;
  * Manages the proxy's log output: file logging, System.out/err tee, and optional Swing GUI.
  */
 public final class LogWindow {
+    /** Hard cap on lines kept in the log view — an unbounded (or megabyte-sized)
+     *  document makes the JTextArea's layout/repaint crawl on every append, so
+     *  under a flood of log lines the whole window appears to hang. */
+    private static final int MAX_LINES = 1000;
+
     private static JTextArea area;
     private static JFrame frame;
     private static FileOutputStream fileOut;
@@ -743,11 +748,15 @@ public final class LogWindow {
             if (area == null) return;
             SwingUtilities.invokeLater(() -> {
                 area.append(chunk);
-                // Cap buffer at ~1MB to avoid memory blowup
-                int max = 1_000_000;
-                int overflow = area.getDocument().getLength() - max;
-                if (overflow > 0) {
-                    try { area.getDocument().remove(0, overflow); } catch (Exception ignored) {}
+                // Keep only the most recent MAX_LINES lines: drop everything up
+                // to the end of the oldest line(s) that overflow the cap. A
+                // line-bounded document keeps repaint cheap under a log flood.
+                int excess = area.getLineCount() - MAX_LINES;
+                if (excess > 0) {
+                    try {
+                        int removeTo = area.getLineEndOffset(excess - 1);
+                        area.getDocument().remove(0, removeTo);
+                    } catch (Exception ignored) {}
                 }
                 area.setCaretPosition(area.getDocument().getLength());
             });
