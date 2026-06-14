@@ -5,6 +5,7 @@ import meridian.api.session.ProxySession;
 import meridian.api.session.SessionPhase;
 import meridian.internal.HytaleAuthState;
 import meridian.internal.Version;
+import meridian.protocol.PacketRegistry;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.PacketStatsRecorder;
 import io.netty.buffer.ByteBuf;
@@ -140,25 +141,39 @@ public class ProxySessionImpl implements ProxySession {
 
     @Override
     public void sendToClient(Packet packet) {
-        ByteBuf framed = frame(packet);
+        ByteBuf framed = frame(packet, false);
         if (framed != null) sendRawToClient(framed);
     }
 
     @Override
     public void sendToServer(Packet packet) {
-        ByteBuf framed = frame(packet);
+        ByteBuf framed = frame(packet, true);
         if (framed != null) sendRawToServer(framed);
     }
 
-    /** Serialises a packet into a fresh framed buffer, or null on failure. */
-    private ByteBuf frame(Packet packet) {
+    /**
+     * Serialises a packet into a fresh framed buffer, or null on failure. The
+     * {@code toServer} direction picks the matching registry table — a C2S
+     * packet ({@code ClientMovement}, {@code DropItemStack}) lives only in the
+     * to-server table, so framing it through the to-client table would NPE.
+     */
+    private ByteBuf frame(Packet packet, boolean toServer) {
         if (!(packet instanceof meridian.protocol.Packet p)) {
             log.warn("sendTo*: {} is not a protocol packet — ignored", packet);
             return null;
         }
+        Integer id = PacketRegistry.getId(p.getClass());
+        PacketRegistry.PacketInfo info = id == null ? null
+                : (toServer ? PacketRegistry.getToServerPacketById(id)
+                            : PacketRegistry.getToClientPacketById(id));
+        if (info == null) {
+            log.error("sendTo*: {} is not registered as a {} packet — cannot serialise",
+                    p.getClass().getSimpleName(), toServer ? "C2S" : "S2C");
+            return null;
+        }
         ByteBuf out = Unpooled.buffer();
         try {
-            PacketIO.writeFramedPacket(p, p.getClass(), out, out.alloc(), PacketStatsRecorder.NOOP);
+            PacketIO.writeFramedPacketWithInfo(p, info, out, out.alloc(), PacketStatsRecorder.NOOP);
             return out;
         } catch (Exception e) {
             log.error("sendTo*: failed to serialise {}: {}", p.getClass().getSimpleName(), e.toString());
