@@ -1,39 +1,19 @@
 package meridian.internal;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.incubator.codec.quic.*;
 import meridian.internal.auth.LauncherSessionMinter;
 import meridian.internal.core.ProxyConfig;
-import meridian.internal.core.QuicConfig;
 import meridian.internal.core.LauncherBridge;
-import meridian.api.event.EventBus;
-import meridian.internal.module.HandlerRegistry;
-import meridian.internal.module.ModuleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.util.Base64;
-import java.util.concurrent.TimeUnit;
-
 /**
- * Main entry point for the Hytale MITM Proxy (QUIC Implementation).
- * Listens for QUIC connections and proxies streams to the target server.
+ * Entry point for the Hytale MITM Proxy (QUIC). Performs run-mode dispatch and
+ * owns the <em>current</em> {@link ConnectionScope}; the scope owns everything
+ * connection-scoped (module runtime, QUIC listener, live connections) and its
+ * own teardown. The static {@code connect/disconnect} facade lets the GUI drive
+ * the lifecycle without knowing about {@link ConnectionScope}.
  */
 public class ProxyServer {
     // IMPORTANT: install Swing log window + tee System.err/out BEFORE slf4j-simple
@@ -60,117 +40,18 @@ public class ProxyServer {
 
     private static final Logger log = LoggerFactory.getLogger(ProxyServer.class);
 
-    private final String remoteHost;
-    private final int remotePort;
-    private final int localPort;
-    private final String clientSessionToken;
-    private final String serverSessionToken;
-    private final String serverIdentityToken;
-    private final ModuleManager moduleManager;
-
-    public ProxyServer(ProxyConfig config, ModuleManager moduleManager) {
-        this.remoteHost = config.remoteHost();
-        this.remotePort = config.remotePort();
-        this.localPort = config.localPort();
-        this.clientSessionToken = config.clientToken();
-        this.serverSessionToken = config.serverToken();
-        this.serverIdentityToken = config.identityToken();
-        this.moduleManager = moduleManager;
-    }
-
-    public void start() throws Exception {
-        log.info("Starting Hytale MITM QUIC Proxy on port {} -> {}:{}", localPort, remoteHost, remotePort);
-
-        SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
-        QuicSslContext sslContext = QuicSslContextBuilder.forServer(ssc.key(), null, ssc.cert())
-                .applicationProtocols("hytale/2", "hytale/1")
-                .clientAuth(ClientAuth.NONE)
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
-
-        // ---- Prepare Hytale session auth state ----
-        logEnv("HYTALE_SESSION_TOKEN", clientSessionToken);
-        logEnv("HYTALE_SERVER_SESSION_TOKEN", serverSessionToken);
-        logEnv("HYTALE_SERVER_IDENTITY_TOKEN", serverIdentityToken);
-        byte[] certDer = ssc.cert().getEncoded();
-        byte[] sha256 = MessageDigest.getInstance("SHA-256").digest(certDer);
-        String fingerprintB64Url = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256);
-        log.info("Proxy self-signed cert SHA-256 fingerprint (b64url): {}", fingerprintB64Url);
-        final HytaleSessionApi clientApi = new HytaleSessionApi(clientSessionToken != null ? clientSessionToken : "");
-        final HytaleSessionApi serverApi = new HytaleSessionApi(serverSessionToken != null ? serverSessionToken : "");
-        final String fp = fingerprintB64Url;
-        final String serverIdent = serverIdentityToken;
-        final HandlerRegistry handlerRegistry = moduleManager.handlerRegistry();
-        final EventBus eventBus = moduleManager.eventBus();
-
-        NioEventLoopGroup group = new NioEventLoopGroup();
-
-        try {
-            Bootstrap b = new Bootstrap();
-            b.group(group)
-                    .channel(io.netty.channel.socket.nio.NioDatagramChannel.class)
-                    // Large UDP socket buffers: the Hytale setup payload arrives as a
-                    // multi-megabyte burst. With the OS-default ~64 KB receive buffer the
-                    // kernel drops datagrams whenever the event loop hiccups, which QUIC
-                    // sees as loss → retransmit storm → setup timeout.
-                    .option(ChannelOption.SO_RCVBUF, 8 * 1024 * 1024)
-                    .option(ChannelOption.SO_SNDBUF, 4 * 1024 * 1024)
-                    .handler(new LoggingHandler("UDP_RAW", LogLevel.DEBUG))
-                    .handler(QuicConfig.configure(new QuicServerCodecBuilder()
-                            .sslContext(sslContext)
-                            .tokenHandler(null))
-                            .handler(new ChannelInitializer<QuicChannel>() {
-                                @Override
-                                protected void initChannel(QuicChannel ch) {
-                                    log.info("New QUIC connection from {}", ch.remoteAddress());
-                                    ch.pipeline().addFirst(new LoggingHandler("FRONTEND_CONN", LogLevel.INFO));
-                                    ch.pipeline().addLast(new ProxyFrontendHandler(remoteHost, remotePort, ssc,
-                                            new HytaleAuthState(fp, fp, serverIdent, clientApi, serverApi),
-                                            handlerRegistry, eventBus));
-                                }
-                            })
-                            .streamHandler(new LoggingHandler("STREAM_RAW", LogLevel.INFO))
-                            .build());
-
-            ChannelFuture f = b.bind(localPort).sync();
-            activeServerChannel.set(f.channel());
-            activeGroup.set(group);
-
-            // Magic prints for launcher compatibility
-            System.out.println("Listening on /127.0.0.1:" + localPort);
-            System.out.println("Listening on /[0:0:0:0:0:0:0:1]:" + localPort);
-            System.out.println("-=|Enabled|0");
-            System.out.println(ProxyConfig.READY_SIGNAL);
-            System.out.flush();
-
-            log.info("QUIC Proxy is ready and listening.");
-            LogWindow.onProxyStarted(remoteHost, remotePort, localPort);
-            f.channel().closeFuture().sync();
-        } finally {
-            activeServerChannel.compareAndSet(activeServerChannel.get(), null);
-            activeGroup.compareAndSet(activeGroup.get(), null);
-            group.shutdownGracefully();
-            LogWindow.onProxyStopped();
-        }
-    }
-
-    /** Module manager + active proxy reference for the GUI Connect path. */
-    private static ModuleManager sharedModuleManager;
-    private static final AtomicReference<Channel> activeServerChannel = new AtomicReference<>();
-    private static final AtomicReference<NioEventLoopGroup> activeGroup = new AtomicReference<>();
+    /** The active connection lifecycle, or null when disconnected. */
+    private static final AtomicReference<ConnectionScope> current = new AtomicReference<>();
 
     public static void main(String[] args) throws Exception {
         ProxyConfig config = ProxyConfig.fromArgs(args);
 
         log.info("Meridian Proxy {} — releases: {}", Version.VERSION, Version.RELEASES_URL);
 
-        ModuleManager mm = new ModuleManager();
-        LogWindow.setModuleManager(mm);
-        sharedModuleManager = mm;
-
         if (config.standalone()) {
-            // GUI standalone — the target server is unknown until Connect, so
-            // its per-server modules are loaded later in connectStandalone().
+            // GUI standalone — the target server is unknown until Connect, so the
+            // connection scope (and its per-server modules) is built in
+            // connectStandalone() once the user picks a remote.
             log.info("Standalone mode — waiting for Connect from the GUI.");
             LogWindow.enterStandaloneMode(
                     ProxyConfig.findArg(args, "--remote"),
@@ -178,19 +59,8 @@ public class ProxyServer {
             return;
         }
 
-        // Launcher / CLI: the remote is known now. Launcher mode keeps the
-        // world-local ./modules; everything else gets a per-server workspace
-        // <jar-dir>/<host_port>/ with modules/ inside it, so a module may also
-        // write its own files under <host_port>.
-        Path modulesDir = config.launchedByLauncher()
-                ? Paths.get("modules")
-                : ProxyConfig.jarDir()
-                        .resolve(ProxyConfig.sanitizeHostPort(config.remoteHost(), config.remotePort()))
-                        .resolve("modules");
-        mm.loadModules(modulesDir);
-        LogWindow.updateModuleList();
-
-        // Enforce magic progress bars for launcher compatibility
+        // Launcher / CLI: the remote is known now, so build the scope and run it
+        // (blocking) on this thread — the process lifetime is the one connection.
         ProxyConfig.printLauncherProgress();
 
         // Mode 3 (CLI): only the player session was supplied (--session-token) — derive the
@@ -219,33 +89,28 @@ public class ProxyServer {
             bridge.launchAndWait();
         }
 
-        new ProxyServer(config, mm).start();
+        ConnectionScope scope = new ConnectionScope(config, false);
+        current.set(scope);
+        try {
+            scope.run(); // blocks until disconnect / process end
+        } finally {
+            current.compareAndSet(scope, null);
+        }
     }
 
     /**
-     * Called from the GUI Connect button (standalone mode). Takes the player session
-     * token from the GUI (snoop-filled or pasted), derives the server-scope tokens via
-     * /game-session/child, builds a standalone config, and starts a non-blocking
-     * listener on a background thread. Idempotent on already-active state.
+     * Called from the GUI Connect button (standalone mode). Derives the server-scope
+     * tokens from the player session, builds a fresh {@link ConnectionScope}, and runs
+     * it on a background thread. No-op if a scope is already active.
      *
      * @throws IllegalStateException if the token is missing or the /child hop fails.
      */
     public static synchronized void connectStandalone(String remoteHost, int remotePort, int localPort,
-                                                       String playerSessionToken) {
-        if (activeServerChannel.get() != null) {
+                                                      String playerSessionToken) {
+        ConnectionScope existing = current.get();
+        if (existing != null && existing.state() != ConnectionScope.State.DISCONNECTED) {
             log.warn("connectStandalone: already connected; disconnect first.");
             return;
-        }
-
-        // Load this server's module set now that host:port is known. One load
-        // per process — reconnecting to a different server is a new-process
-        // operation (see architecture §3).
-        if (sharedModuleManager.getLoadedModules().isEmpty()) {
-            Path modulesDir = ProxyConfig.jarDir()
-                    .resolve(ProxyConfig.sanitizeHostPort(remoteHost, remotePort))
-                    .resolve("modules");
-            sharedModuleManager.loadModules(modulesDir);
-            LogWindow.updateModuleList();
         }
 
         LauncherSessionMinter.SessionBundle bundle;
@@ -261,52 +126,33 @@ public class ProxyServer {
 
         log.info("Standalone Connect: localhost:{} -> {}:{} (profile={})",
                 cfg.localPort(), cfg.remoteHost(), cfg.remotePort(), bundle.profileUuid());
+
+        ConnectionScope scope = new ConnectionScope(cfg, true);
+        current.set(scope);
         Thread t = new Thread(() -> {
             try {
-                new ProxyServer(cfg, sharedModuleManager).start();
+                scope.run();
             } catch (Exception e) {
                 log.error("Standalone proxy thread terminated", e);
-                LogWindow.onProxyFailed(formatBindError(e, cfg.localPort()));
+            } finally {
+                current.compareAndSet(scope, null);
             }
         }, "MeridianProxy-Standalone");
         t.setDaemon(true);
         t.start();
     }
 
-    private static String formatBindError(Throwable e, int port) {
-        String msg = e.getMessage() != null ? e.getMessage() : e.toString();
-        Throwable cause = e;
-        while (cause != null) {
-            if (cause instanceof java.net.BindException
-                    || (cause.getMessage() != null && cause.getMessage().toLowerCase().contains("address already in use"))) {
-                return "Local port " + port + " is already in use.\n\n"
-                        + "If a Hytale single-player session is running, it occupies 5520. "
-                        + "Either close it, or pick a different Local port and use it in Direct Connect.";
-            }
-            cause = cause.getCause();
-        }
-        return "Failed to start: " + msg;
-    }
-
+    /** Requests a clean disconnect of the active connection (UI Disconnect button). */
     public static synchronized void disconnectStandalone() {
-        Channel ch = activeServerChannel.getAndSet(null);
-        NioEventLoopGroup g = activeGroup.getAndSet(null);
-        if (ch != null) {
-            log.info("Disconnecting active proxy listener");
-            ch.close();
+        ConnectionScope scope = current.get();
+        if (scope != null) {
+            log.info("Disconnect requested via UI.");
+            scope.requestDisconnect(true);
         }
-        if (g != null) g.shutdownGracefully();
     }
 
     public static boolean isStandaloneActive() {
-        return activeServerChannel.get() != null;
-    }
-
-    private static void logEnv(String name, String value) {
-        if (value != null && !value.isEmpty()) {
-            log.info("  {} = {}... (len={})", name, value.substring(0, Math.min(value.length(), 10)), value.length());
-        } else {
-            log.warn("  {} is empty. Auth may fail.", name);
-        }
+        ConnectionScope scope = current.get();
+        return scope != null && scope.isActive();
     }
 }

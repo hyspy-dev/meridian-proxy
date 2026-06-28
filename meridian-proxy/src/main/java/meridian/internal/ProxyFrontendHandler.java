@@ -58,6 +58,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
     private final HytaleAuthState auth;
     private final HandlerRegistry handlerRegistry;
     private final EventBus eventBus;
+    private final ConnectionScope scope;
     private volatile QuicChannel backendConnection;
     private volatile String sniHostname;
     private boolean backendInitiated = false;
@@ -75,13 +76,15 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
             QuicStreamType.class);
 
     public ProxyFrontendHandler(String remoteHost, int remotePort, SelfSignedCertificate ssc,
-            HytaleAuthState auth, HandlerRegistry handlerRegistry, EventBus eventBus) {
+            HytaleAuthState auth, HandlerRegistry handlerRegistry, EventBus eventBus,
+            ConnectionScope scope) {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.ssc = ssc;
         this.auth = auth;
         this.handlerRegistry = handlerRegistry;
         this.eventBus = eventBus;
+        this.scope = scope;
 
         nextExpectedBackStreamId.put(QuicStreamType.BIDIRECTIONAL, 1L);
         nextExpectedBackStreamId.put(QuicStreamType.UNIDIRECTIONAL, 3L);
@@ -97,6 +100,18 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.info("Client connected. Waiting for handshake...");
+        scope.onClientConnected((QuicChannel) ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        log.info("Client connection closed — tearing down backend leg.");
+        QuicChannel backend = backendConnection;
+        if (backend != null && backend.isActive()) {
+            backend.close();
+        }
+        scope.onClientClosed((QuicChannel) ctx.channel());
+        ctx.fireChannelInactive();
     }
 
     private synchronized void initiateBackendConnection(ChannelHandlerContext ctx) {
@@ -198,7 +213,13 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
 
                                         @Override
                                         public void channelInactive(ChannelHandlerContext c) {
-                                            log.warn("Backend connection INACTIVE (closed).");
+                                            log.warn("Backend connection INACTIVE (closed) — closing client leg.");
+                                            // Propagate the server-side close to the client so a
+                                            // server-initiated drop converges on the same teardown
+                                            // path as a client drop (frontend channelInactive).
+                                            if (inboundChannel.isActive()) {
+                                                inboundChannel.close();
+                                            }
                                             c.fireChannelInactive();
                                         }
 
@@ -370,7 +391,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         handlers.add(new ConnectObserver(dir));
         handlers.add(new BackAuthHandler(dir, forwarder));
         handlers.add(new FrontAuthHandler(dir));
-        handlers.add(new RouteGuard(dir));
+        handlers.add(new RouteGuard(dir, scope));
         handlers.add(new ServerAccessLogger(dir));
         handlers.add(new PhaseTracker(dir, eventBus));
 

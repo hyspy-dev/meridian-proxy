@@ -43,6 +43,8 @@ public final class LogWindow {
     private static JLabel settingsTitle;
     private static JPanel settingsContent;
 
+    private static JPanel northCards;
+    private static CardLayout northLayout;
     private static JPanel authBar;
     private static JLabel gameStatusDot;
     private static JLabel gameStatusText;
@@ -51,7 +53,13 @@ public final class LogWindow {
     private static JTextField localPortField;
     private static JTextField sessionTokenField;
     private static JButton connectButton;
+    private static JLabel connectedLabel;
+    private static JButton disconnectButton;
     private static volatile boolean standaloneMode = false;
+
+    /** Card names for the north area: the Connect form vs. the Connected status bar. */
+    private static final String CARD_CONNECT = "CONNECT";
+    private static final String CARD_CONNECTED = "CONNECTED";
 
     private LogWindow() {}
 
@@ -273,8 +281,13 @@ public final class LogWindow {
 
         frame.setLayout(new BorderLayout());
         authBar = buildAuthBar();
-        authBar.setVisible(false); // hidden until enterStandaloneMode() is called
-        frame.add(authBar, BorderLayout.NORTH);
+        JPanel connectedBar = buildConnectedBar();
+        northLayout = new CardLayout();
+        northCards = new JPanel(northLayout);
+        northCards.add(authBar, CARD_CONNECT);
+        northCards.add(connectedBar, CARD_CONNECTED);
+        northCards.setVisible(false); // hidden until enterStandaloneMode() is called
+        frame.add(northCards, BorderLayout.NORTH);
         frame.add(splitPane, BorderLayout.CENTER);
         frame.add(buildStatusBar(), BorderLayout.SOUTH);
 
@@ -413,45 +426,108 @@ public final class LogWindow {
         });
     }
 
-    /** Called from ProxyServer.start() when bind fails (port in use, permission denied, etc.) */
-    public static void onProxyFailed(String message) {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(frame, message, "Proxy failed to start", JOptionPane.ERROR_MESSAGE);
-            if (standaloneMode && authBar != null) {
-                authBar.setVisible(true);
-                if (connectButton != null) {
-                    connectButton.setText("Connect");
-                    updateConnectEnabled();
-                }
+    /** The "Connected to X — [Disconnect]" bar, shown in place of the Connect form while a session is live. */
+    private static JPanel buildConnectedBar() {
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        bar.setBackground(new Color(32, 32, 32));
+        bar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(50, 50, 50)));
+
+        JLabel dot = new JLabel("●");
+        dot.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        dot.setForeground(new Color(111, 207, 151));
+        bar.add(dot);
+
+        connectedLabel = new JLabel("Connected");
+        connectedLabel.setForeground(new Color(210, 210, 210));
+        connectedLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        bar.add(connectedLabel);
+
+        bar.add(verticalSeparator());
+
+        disconnectButton = new JButton("Disconnect");
+        disconnectButton.setFocusPainted(false);
+        disconnectButton.setMargin(new Insets(2, 14, 2, 14));
+        disconnectButton.setToolTipText("Close the session and unload its modules; returns to the Connect form");
+        disconnectButton.addActionListener(e -> performDisconnect());
+        bar.add(disconnectButton);
+
+        return bar;
+    }
+
+    private static void performDisconnect() {
+        if (disconnectButton != null) {
+            disconnectButton.setEnabled(false);
+            disconnectButton.setText("Disconnecting…");
+        }
+        // requestDisconnect is non-blocking, but run it off the EDT to be safe; the
+        // UI flips back to the Connect form when teardown fires onProxyStopped().
+        Thread.startVirtualThread(() -> {
+            try {
+                meridian.internal.ProxyServer.disconnectStandalone();
+            } catch (Throwable ex) {
+                SwingUtilities.invokeLater(() -> {
+                    if (disconnectButton != null) {
+                        disconnectButton.setText("Disconnect");
+                        disconnectButton.setEnabled(true);
+                    }
+                });
             }
         });
     }
 
-    /** Called from ProxyServer.start() once the listener is bound — hide auth bar in standalone, log target. */
+    /** Called from ConnectionScope when bind fails (port in use, permission denied, etc.) */
+    public static void onProxyFailed(String message) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(frame, message, "Proxy failed to start", JOptionPane.ERROR_MESSAGE);
+            if (standaloneMode) showConnectCard();
+        });
+    }
+
+    /** Called from ConnectionScope once the listener is bound — show the Connected bar, log target. */
     public static void onProxyStarted(String remoteHost, int remotePort, int localPort) {
         SwingUtilities.invokeLater(() -> {
-            if (authBar != null) authBar.setVisible(false);
             if (frame != null) {
                 frame.setTitle("Meridian Proxy " + Version.VERSION + " — " + remoteHost + ":" + remotePort
                         + " (listening on localhost:" + localPort + ")");
             }
+            if (standaloneMode) {
+                if (connectedLabel != null) {
+                    connectedLabel.setText("Connected to " + remoteHost + ":" + remotePort
+                            + "   (listening on localhost:" + localPort + ")");
+                }
+                if (disconnectButton != null) {
+                    disconnectButton.setText("Disconnect");
+                    disconnectButton.setEnabled(true);
+                }
+                showCard(CARD_CONNECTED);
+            }
         });
     }
 
-    /** Called from ProxyServer.start()'s finally — re-show auth bar in standalone mode. */
+    /** Called from ConnectionScope teardown — return to the Connect form in standalone mode. */
     public static void onProxyStopped() {
         SwingUtilities.invokeLater(() -> {
             if (frame != null) {
                 frame.setTitle("Meridian Proxy " + Version.VERSION + " — Management");
             }
-            if (standaloneMode && authBar != null) {
-                authBar.setVisible(true);
-                if (connectButton != null) {
-                    connectButton.setText("Connect");
-                    updateConnectEnabled();
-                }
-            }
+            if (standaloneMode) showConnectCard();
         });
+    }
+
+    /** Shows the Connect form card and resets its Connect button to a ready state. */
+    private static void showConnectCard() {
+        showCard(CARD_CONNECT);
+        if (connectButton != null) {
+            connectButton.setText("Connect");
+            updateConnectEnabled();
+        }
+    }
+
+    private static void showCard(String card) {
+        if (northCards != null && northLayout != null) {
+            northCards.setVisible(true);
+            northLayout.show(northCards, card);
+        }
     }
 
     /**
@@ -464,7 +540,7 @@ public final class LogWindow {
     public static void enterStandaloneMode(String remoteHint, String bindHint) {
         standaloneMode = true;
         SwingUtilities.invokeLater(() -> {
-            if (authBar != null) authBar.setVisible(true);
+            showCard(CARD_CONNECT);
             if (remoteHint != null && !remoteHint.isBlank() && remoteField != null) {
                 remoteField.setText(remoteHint.trim());
             } else if (remoteField != null && remoteField.getText().isBlank()) {

@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.jar.JarEntry;
@@ -56,12 +56,14 @@ public class ModuleManager {
     private static final Gson gson = new Gson();
 
     private final HandlerRegistry handlerRegistry = new HandlerRegistry();
-    private final Executor offloadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService offloadExecutor = Executors.newVirtualThreadPerTaskExecutor();
     private final EventBus eventBus = new EventBusImpl(offloadExecutor);
     private final ServiceRegistry serviceRegistry = new ServiceRegistryImpl();
     private final List<ModuleEntry> loadedModules = new ArrayList<>();
     private final List<SkippedModule> skippedModules = new ArrayList<>();
     private Path currentPluginsDir;
+    /** The shared loader built in {@link #loadModules}; held so {@link #shutdown} can close it. */
+    private URLClassLoader sharedLoader;
 
     /** Packet-handler factories registered by modules; consumed by the pipeline. */
     public HandlerRegistry handlerRegistry() {
@@ -150,7 +152,7 @@ public class ModuleManager {
             for (ModuleMetadataWrapper w : ordered) {
                 urls.add(w.file.toURI().toURL());
             }
-            URLClassLoader sharedLoader = new URLClassLoader(
+            this.sharedLoader = new URLClassLoader(
                     urls.toArray(new URL[0]), getClass().getClassLoader());
 
             // 6. Load + enable in dependency order.
@@ -457,6 +459,30 @@ public class ModuleManager {
             entry.context.runShutdown();
         }
         loadedModules.clear();
+    }
+
+    /**
+     * Fully tears down this module runtime: disables every module, then releases
+     * the resources the runtime holds — the shared class loader and the offload
+     * executor. The other runtime state ({@link HandlerRegistry}, {@link EventBus},
+     * {@link ServiceRegistry}) is per-instance and reclaimed when this
+     * {@code ModuleManager} is dropped, so a fresh connection builds a fresh one.
+     *
+     * <p>Idempotent. After this returns the instance must not be reused.
+     */
+    public void shutdown() {
+        disableModules();
+        skippedModules.clear();
+        if (sharedLoader != null) {
+            try {
+                sharedLoader.close();
+            } catch (Exception e) {
+                log.warn("Failed to close module class loader: {}", e.toString());
+            }
+            sharedLoader = null;
+        }
+        offloadExecutor.shutdownNow();
+        log.info("Module runtime shut down.");
     }
 
     /**
