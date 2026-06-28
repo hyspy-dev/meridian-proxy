@@ -510,6 +510,19 @@ public final class LogWindow {
             if (frame != null) {
                 frame.setTitle("Meridian Proxy " + Version.VERSION + " — Management");
             }
+            // The disconnect tore down the module runtime; a module settings panel
+            // shown in the SETTINGS card now references a dead module (its buttons
+            // would call a torn-down scheduler/session). Drop back to the console and
+            // discard the stale panel — re-opening a module after reconnect renders a
+            // fresh one against the new runtime.
+            if (cardLayout != null && mainContainer != null) {
+                cardLayout.show(mainContainer, "CONSOLE");
+            }
+            if (settingsContent != null) {
+                settingsContent.removeAll();
+                settingsContent.revalidate();
+                settingsContent.repaint();
+            }
             if (standaloneMode) showConnectCard();
         });
     }
