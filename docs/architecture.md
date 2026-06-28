@@ -35,10 +35,12 @@ The proxy operates as two independent QUIC endpoints sharing a common authentica
 | **LauncherBridge** | Handles `_HytaleServer.jar` subprocess lifecycle and sync (Mode 1) |
 | **ProxyConfig** | CLI/env resolution + runtime constants, run-mode detection |
 | **QuicConfig** | Builds the QUIC server & client codecs |
-| **ModuleManager** | Dynamic loading of external JAR modules |
-| **Frontend (`ProxyServer` + `ProxyFrontendHandler`)** | Acts as a Hytale server to the client |
+| **ProxyServer** | Process entry point + run-mode dispatch; holds the *current* `ConnectionScope` behind a static connect/disconnect facade |
+| **ConnectionScope** | Owns one connect→disconnect lifecycle: the module runtime, the QUIC listener, every live connection, and the single idempotent teardown. Rebuilt per Connect (see [Connection Lifecycle](#connection-lifecycle)) |
+| **ModuleManager** | Per-connection runtime for external JAR modules — built fresh on Connect, fully unloaded on Disconnect |
+| **Frontend (`ProxyFrontendHandler`)** | Acts as a Hytale server to the client |
 | **Backend (QUIC client bootstrap in `ProxyFrontendHandler`)** | Acts as a Hytale client to the real server |
-| **HandlerRegistry** | Per-run instance (owned by `ModuleManager`) holding module packet-handler factories, keyed by `Direction` + `HandlerPosition` |
+| **HandlerRegistry** | Per-connection instance (owned by `ModuleManager`) holding module packet-handler factories, keyed by `Direction` + `HandlerPosition` |
 
 ## Connection Topology
 
@@ -61,6 +63,54 @@ sequenceDiagram
 ```
 
 The proxy uses a **single self-signed certificate** (`SelfSignedCertificate("localhost")`) for both the frontend (as TLS server cert) and the backend (as mTLS client cert). The SHA-256 fingerprint of this certificate (`fp`) is used as the `x509Fingerprint` parameter in all REST calls to `sessions.hytale.com`.
+
+## Connection Lifecycle
+
+A single proxy process supports **connect → play → disconnect → connect again**
+(to the same or a different server). Everything connection-scoped is rebuilt on
+Connect and fully unloaded on Disconnect, so one launch is no longer one
+connection.
+
+`ConnectionScope` owns one connect→disconnect lifecycle. Each Connect builds a
+fresh scope holding its own `ModuleManager` (and therefore a fresh
+`HandlerRegistry` / `EventBus` / `ServiceRegistry` / class loader), the QUIC
+listener channel + event-loop group, and the set of live client connections. A
+CAS state machine guards the transitions:
+
+```
+        connect()                 bind ok
+DISCONNECTED ──► CONNECTING ───────────────► CONNECTED
+     ▲              │                            │
+     │   bind fails │       requestDisconnect()  │  (UI button / client drop / server drop)
+     └────────── DISCONNECTING ◄─────────────────┘
+                    │  (teardown on the listener thread)
+                    └──► DISCONNECTED
+```
+
+**Single teardown, three origins.** A disconnect can be triggered by the UI
+Disconnect button, by the client dropping (`ProxyFrontendHandler.channelInactive`
+closes the backend leg), or by the real server dropping (the backend adapter
+closes the client leg). All three converge on one idempotent teardown that closes
+the live connections first (so each leg gets a clean QUIC `CONNECTION_CLOSE`),
+then the listener, then shuts the event-loop group and unloads the module runtime
+(`ModuleManager.shutdown()` runs `onDisable`, closes the class loader, stops the
+offload executor). Idempotency comes from the state CAS plus `isActive` guards, so
+"already disconnected" and "one side still open" are no-ops.
+
+**Per-connection modules.** Because the module runtime is owned by the scope and
+recomputed from the connect's `host:port`, reconnecting to a *different* server
+loads that server's module set with no process restart. Module authors must
+release resources in `onDisable` / `onShutdown` — the class-loader close and
+executor shutdown assume it (see [modules.md](modules.md)).
+
+**Server redirect (follow-referral).** When the upstream sends a `ClientReferral`
+(Pkt 18) the proxy follows it transparently: it repoints the scope's backend
+target at the real host and rewrites `hostTo` to the proxy's own address, so the
+client drops and reconnects *through the proxy* to the new server. The referral
+`data` blob rides along untouched as `Connect.referralData`; the new server only
+presence-checks `referralSource`, so no further rewrite is needed. The scope stays
+`CONNECTED` across the reconnect (the drop is recognised as a redirect, not a
+disconnect). See `RouteGuard` in [Pipeline Architecture](#pipeline-architecture).
 
 ## Token Model
 
@@ -198,8 +248,10 @@ Every packet on every QUIC stream uses the same binary framing:
 | 15 | `PasswordResponse` | C→S | Forward with logging |
 | 16 | `PasswordAccepted` | S→C | Forward with logging |
 | 17 | `PasswordRejected` | S→C | Forward with logging |
+| 18 | `ClientReferral` | S→C | **Follow** (`RouteGuard`). Retarget the backend, rewrite `hostTo` to the proxy. |
 | 20 | `WorldSettings` | S→C | Forward (buffered during auth) |
 | 34 | `JoinWorld` | S→C | Forward |
+| 223 | `ServerInfo` | S→C | Clear `fallbackServer` (`RouteGuard`); forward the rest. |
 | * | All others | Both | Forward transparently |
 
 ## QUIC Stream Management
@@ -281,8 +333,9 @@ original raw frame unchanged — the stream is never corrupted.
 
 | Class | Responsibility |
 |-------|---------------|
-| `ProxyServer` | Bootstraps QUIC server and client codecs. Run-mode dispatch. Initializes `HytaleAuthState`. |
-| `ProxyFrontendHandler` | Manages the QUIC connection lifecycle. Bridges client streams to backend streams with ordering guarantees. Wires up the per-stream pipeline. |
+| `ProxyServer` | Process entry point + run-mode dispatch. Holds the *current* `ConnectionScope` behind a static `connectStandalone` / `disconnectStandalone` facade for the GUI. |
+| `ConnectionScope` | Owns one connect→disconnect lifecycle (state machine, module runtime, QUIC listener + group, live connections, single teardown). Bootstraps the QUIC server codec, initializes `HytaleAuthState` per connection, and follows server redirects. See [Connection Lifecycle](#connection-lifecycle). |
+| `ProxyFrontendHandler` | Manages one client-facing QUIC connection. Bridges client streams to backend streams with ordering guarantees, wires the per-stream pipeline, and on close tears down the backend leg + notifies the scope. |
 | `PacketCodec` | Accumulates raw bytes, parses `[len\|id\|payload]` frames, emits `PacketFrame` objects. |
 | `PacketRouter` | Iterates registered `PacketHandler`s for each frame. `FORWARD` → ships the original raw frame; `MODIFIED` → re-serialises the mutated `Packet` (Zstd-aware). |
 | `PacketForwarder` | Writes framed packets to the target channel. Manages pending queue, target readiness polling, and S2C buffering. |
@@ -291,7 +344,7 @@ original raw frame unchanged — the stream is never corrupted.
 | `ConnectObserver` | Captures the client's `identityToken` and logs `referralSource` from Pkt 0. |
 | `BackAuthHandler` | Handles Pkt 11 (S→C) and Pkt 12 (C→S) on the server-facing leg; performs BACK REST calls. |
 | `FrontAuthHandler` | Handles Pkt 11/12/13 on the client-facing leg; performs the FRONT REST call, drives S2C buffering and `FlushBufferingEvent`. |
-| `RouteGuard` | Pins the connection to the proxy: rewrites referral / fallback addresses so the client doesn't re-resolve to the upstream server during the session. |
+| `RouteGuard` | Keeps the client routed through the proxy across redirects. **Follows** `ClientReferral` (Pkt 18): repoints the scope's backend target at the real `hostTo` and rewrites `hostTo` to the proxy's own address so the client reconnects through us (referral `data` relayed untouched). Clears `ServerInfo.fallbackServer` (Pkt 223) — fallback hops are not yet followed. |
 | `ServerAccessLogger` | Pass-through audit log for the singleplayer access protocol (Pkts 250/251/252); redacts passwords. |
 | `PhaseTracker` | Advances `ProxySession.phase()` on lifecycle trigger packets so modules can gate by stage. |
 | `HytaleAuthState` | Thread-safe container for token futures and certificate fingerprints. |
@@ -341,8 +394,9 @@ meridian-proxy/                          # git root — parent (aggregator) POM
 │
 └── meridian-proxy/                      # the implementation — builds the runnable uber-jar
     └── src/main/java/meridian/internal/ # never exposed to modules
-        ├── ProxyServer            # entry point, QUIC bootstrap, run-mode dispatch
-        ├── ProxyFrontendHandler   # QUIC lifecycle, stream bridging, backend connect
+        ├── ProxyServer            # process entry point, run-mode dispatch, connect/disconnect facade
+        ├── ConnectionScope        # per-connection lifecycle: QUIC bootstrap, module runtime, teardown, redirect
+        ├── ProxyFrontendHandler   # QUIC lifecycle, stream bridging, backend connect + teardown
         ├── HytaleAuthState        # shared token/fingerprint state
         ├── HytaleSessionApi       # async REST client for sessions.hytale.com
         ├── LogWindow              # Swing window + standalone connection bar

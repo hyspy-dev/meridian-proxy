@@ -31,6 +31,21 @@ All module JARs load into one shared class loader. Load order is the topological
 sort of `dependsOn` (a module always loads after its dependencies); `order.json`
 next to the JARs breaks ties and is editable from the Management UI.
 
+### Per-connection runtime
+
+The module runtime is **per connection, not per process.** Each Connect builds a
+fresh `ModuleManager` (and a fresh class loader, `HandlerRegistry`, `EventBus`,
+`ServiceRegistry`) for the connected server's module directory; each Disconnect
+fully unloads it — `onDisable` runs, every `onShutdown` hook fires, the scheduler
+stops, and the class loader is closed. Reconnecting to a **different** server
+therefore loads that server's module set with no process restart (see
+[architecture.md](architecture.md#connection-lifecycle)).
+
+Because Disconnect closes the class loader and stops the module's offload
+executor, a module **must release everything it owns** in `onDisable` /
+`onShutdown` (threads it spawned itself, native handles, listeners). State left
+behind would leak across a reconnect or keep the old class loader alive.
+
 ## `module.json`
 
 Every module JAR **must** contain `module.json` in its archive root:

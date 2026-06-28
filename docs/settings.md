@@ -29,7 +29,7 @@ so a single callback per setting is enough:
 |------|--------------|
 | `registerSettings(spec)` | Each leaf's `onChange` fires with the persisted-or-initial value. Run any wiring (start a scheduler, flip a flag) inside it. |
 | User edits a widget | `onChange` fires with the new value; if the setting was marked `.persistent()` the value is also written to disk. |
-| `onDisable()` | Nothing built in — settings stay registered. Tear down your own state. |
+| `onDisable()` | Runs on Disconnect — the whole module (its settings panel included) is dropped with the connection's runtime. Tear down your own state here. |
 
 `onChange` always runs on the Swing EDT. If your work is heavy (or blocking),
 post it to `ctx.offloadExecutor()` or just store the value in a `volatile`

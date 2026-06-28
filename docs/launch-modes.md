@@ -68,8 +68,14 @@ reads the live session straight out of the game process — nothing to copy.
    auto-fills. (If it stays red, click **Refresh** once the game is up.)
 4. Type the target server into **Remote** (e.g. `2o2t.org:5520`). Optionally change
    the **Local port** (default `5520`).
-5. Click **Connect**. The bar disappears and the proxy starts listening.
+5. Click **Connect**. The bar switches to a **Connected to … — Disconnect** status
+   and the proxy starts listening.
 6. In the Hytale client, **Direct Connect** to `localhost`.
+
+To end the session or switch servers, click **Disconnect**: the proxy unloads the
+session (and its modules) and returns to the connection bar, ready to **Connect**
+again — to the same Remote or a different one — **without restarting**. It also
+returns to the bar on its own if the client or the server drops the connection.
 
 ### Platform support
 
