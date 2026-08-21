@@ -1,181 +1,150 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+
 
 public class TriggerVolumeToolSetActivationDelay implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 502;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 4;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 4;
-   public static final int MAX_SIZE = 16384009;
-   @Nonnull
-   public String volumeId = "";
-   public float activationDelay;
+    public static final int PACKET_ID = 502;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 4;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 4;
+    public static final int MAX_SIZE = 16384009;
 
-   @Override
-   public int getId() {
-      return 502;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public TriggerVolumeToolSetActivationDelay() {
-   }
+    @Nonnull public String volumeId = "";
+    public float activationDelay;
 
-   public TriggerVolumeToolSetActivationDelay(@Nonnull String volumeId, float activationDelay) {
-      this.volumeId = volumeId;
-      this.activationDelay = activationDelay;
-   }
+    public TriggerVolumeToolSetActivationDelay() {
+    }
 
-   public TriggerVolumeToolSetActivationDelay(@Nonnull TriggerVolumeToolSetActivationDelay other) {
-      this.volumeId = other.volumeId;
-      this.activationDelay = other.activationDelay;
-   }
+    public TriggerVolumeToolSetActivationDelay(@Nonnull String volumeId, float activationDelay) {
+        this.volumeId = volumeId;
+        this.activationDelay = activationDelay;
+    }
 
-   @Nonnull
-   public static TriggerVolumeToolSetActivationDelay deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 4) {
-         throw ProtocolException.bufferTooSmall("TriggerVolumeToolSetActivationDelay", 4, buf.readableBytes() - offset);
-      }
+    public TriggerVolumeToolSetActivationDelay(@Nonnull TriggerVolumeToolSetActivationDelay other) {
+        this.volumeId = other.volumeId;
+        this.activationDelay = other.activationDelay;
+    }
 
-      TriggerVolumeToolSetActivationDelay obj = new TriggerVolumeToolSetActivationDelay();
-      obj.activationDelay = buf.getFloatLE(offset + 0);
-      int pos = offset + 4;
-      int volumeIdLen = VarInt.peek(buf, pos);
-      if (volumeIdLen < 0) {
-         throw ProtocolException.invalidVarInt("VolumeId");
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("TriggerVolumeToolSetActivationDelay", offset, (int) mem.byteSize());
+        long needed = (long) offset + 4;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("TriggerVolumeToolSetActivationDelay", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static String getVolumeId(MemorySegment mem) {
+        return getVolumeId(mem, 0);
+    }
+    
+    public static String getVolumeId(MemorySegment mem, int offset) {
+        return PacketIO.readVarString("VolumeId", mem, offset + 4, 4096000);
+    }
+    
+    public static float getActivationDelay(MemorySegment mem) {
+        return getActivationDelay(mem, 0);
+    }
+    
+    public static float getActivationDelay(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 0), "ActivationDelay");
+    }
+    
+    
+    
+    
+    
+    public static TriggerVolumeToolSetActivationDelay toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static TriggerVolumeToolSetActivationDelay toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one TriggerVolumeToolSetActivationDelay and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static TriggerVolumeToolSetActivationDelay toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 4;
+        var varPos = 0;
+        String v0;
+        {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("VolumeId", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new TriggerVolumeToolSetActivationDelay(
+            v0,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 0), "ActivationDelay")
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        PacketIO.requireFinite(this.activationDelay, "ActivationDelay"); mem.set(PacketIO.PROTO_FLOAT, offset + 0, this.activationDelay);
+        var varOffset = offset + 4;
+        varOffset += PacketIO.writeVarString(mem, varOffset, this.volumeId, 4096000);
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 4;
+        size += PacketIO.stringSize(volumeId);
 
-      int volumeIdVarLen = VarInt.size(volumeIdLen);
-      if (volumeIdLen > 4096000) {
-         throw ProtocolException.stringTooLong("VolumeId", volumeIdLen, 4096000);
-      }
+        return size;
+    }
 
-      if (pos + volumeIdVarLen + volumeIdLen > buf.readableBytes()) {
-         throw ProtocolException.bufferTooSmall("VolumeId", pos + volumeIdVarLen + volumeIdLen, buf.readableBytes());
-      }
+    public TriggerVolumeToolSetActivationDelay clone() {
+        TriggerVolumeToolSetActivationDelay copy = new TriggerVolumeToolSetActivationDelay();
+        copy.volumeId = this.volumeId;
+        copy.activationDelay = this.activationDelay;
+        return copy;
+    }
 
-      obj.volumeId = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-      pos += volumeIdVarLen + volumeIdLen;
-      return obj;
-   }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int pos = offset + 4;
-      int sl = VarInt.peek(buf, pos);
-      pos += VarInt.size(sl) + sl;
-      return pos - offset;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof TriggerVolumeToolSetActivationDelay other)) return false;
+        return java.util.Objects.equals(this.volumeId, other.volumeId) && this.activationDelay == other.activationDelay;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 4L;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(volumeId, activationDelay);
+    }
 
-   public static String getVolumeId(MemorySegment mem) {
-      return getVolumeId(mem, 0);
-   }
-
-   public static String getVolumeId(MemorySegment mem, int offset) {
-      return PacketIO.readVarString("VolumeId", mem, offset + 4, 4096000, PacketIO.UTF8);
-   }
-
-   public static float getActivationDelay(MemorySegment mem) {
-      return getActivationDelay(mem, 0);
-   }
-
-   public static float getActivationDelay(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 0);
-   }
-
-   public static TriggerVolumeToolSetActivationDelay toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static TriggerVolumeToolSetActivationDelay toObject(MemorySegment mem, int offset) {
-      if (offset + 4 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("TriggerVolumeToolSetActivationDelay", offset + 4, (int)mem.byteSize());
-      } else {
-         return new TriggerVolumeToolSetActivationDelay(
-            PacketIO.readVarString("VolumeId", mem, offset + 4, 4096000, PacketIO.UTF8), mem.get(PacketIO.PROTO_FLOAT, offset + 0)
-         );
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeFloatLE(this.activationDelay);
-      PacketIO.writeVarString(buf, this.volumeId, 4096000);
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_FLOAT, offset + 0, this.activationDelay);
-      int varOffset = offset + 4;
-      varOffset += PacketIO.writeVarString(mem, varOffset, this.volumeId, 4096000);
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 4;
-      return size + PacketIO.stringSize(this.volumeId);
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 4) {
-         return ValidationResult.error("Buffer too small: expected at least 4 bytes");
-      }
-
-      int pos = offset + 4;
-      int volumeIdLen = VarInt.peek(buffer, pos);
-      if (volumeIdLen < 0) {
-         return ValidationResult.error("Invalid string length for VolumeId");
-      }
-
-      if (volumeIdLen > 4096000) {
-         return ValidationResult.error("VolumeId exceeds max length 4096000");
-      }
-
-      pos += VarInt.size(volumeIdLen);
-      pos += volumeIdLen;
-      return pos > buffer.writerIndex() ? ValidationResult.error("Buffer overflow reading VolumeId") : ValidationResult.OK;
-   }
-
-   public TriggerVolumeToolSetActivationDelay clone() {
-      TriggerVolumeToolSetActivationDelay copy = new TriggerVolumeToolSetActivationDelay();
-      copy.volumeId = this.volumeId;
-      copy.activationDelay = this.activationDelay;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof TriggerVolumeToolSetActivationDelay other)
-            ? false
-            : Objects.equals(this.volumeId, other.volumeId) && this.activationDelay == other.activationDelay;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.volumeId, this.activationDelay);
-   }
-}
+}

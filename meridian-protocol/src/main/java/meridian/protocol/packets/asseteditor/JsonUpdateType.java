@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum JsonUpdateType {
-   SetProperty(0),
-   InsertProperty(1),
-   RemoveProperty(2);
+    SetProperty(0),
+    InsertProperty(1),
+    RemoveProperty(2);
 
-   public static final JsonUpdateType[] VALUES = values();
-   private final int value;
+    public static final JsonUpdateType[] VALUES = values();
 
-   JsonUpdateType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    JsonUpdateType(int value) {
+        this.value = value;
+    }
 
-   public static JsonUpdateType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("JsonUpdateType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static JsonUpdateType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("JsonUpdateType", value);
+    }
+}

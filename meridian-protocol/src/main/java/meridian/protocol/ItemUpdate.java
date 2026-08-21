@@ -1,143 +1,135 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class ItemUpdate extends ComponentUpdate {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 4;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 4;
-   public static final int MAX_SIZE = 32768044;
-   @Nonnull
-   public ItemWithAllMetadata item = new ItemWithAllMetadata();
-   public float entityScale;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 4;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 4;
+    public static final int MAX_SIZE = 32768048;
 
-   public ItemUpdate() {
-   }
+    @Nonnull public ItemWithAllMetadata item = new ItemWithAllMetadata();
+    public float entityScale;
 
-   public ItemUpdate(@Nonnull ItemWithAllMetadata item, float entityScale) {
-      this.item = item;
-      this.entityScale = entityScale;
-   }
+    public ItemUpdate() {
+    }
 
-   public ItemUpdate(@Nonnull ItemUpdate other) {
-      this.item = other.item;
-      this.entityScale = other.entityScale;
-   }
+    public ItemUpdate(@Nonnull ItemWithAllMetadata item, float entityScale) {
+        this.item = item;
+        this.entityScale = entityScale;
+    }
 
-   @Nonnull
-   public static ItemUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 4) {
-         throw ProtocolException.bufferTooSmall("ItemUpdate", 4, buf.readableBytes() - offset);
-      }
+    public ItemUpdate(@Nonnull ItemUpdate other) {
+        this.item = other.item;
+        this.entityScale = other.entityScale;
+    }
 
-      ItemUpdate obj = new ItemUpdate();
-      obj.entityScale = buf.getFloatLE(offset + 0);
-      int pos = offset + 4;
-      obj.item = ItemWithAllMetadata.deserialize(buf, pos);
-      pos += ItemWithAllMetadata.computeBytesConsumed(buf, pos);
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ItemUpdate", offset, (int) mem.byteSize());
+        long needed = (long) offset + 4;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ItemUpdate", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static ItemWithAllMetadata getItem(MemorySegment mem) {
+        return getItem(mem, 0);
+    }
+    
+    public static ItemWithAllMetadata getItem(MemorySegment mem, int offset) {
+        return ItemWithAllMetadata.toObject(mem, offset + 4);
+    }
+    
+    public static float getEntityScale(MemorySegment mem) {
+        return getEntityScale(mem, 0);
+    }
+    
+    public static float getEntityScale(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 0), "EntityScale");
+    }
+    
+    
+    
+    
+    
+    public static ItemUpdate toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ItemUpdate toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ItemUpdate and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ItemUpdate toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 4;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        ItemWithAllMetadata v0;
+        {
+            v0 = ItemWithAllMetadata.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new ItemUpdate(
+            v0,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 0), "EntityScale")
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        PacketIO.requireFinite(this.entityScale, "EntityScale"); mem.set(PacketIO.PROTO_FLOAT, offset + 0, this.entityScale);
+        var varOffset = offset + 4;
+        varOffset += this.item.serialize(mem, varOffset);
+    
+       return varOffset - offset;
+    }
+    @Override
+    public int computeSize() {
+        int size = 4;
+        size += item.computeSize();
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int pos = offset + 4;
-      pos += ItemWithAllMetadata.computeBytesConsumed(buf, pos);
-      return pos - offset;
-   }
+        return size;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 4L;
-   }
+    public ItemUpdate clone() {
+        ItemUpdate copy = new ItemUpdate();
+        copy.item = this.item.clone();
+        copy.entityScale = this.entityScale;
+        return copy;
+    }
 
-   public static ItemWithAllMetadata getItem(MemorySegment mem) {
-      return getItem(mem, 0);
-   }
 
-   public static ItemWithAllMetadata getItem(MemorySegment mem, int offset) {
-      return ItemWithAllMetadata.toObject(mem, offset + 4);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ItemUpdate other)) return false;
+        return java.util.Objects.equals(this.item, other.item) && this.entityScale == other.entityScale;
+    }
 
-   public static float getEntityScale(MemorySegment mem) {
-      return getEntityScale(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(item, entityScale);
+    }
 
-   public static float getEntityScale(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 0);
-   }
-
-   public static ItemUpdate toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ItemUpdate toObject(MemorySegment mem, int offset) {
-      if (offset + 4 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ItemUpdate", offset + 4, (int)mem.byteSize());
-      } else {
-         return new ItemUpdate(ItemWithAllMetadata.toObject(mem, offset + 4), mem.get(PacketIO.PROTO_FLOAT, offset + 0));
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      buf.writeFloatLE(this.entityScale);
-      this.item.serialize(buf);
-      return buf.writerIndex() - startPos;
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_FLOAT, offset + 0, this.entityScale);
-      int varOffset = offset + 4;
-      varOffset += this.item.serialize(mem, varOffset);
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 4;
-      return size + this.item.computeSize();
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 4) {
-         return ValidationResult.error("Buffer too small: expected at least 4 bytes");
-      }
-
-      int pos = offset + 4;
-      ValidationResult itemResult = ItemWithAllMetadata.validateStructure(buffer, pos);
-      if (!itemResult.isValid()) {
-         return ValidationResult.error("Invalid Item: " + itemResult.error());
-      }
-
-      pos += ItemWithAllMetadata.computeBytesConsumed(buffer, pos);
-      return ValidationResult.OK;
-   }
-
-   public ItemUpdate clone() {
-      ItemUpdate copy = new ItemUpdate();
-      copy.item = this.item.clone();
-      copy.entityScale = this.entityScale;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ItemUpdate other) ? false : Objects.equals(this.item, other.item) && this.entityScale == other.entityScale;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.item, this.entityScale);
-   }
-}
+}

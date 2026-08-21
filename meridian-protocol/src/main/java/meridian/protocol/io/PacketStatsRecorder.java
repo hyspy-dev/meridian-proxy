@@ -1,74 +1,94 @@
 package meridian.protocol.io;
 
 import io.netty.util.AttributeKey;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Interface for recording packet statistics at the wire level.
+ * Called by PacketIO during frame read/write to capture both
+ * uncompressed (serialized) and compressed (wire) sizes.
+ */
 public interface PacketStatsRecorder {
-   AttributeKey<PacketStatsRecorder> CHANNEL_KEY = AttributeKey.valueOf("PacketStatsRecorder");
-   PacketStatsRecorder NOOP = new NoopPacketStatsRecorder();
 
-   void recordSend(int var1, int var2, int var3);
+    /** Channel attribute key for accessing the recorder from encoder/decoder. */
+    AttributeKey<PacketStatsRecorder> CHANNEL_KEY = AttributeKey.valueOf("PacketStatsRecorder");
 
-   void recordReceive(int var1, int var2, int var3);
+    /** No-op implementation for when stats recording is not needed. */
+    PacketStatsRecorder NOOP = new NoopPacketStatsRecorder();
 
-   @Nonnull
-   PacketStatsRecorder.PacketStatsEntry getEntry(int var1);
+    /**
+     * Record statistics for an outbound packet.
+     *
+     * @param packetId         the packet ID
+     * @param uncompressedSize the serialized size before compression
+     * @param compressedSize   the wire size after compression (same as uncompressed if not compressed)
+     */
+    void recordSend(int packetId, int uncompressedSize, int compressedSize);
 
-   interface PacketStatsEntry {
-      int RECENT_SECONDS = 30;
+    /**
+     * Record statistics for an inbound packet.
+     *
+     * @param packetId         the packet ID
+     * @param uncompressedSize the decompressed payload size
+     * @param compressedSize   the wire size before decompression (same as uncompressed if not compressed)
+     */
+    void recordReceive(int packetId, int uncompressedSize, int compressedSize);
 
-      int getPacketId();
+    /**
+     * Get the stats entry for a specific packet ID.
+     */
+    @Nonnull
+    PacketStatsEntry getEntry(int packetId);
 
-      @Nullable
-      String getName();
+    /**
+     * Per-packet statistics entry.
+     */
+    interface PacketStatsEntry {
+        /** Default time window for recent stats in seconds. */
+        int RECENT_SECONDS = 30;
+        int getPacketId();
+        @Nullable String getName();
+        boolean hasData();
 
-      boolean hasData();
+        // Send stats
+        int getSentCount();
+        long getSentUncompressedTotal();
+        long getSentCompressedTotal();
+        long getSentUncompressedMin();
+        long getSentUncompressedMax();
+        long getSentCompressedMin();
+        long getSentCompressedMax();
+        double getSentUncompressedAvg();
+        double getSentCompressedAvg();
+        @Nonnull RecentStats getSentRecently();
 
-      int getSentCount();
+        // Receive stats
+        int getReceivedCount();
+        long getReceivedUncompressedTotal();
+        long getReceivedCompressedTotal();
+        long getReceivedUncompressedMin();
+        long getReceivedUncompressedMax();
+        long getReceivedCompressedMin();
+        long getReceivedCompressedMax();
+        double getReceivedUncompressedAvg();
+        double getReceivedCompressedAvg();
+        @Nonnull RecentStats getReceivedRecently();
+    }
 
-      long getSentUncompressedTotal();
-
-      long getSentCompressedTotal();
-
-      long getSentUncompressedMin();
-
-      long getSentUncompressedMax();
-
-      long getSentCompressedMin();
-
-      long getSentCompressedMax();
-
-      double getSentUncompressedAvg();
-
-      double getSentCompressedAvg();
-
-      @Nonnull
-      PacketStatsRecorder.RecentStats getSentRecently();
-
-      int getReceivedCount();
-
-      long getReceivedUncompressedTotal();
-
-      long getReceivedCompressedTotal();
-
-      long getReceivedUncompressedMin();
-
-      long getReceivedUncompressedMax();
-
-      long getReceivedCompressedMin();
-
-      long getReceivedCompressedMax();
-
-      double getReceivedUncompressedAvg();
-
-      double getReceivedCompressedAvg();
-
-      @Nonnull
-      PacketStatsRecorder.RecentStats getReceivedRecently();
-   }
-
-   record RecentStats(int count, long uncompressedTotal, long compressedTotal, int uncompressedMin, int uncompressedMax, int compressedMin, int compressedMax) {
-      public static final PacketStatsRecorder.RecentStats EMPTY = new PacketStatsRecorder.RecentStats(0, 0L, 0L, 0, 0, 0, 0);
-   }
+    /**
+     * Statistics for a recent time window.
+     */
+    record RecentStats(
+        int count,
+        long uncompressedTotal,
+        long compressedTotal,
+        int uncompressedMin,
+        int uncompressedMax,
+        int compressedMin,
+        int compressedMax
+    ) {
+        public static final RecentStats EMPTY = new RecentStats(0, 0, 0, 0, 0, 0, 0);
+    }
 }

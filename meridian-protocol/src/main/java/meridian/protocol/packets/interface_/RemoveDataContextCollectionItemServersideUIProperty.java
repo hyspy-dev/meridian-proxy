@@ -1,168 +1,136 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+
 
 public class RemoveDataContextCollectionItemServersideUIProperty extends ServersideUICommand {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 4;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 4;
-   public static final int MAX_SIZE = 16384009;
-   @Nonnull
-   public String property = "";
-   public int index;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 4;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 4;
+    public static final int MAX_SIZE = 16384009;
 
-   public RemoveDataContextCollectionItemServersideUIProperty() {
-   }
+    @Nonnull public String property = "";
+    public int index;
 
-   public RemoveDataContextCollectionItemServersideUIProperty(@Nonnull String property, int index) {
-      this.property = property;
-      this.index = index;
-   }
+    public RemoveDataContextCollectionItemServersideUIProperty() {
+    }
 
-   public RemoveDataContextCollectionItemServersideUIProperty(@Nonnull RemoveDataContextCollectionItemServersideUIProperty other) {
-      this.property = other.property;
-      this.index = other.index;
-   }
+    public RemoveDataContextCollectionItemServersideUIProperty(@Nonnull String property, int index) {
+        this.property = property;
+        this.index = index;
+    }
 
-   @Nonnull
-   public static RemoveDataContextCollectionItemServersideUIProperty deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 4) {
-         throw ProtocolException.bufferTooSmall("RemoveDataContextCollectionItemServersideUIProperty", 4, buf.readableBytes() - offset);
-      }
+    public RemoveDataContextCollectionItemServersideUIProperty(@Nonnull RemoveDataContextCollectionItemServersideUIProperty other) {
+        this.property = other.property;
+        this.index = other.index;
+    }
 
-      RemoveDataContextCollectionItemServersideUIProperty obj = new RemoveDataContextCollectionItemServersideUIProperty();
-      obj.index = buf.getIntLE(offset + 0);
-      int pos = offset + 4;
-      int propertyLen = VarInt.peek(buf, pos);
-      if (propertyLen < 0) {
-         throw ProtocolException.invalidVarInt("Property");
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("RemoveDataContextCollectionItemServersideUIProperty", offset, (int) mem.byteSize());
+        long needed = (long) offset + 4;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("RemoveDataContextCollectionItemServersideUIProperty", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static String getProperty(MemorySegment mem) {
+        return getProperty(mem, 0);
+    }
+    
+    public static String getProperty(MemorySegment mem, int offset) {
+        return PacketIO.readVarString("Property", mem, offset + 4, 4096000);
+    }
+    
+    public static int getIndex(MemorySegment mem) {
+        return getIndex(mem, 0);
+    }
+    
+    public static int getIndex(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    
+    
+    
+    
+    public static RemoveDataContextCollectionItemServersideUIProperty toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static RemoveDataContextCollectionItemServersideUIProperty toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one RemoveDataContextCollectionItemServersideUIProperty and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static RemoveDataContextCollectionItemServersideUIProperty toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 4;
+        var varPos = 0;
+        String v0;
+        {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("Property", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new RemoveDataContextCollectionItemServersideUIProperty(
+            v0,
+            mem.get(PacketIO.PROTO_INT, offset + 0)
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.index);
+        var varOffset = offset + 4;
+        varOffset += PacketIO.writeVarString(mem, varOffset, this.property, 4096000);
+    
+       return varOffset - offset;
+    }
+    @Override
+    public int computeSize() {
+        int size = 4;
+        size += PacketIO.stringSize(property);
 
-      int propertyVarLen = VarInt.size(propertyLen);
-      if (propertyLen > 4096000) {
-         throw ProtocolException.stringTooLong("Property", propertyLen, 4096000);
-      }
+        return size;
+    }
 
-      if (pos + propertyVarLen + propertyLen > buf.readableBytes()) {
-         throw ProtocolException.bufferTooSmall("Property", pos + propertyVarLen + propertyLen, buf.readableBytes());
-      }
+    public RemoveDataContextCollectionItemServersideUIProperty clone() {
+        RemoveDataContextCollectionItemServersideUIProperty copy = new RemoveDataContextCollectionItemServersideUIProperty();
+        copy.property = this.property;
+        copy.index = this.index;
+        return copy;
+    }
 
-      obj.property = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-      pos += propertyVarLen + propertyLen;
-      return obj;
-   }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int pos = offset + 4;
-      int sl = VarInt.peek(buf, pos);
-      pos += VarInt.size(sl) + sl;
-      return pos - offset;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof RemoveDataContextCollectionItemServersideUIProperty other)) return false;
+        return java.util.Objects.equals(this.property, other.property) && this.index == other.index;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 4L;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(property, index);
+    }
 
-   public static String getProperty(MemorySegment mem) {
-      return getProperty(mem, 0);
-   }
-
-   public static String getProperty(MemorySegment mem, int offset) {
-      return PacketIO.readVarString("Property", mem, offset + 4, 4096000, PacketIO.UTF8);
-   }
-
-   public static int getIndex(MemorySegment mem) {
-      return getIndex(mem, 0);
-   }
-
-   public static int getIndex(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 0);
-   }
-
-   public static RemoveDataContextCollectionItemServersideUIProperty toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static RemoveDataContextCollectionItemServersideUIProperty toObject(MemorySegment mem, int offset) {
-      if (offset + 4 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("RemoveDataContextCollectionItemServersideUIProperty", offset + 4, (int)mem.byteSize());
-      } else {
-         return new RemoveDataContextCollectionItemServersideUIProperty(
-            PacketIO.readVarString("Property", mem, offset + 4, 4096000, PacketIO.UTF8), mem.get(PacketIO.PROTO_INT, offset + 0)
-         );
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      buf.writeIntLE(this.index);
-      PacketIO.writeVarString(buf, this.property, 4096000);
-      return buf.writerIndex() - startPos;
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_INT, offset + 0, this.index);
-      int varOffset = offset + 4;
-      varOffset += PacketIO.writeVarString(mem, varOffset, this.property, 4096000);
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 4;
-      return size + PacketIO.stringSize(this.property);
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 4) {
-         return ValidationResult.error("Buffer too small: expected at least 4 bytes");
-      }
-
-      int pos = offset + 4;
-      int propertyLen = VarInt.peek(buffer, pos);
-      if (propertyLen < 0) {
-         return ValidationResult.error("Invalid string length for Property");
-      }
-
-      if (propertyLen > 4096000) {
-         return ValidationResult.error("Property exceeds max length 4096000");
-      }
-
-      pos += VarInt.size(propertyLen);
-      pos += propertyLen;
-      return pos > buffer.writerIndex() ? ValidationResult.error("Buffer overflow reading Property") : ValidationResult.OK;
-   }
-
-   public RemoveDataContextCollectionItemServersideUIProperty clone() {
-      RemoveDataContextCollectionItemServersideUIProperty copy = new RemoveDataContextCollectionItemServersideUIProperty();
-      copy.property = this.property;
-      copy.index = this.index;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof RemoveDataContextCollectionItemServersideUIProperty other)
-            ? false
-            : Objects.equals(this.property, other.property) && this.index == other.index;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.property, this.index);
-   }
-}
+}

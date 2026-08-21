@@ -1,183 +1,148 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
-import meridian.protocol.Objective;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.Objective;
 
 public class TrackOrUpdateObjective implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 69;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public Objective objective;
+    public static final int PACKET_ID = 69;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 69;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public TrackOrUpdateObjective() {
-   }
+    @Nullable public Objective objective;
 
-   public TrackOrUpdateObjective(@Nullable Objective objective) {
-      this.objective = objective;
-   }
+    public TrackOrUpdateObjective() {
+    }
 
-   public TrackOrUpdateObjective(@Nonnull TrackOrUpdateObjective other) {
-      this.objective = other.objective;
-   }
+    public TrackOrUpdateObjective(@Nullable Objective objective) {
+        this.objective = objective;
+    }
 
-   @Nonnull
-   public static TrackOrUpdateObjective deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("TrackOrUpdateObjective", 1, buf.readableBytes() - offset);
-      }
+    public TrackOrUpdateObjective(@Nonnull TrackOrUpdateObjective other) {
+        this.objective = other.objective;
+    }
 
-      TrackOrUpdateObjective obj = new TrackOrUpdateObjective();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         obj.objective = Objective.deserialize(buf, pos);
-         pos += Objective.computeBytesConsumed(buf, pos);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("TrackOrUpdateObjective", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("TrackOrUpdateObjective", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static Objective getObjective(MemorySegment mem) {
+        return getObjective(mem, 0);
+    }
+    
+    @Nullable
+    public static Objective getObjective(MemorySegment mem, int offset) {
+        return hasObjective(mem, offset) ? Objective.toObject(mem, offset + 1): null;
+    }
+    
+    public static boolean hasObjective(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static TrackOrUpdateObjective toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static TrackOrUpdateObjective toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one TrackOrUpdateObjective and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static TrackOrUpdateObjective toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        Objective v0 = null;
+        if (hasObjective(mem, offset)) {
+            v0 = Objective.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new TrackOrUpdateObjective(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.objective != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.objective != null) {
+            
+            varOffset += this.objective.serialize(mem, varOffset);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (objective != null) size += objective.computeSize();
 
-      return obj;
-   }
+        return size;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         pos += Objective.computeBytesConsumed(buf, pos);
-      }
+    public TrackOrUpdateObjective clone() {
+        TrackOrUpdateObjective copy = new TrackOrUpdateObjective();
+        copy.objective = this.objective != null ? this.objective.clone() : null;
+        return copy;
+    }
 
-      return pos - offset;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof TrackOrUpdateObjective other)) return false;
+        return java.util.Objects.equals(this.objective, other.objective);
+    }
 
-   @Nullable
-   public static Objective getObjective(MemorySegment mem) {
-      return getObjective(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(objective);
+    }
 
-   @Nullable
-   public static Objective getObjective(MemorySegment mem, int offset) {
-      return hasObjective(mem, offset) ? Objective.toObject(mem, offset + 1) : null;
-   }
-
-   public static boolean hasObjective(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static TrackOrUpdateObjective toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static TrackOrUpdateObjective toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("TrackOrUpdateObjective", offset + 1, (int)mem.byteSize());
-      } else {
-         return new TrackOrUpdateObjective(hasObjective(mem, offset) ? Objective.toObject(mem, offset + 1) : null);
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.objective != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.objective != null) {
-         this.objective.serialize(buf);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.objective != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.objective != null) {
-         varOffset += this.objective.serialize(mem, varOffset);
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.objective != null) {
-         size += this.objective.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         ValidationResult objectiveResult = Objective.validateStructure(buffer, pos);
-         if (!objectiveResult.isValid()) {
-            return ValidationResult.error("Invalid Objective: " + objectiveResult.error());
-         }
-
-         pos += Objective.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public TrackOrUpdateObjective clone() {
-      TrackOrUpdateObjective copy = new TrackOrUpdateObjective();
-      copy.objective = this.objective != null ? this.objective.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof TrackOrUpdateObjective other ? Objects.equals(this.objective, other.objective) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.objective);
-   }
-}
+}

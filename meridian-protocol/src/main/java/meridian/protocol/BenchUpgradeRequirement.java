@@ -1,299 +1,186 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class BenchUpgradeRequirement {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 9;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 9;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public MaterialQuantity[] material;
-   public double timeSeconds;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 9;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 9;
+    public static final int MAX_SIZE = 1677721600;
 
-   public BenchUpgradeRequirement() {
-   }
+    @Nullable public MaterialQuantity[] material;
+    public double timeSeconds;
 
-   public BenchUpgradeRequirement(@Nullable MaterialQuantity[] material, double timeSeconds) {
-      this.material = material;
-      this.timeSeconds = timeSeconds;
-   }
+    public BenchUpgradeRequirement() {
+    }
 
-   public BenchUpgradeRequirement(@Nonnull BenchUpgradeRequirement other) {
-      this.material = other.material;
-      this.timeSeconds = other.timeSeconds;
-   }
+    public BenchUpgradeRequirement(@Nullable MaterialQuantity[] material, double timeSeconds) {
+        this.material = material;
+        this.timeSeconds = timeSeconds;
+    }
 
-   @Nonnull
-   public static BenchUpgradeRequirement deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 9) {
-         throw ProtocolException.bufferTooSmall("BenchUpgradeRequirement", 9, buf.readableBytes() - offset);
-      }
+    public BenchUpgradeRequirement(@Nonnull BenchUpgradeRequirement other) {
+        this.material = other.material;
+        this.timeSeconds = other.timeSeconds;
+    }
 
-      BenchUpgradeRequirement obj = new BenchUpgradeRequirement();
-      byte nullBits = buf.getByte(offset);
-      obj.timeSeconds = buf.getDoubleLE(offset + 1);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int materialCount = VarInt.peek(buf, pos);
-         if (materialCount < 0) {
-            throw ProtocolException.invalidVarInt("Material");
-         }
-
-         int materialVarLen = VarInt.size(materialCount);
-         if (materialCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Material", materialCount, 4096000);
-         }
-
-         if (pos + materialVarLen + materialCount * 9L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Material", pos + materialVarLen + materialCount * 9, buf.readableBytes());
-         }
-
-         pos += materialVarLen;
-         obj.material = new MaterialQuantity[materialCount];
-
-         for (int i = 0; i < materialCount; i++) {
-            obj.material[i] = MaterialQuantity.deserialize(buf, pos);
-            pos += MaterialQuantity.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen);
-
-         for (int i = 0; i < arrLen; i++) {
-            pos += MaterialQuantity.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 9L;
-   }
-
-   @Nullable
-   public static MaterialQuantity[] getMaterial(MemorySegment mem) {
-      return getMaterial(mem, 0);
-   }
-
-   @Nullable
-   public static MaterialQuantity[] getMaterial(MemorySegment mem, int offset) {
-      if (!hasMaterial(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 9;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Material", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Material", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Material", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      MaterialQuantity[] data = new MaterialQuantity[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = MaterialQuantity.toObject(mem, off);
-         off += data[i].computeSize();
-      }
-
-      return data;
-   }
-
-   public static double getTimeSeconds(MemorySegment mem) {
-      return getTimeSeconds(mem, 0);
-   }
-
-   public static double getTimeSeconds(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_DOUBLE, offset + 1);
-   }
-
-   public static boolean hasMaterial(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static BenchUpgradeRequirement toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static BenchUpgradeRequirement toObject(MemorySegment mem, int offset) {
-      if (offset + 9 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("BenchUpgradeRequirement", offset + 9, (int)mem.byteSize());
-      }
-
-      MaterialQuantity[] material = null;
-      if (hasMaterial(mem, offset)) {
-         int off = offset + 9;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Material", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Material", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Material", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         material = new MaterialQuantity[len];
-
-         for (int i = 0; i < len; i++) {
-            material[i] = MaterialQuantity.toObject(mem, off);
-            off += material[i].computeSize();
-         }
-      }
-
-      return new BenchUpgradeRequirement(material, mem.get(PacketIO.PROTO_DOUBLE, offset + 1));
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.material != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeDoubleLE(this.timeSeconds);
-      if (this.material != null) {
-         if (this.material.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Material", this.material.length, 4096000);
-         }
-
-         VarInt.write(buf, this.material.length);
-
-         for (MaterialQuantity item : this.material) {
-            item.serialize(buf);
-         }
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.material != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_DOUBLE, offset + 1, this.timeSeconds);
-      int varOffset = offset + 9;
-      if (this.material != null) {
-         if (this.material.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Material", this.material.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.material.length);
-         int materialValueOffset = 0;
-
-         for (int i = 0; i < this.material.length; i++) {
-            materialValueOffset += this.material[i].serialize(mem, varOffset + materialValueOffset);
-         }
-
-         varOffset += materialValueOffset;
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 9;
-      if (this.material != null) {
-         int materialSize = 0;
-
-         for (MaterialQuantity elem : this.material) {
-            materialSize += elem.computeSize();
-         }
-
-         size += VarInt.size(this.material.length) + materialSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 9) {
-         return ValidationResult.error("Buffer too small: expected at least 9 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int materialCount = VarInt.peek(buffer, pos);
-         if (materialCount < 0) {
-            return ValidationResult.error("Invalid array count for Material");
-         }
-
-         if (materialCount > 4096000) {
-            return ValidationResult.error("Material exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(materialCount);
-
-         for (int i = 0; i < materialCount; i++) {
-            ValidationResult structResult = MaterialQuantity.validateStructure(buffer, pos);
-            if (!structResult.isValid()) {
-               return ValidationResult.error("Invalid MaterialQuantity in Material[" + i + "]: " + structResult.error());
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("BenchUpgradeRequirement", offset, (int) mem.byteSize());
+        long needed = (long) offset + 9;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("BenchUpgradeRequirement", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static MaterialQuantity[] getMaterial(MemorySegment mem) {
+        return getMaterial(mem, 0);
+    }
+    
+    @Nullable
+    public static MaterialQuantity[] getMaterial(MemorySegment mem, int offset) {
+        if (!hasMaterial(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 9;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Material");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Material", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 17 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Material", (int) java.lang.Math.min(off + lenOffset + (long) len * 17, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new MaterialQuantity[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = MaterialQuantity.toObject(mem, off, walkCursor);
+            off = walkCursor.position;
+        }
+        return data;
+    }
+    
+    public static double getTimeSeconds(MemorySegment mem) {
+        return getTimeSeconds(mem, 0);
+    }
+    
+    public static double getTimeSeconds(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_DOUBLE, offset + 1), "TimeSeconds");
+    }
+    
+    public static boolean hasMaterial(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static BenchUpgradeRequirement toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static BenchUpgradeRequirement toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one BenchUpgradeRequirement and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static BenchUpgradeRequirement toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 9;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        MaterialQuantity[] v0 = null;
+        if (hasMaterial(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Material");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Material", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 17 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Material", (int) java.lang.Math.min(off + lenOffset + (long) len * 17, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new MaterialQuantity[len];
+            for (var i = 0; i < len; i++) {
+                v0[i] = MaterialQuantity.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
             }
+            varPos = off - varBase;
+        }
+        var result = new BenchUpgradeRequirement(
+            v0,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_DOUBLE, offset + 1), "TimeSeconds")
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.material != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        PacketIO.requireFinite(this.timeSeconds, "TimeSeconds"); mem.set(PacketIO.PROTO_DOUBLE, offset + 1, this.timeSeconds);
+        var varOffset = offset + 9;
+        if (this.material != null) {
+            
+            if (material.length > 4096000) throw ProtocolException.arrayTooLong("Material", material.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.material.length);
+            
+            var materialValueOffset = 0;
+            for (var i = 0; i < this.material.length; i++) {
+                materialValueOffset += this.material[i].serialize(mem, varOffset + materialValueOffset);
+            }
+            varOffset += materialValueOffset;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 9;
+        if (material != null) {
+        int materialSize = 0;
+for (var elem : material) materialSize += elem.computeSize();
+size += VarInt.size(material.length) + materialSize;
+    }
 
-            pos += MaterialQuantity.computeBytesConsumed(buffer, pos);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public BenchUpgradeRequirement clone() {
+        BenchUpgradeRequirement copy = new BenchUpgradeRequirement();
+        copy.material = this.material != null ? java.util.Arrays.stream(this.material).map(e -> e.clone()).toArray(MaterialQuantity[]::new) : null;
+        copy.timeSeconds = this.timeSeconds;
+        return copy;
+    }
 
-   public BenchUpgradeRequirement clone() {
-      BenchUpgradeRequirement copy = new BenchUpgradeRequirement();
-      copy.material = this.material != null ? Arrays.stream(this.material).map(e -> e.clone()).toArray(MaterialQuantity[]::new) : null;
-      copy.timeSeconds = this.timeSeconds;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof BenchUpgradeRequirement other) ? false : Arrays.equals(this.material, other.material) && this.timeSeconds == other.timeSeconds;
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BenchUpgradeRequirement other)) return false;
+        return java.util.Arrays.equals(this.material, other.material) && this.timeSeconds == other.timeSeconds;
+    }
 
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Arrays.hashCode(this.material);
-      return 31 * result + Double.hashCode(this.timeSeconds);
-   }
-}
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(material);
+        result = 31 * result + Double.hashCode(timeSeconds);
+        return result;
+    }
+
+}

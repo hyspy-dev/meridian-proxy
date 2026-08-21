@@ -1,123 +1,125 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.setup;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class SetUpdateRate implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 29;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 4;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 4;
-   public static final int MAX_SIZE = 4;
-   public int updatesPerSecond;
+    public static final int PACKET_ID = 29;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 4;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 4;
+    public static final int MAX_SIZE = 4;
 
-   @Override
-   public int getId() {
-      return 29;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public SetUpdateRate() {
-   }
+    public int updatesPerSecond;
 
-   public SetUpdateRate(int updatesPerSecond) {
-      this.updatesPerSecond = updatesPerSecond;
-   }
+    public SetUpdateRate() {
+    }
 
-   public SetUpdateRate(@Nonnull SetUpdateRate other) {
-      this.updatesPerSecond = other.updatesPerSecond;
-   }
+    public SetUpdateRate(int updatesPerSecond) {
+        this.updatesPerSecond = updatesPerSecond;
+    }
 
-   @Nonnull
-   public static SetUpdateRate deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 4) {
-         throw ProtocolException.bufferTooSmall("SetUpdateRate", 4, buf.readableBytes() - offset);
-      }
+    public SetUpdateRate(@Nonnull SetUpdateRate other) {
+        this.updatesPerSecond = other.updatesPerSecond;
+    }
 
-      SetUpdateRate obj = new SetUpdateRate();
-      obj.updatesPerSecond = buf.getIntLE(offset + 0);
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("SetUpdateRate", offset, (int) mem.byteSize());
+        long needed = (long) offset + 4;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("SetUpdateRate", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getUpdatesPerSecond(MemorySegment mem) {
+        return getUpdatesPerSecond(mem, 0);
+    }
+    
+    public static int getUpdatesPerSecond(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    
+    
+    
+    
+    public static SetUpdateRate toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static SetUpdateRate toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one SetUpdateRate and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static SetUpdateRate toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new SetUpdateRate(
+            mem.get(PacketIO.PROTO_INT, offset + 0)
+        );
+        if (cursor != null) cursor.position = offset + 4;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.updatesPerSecond);
+        
+        
+    
+       return 4;
+    }
+    public int computeSize() {
+        return 4;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 4;
-   }
+    public SetUpdateRate clone() {
+        SetUpdateRate copy = new SetUpdateRate();
+        copy.updatesPerSecond = this.updatesPerSecond;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 4L;
-   }
 
-   public static int getUpdatesPerSecond(MemorySegment mem) {
-      return getUpdatesPerSecond(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof SetUpdateRate other)) return false;
+        return this.updatesPerSecond == other.updatesPerSecond;
+    }
 
-   public static int getUpdatesPerSecond(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(updatesPerSecond);
+    }
 
-   public static SetUpdateRate toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static SetUpdateRate toObject(MemorySegment mem, int offset) {
-      if (offset + 4 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("SetUpdateRate", offset + 4, (int)mem.byteSize());
-      } else {
-         return new SetUpdateRate(mem.get(PacketIO.PROTO_INT, offset + 0));
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeIntLE(this.updatesPerSecond);
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_INT, offset + 0, this.updatesPerSecond);
-      return 4;
-   }
-
-   @Override
-   public int computeSize() {
-      return 4;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      return buffer.readableBytes() - offset < 4 ? ValidationResult.error("Buffer too small: expected at least 4 bytes") : ValidationResult.OK;
-   }
-
-   public SetUpdateRate clone() {
-      SetUpdateRate copy = new SetUpdateRate();
-      copy.updatesPerSecond = this.updatesPerSecond;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof SetUpdateRate other ? this.updatesPerSecond == other.updatesPerSecond : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.updatesPerSecond);
-   }
-}
+}

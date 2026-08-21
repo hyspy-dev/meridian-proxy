@@ -1,324 +1,188 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class ArgCacheInvalidation implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 248;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public String[] argTypeIds;
+    public static final int PACKET_ID = 248;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 248;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public ArgCacheInvalidation() {
-   }
+    @Nullable public String[] argTypeIds;
 
-   public ArgCacheInvalidation(@Nullable String[] argTypeIds) {
-      this.argTypeIds = argTypeIds;
-   }
+    public ArgCacheInvalidation() {
+    }
 
-   public ArgCacheInvalidation(@Nonnull ArgCacheInvalidation other) {
-      this.argTypeIds = other.argTypeIds;
-   }
+    public ArgCacheInvalidation(@Nullable String[] argTypeIds) {
+        this.argTypeIds = argTypeIds;
+    }
 
-   @Nonnull
-   public static ArgCacheInvalidation deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("ArgCacheInvalidation", 1, buf.readableBytes() - offset);
-      }
+    public ArgCacheInvalidation(@Nonnull ArgCacheInvalidation other) {
+        this.argTypeIds = other.argTypeIds;
+    }
 
-      ArgCacheInvalidation obj = new ArgCacheInvalidation();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int argTypeIdsCount = VarInt.peek(buf, pos);
-         if (argTypeIdsCount < 0) {
-            throw ProtocolException.invalidVarInt("ArgTypeIds");
-         }
-
-         int argTypeIdsVarLen = VarInt.size(argTypeIdsCount);
-         if (argTypeIdsCount > 4096000) {
-            throw ProtocolException.arrayTooLong("ArgTypeIds", argTypeIdsCount, 4096000);
-         }
-
-         if (pos + argTypeIdsVarLen + argTypeIdsCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("ArgTypeIds", pos + argTypeIdsVarLen + argTypeIdsCount * 1, buf.readableBytes());
-         }
-
-         pos += argTypeIdsVarLen;
-         obj.argTypeIds = new String[argTypeIdsCount];
-
-         for (int i = 0; i < argTypeIdsCount; i++) {
-            int strLen = VarInt.peek(buf, pos);
-            if (strLen < 0) {
-               throw ProtocolException.invalidVarInt("argTypeIds[" + i + "]");
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ArgCacheInvalidation", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ArgCacheInvalidation", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String[] getArgTypeIds(MemorySegment mem) {
+        return getArgTypeIds(mem, 0);
+    }
+    
+    @Nullable
+    public static String[] getArgTypeIds(MemorySegment mem, int offset) {
+        if (!hasArgTypeIds(mem, offset)) return null;
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("ArgTypeIds");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("ArgTypeIds", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("ArgTypeIds", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new String[len];
+        for (var i = 0; i < len; i++) {
+            var sp = VarInt.getWithLength(mem, off);
+            data[i] = PacketIO.readVarString("ArgTypeIds", mem, off, 0, 4096000, sp);
+            off += (int) sp + (int) (sp >>> 32);
+        }
+        return data;
+    }
+    
+    public static boolean hasArgTypeIds(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static ArgCacheInvalidation toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ArgCacheInvalidation toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ArgCacheInvalidation and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ArgCacheInvalidation toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        String[] v0 = null;
+        if (hasArgTypeIds(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("ArgTypeIds");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("ArgTypeIds", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("ArgTypeIds", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new String[len];
+            for (var i = 0; i < len; i++) {
+                var sp = VarInt.getWithLength(mem, off);
+                v0[i] = PacketIO.readVarString("ArgTypeIds", mem, off, 0, 4096000, sp);
+                off += (int) sp + (int) (sp >>> 32);
             }
-
-            int strVarLen = VarInt.size(strLen);
-            if (strLen > 4096000) {
-               throw ProtocolException.stringTooLong("argTypeIds[" + i + "]", strLen, 4096000);
+            varPos = off - varBase;
+        }
+        var result = new ArgCacheInvalidation(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.argTypeIds != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.argTypeIds != null) {
+            
+            if (argTypeIds.length > 4096000) throw ProtocolException.arrayTooLong("ArgTypeIds", argTypeIds.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.argTypeIds.length);
+            
+            var argTypeIdsValueOffset = 0;
+            for (var i = 0; i < this.argTypeIds.length; i++) {
+                argTypeIdsValueOffset += PacketIO.writeVarString(mem, varOffset + argTypeIdsValueOffset, this.argTypeIds[i], 4096000);
             }
+            varOffset += argTypeIdsValueOffset;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (argTypeIds != null) {
+        int argTypeIdsSize = 0;
+for (var elem : argTypeIds) argTypeIdsSize += PacketIO.stringSize(elem);
+size += VarInt.size(argTypeIds.length) + argTypeIdsSize;
+    }
 
-            if (pos + strVarLen + strLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("argTypeIds[" + i + "]", pos + strVarLen + strLen, buf.readableBytes());
-            }
+        return size;
+    }
 
-            obj.argTypeIds[i] = PacketIO.readVarString(buf, pos);
-            pos += strVarLen + strLen;
-         }
-      }
+    public ArgCacheInvalidation clone() {
+        ArgCacheInvalidation copy = new ArgCacheInvalidation();
+        copy.argTypeIds = this.argTypeIds != null ? java.util.Arrays.copyOf(this.argTypeIds, this.argTypeIds.length) : null;
+        return copy;
+    }
 
-      return obj;
-   }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen);
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ArgCacheInvalidation other)) return false;
+        return java.util.Arrays.equals(this.argTypeIds, other.argTypeIds);
+    }
 
-         for (int i = 0; i < arrLen; i++) {
-            int sl = VarInt.peek(buf, pos);
-            pos += VarInt.size(sl) + sl;
-         }
-      }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(argTypeIds);
+        return result;
+    }
 
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static String[] getArgTypeIds(MemorySegment mem) {
-      return getArgTypeIds(mem, 0);
-   }
-
-   @Nullable
-   public static String[] getArgTypeIds(MemorySegment mem, int offset) {
-      if (!hasArgTypeIds(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("ArgTypeIds", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("ArgTypeIds", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ArgTypeIds", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      String[] data = new String[len];
-
-      for (int i = 0; i < len; i++) {
-         long sp = VarInt.getWithLength(mem, off);
-         int n = (int)sp + (int)(sp >>> 32);
-         data[i] = PacketIO.readVarString("ArgTypeIds", mem, off, 16384000, PacketIO.UTF8);
-         off += n;
-      }
-
-      return data;
-   }
-
-   public static boolean hasArgTypeIds(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ArgCacheInvalidation toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ArgCacheInvalidation toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ArgCacheInvalidation", offset + 1, (int)mem.byteSize());
-      }
-
-      String[] argTypeIds = null;
-      if (hasArgTypeIds(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("ArgTypeIds", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("ArgTypeIds", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("ArgTypeIds", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         argTypeIds = new String[len];
-
-         for (int i = 0; i < len; i++) {
-            long sp = VarInt.getWithLength(mem, off);
-            int n = (int)sp + (int)(sp >>> 32);
-            argTypeIds[i] = PacketIO.readVarString("ArgTypeIds", mem, off, 16384000, PacketIO.UTF8);
-            off += n;
-         }
-      }
-
-      return new ArgCacheInvalidation(argTypeIds);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.argTypeIds != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.argTypeIds != null) {
-         if (this.argTypeIds.length > 4096000) {
-            throw ProtocolException.arrayTooLong("ArgTypeIds", this.argTypeIds.length, 4096000);
-         }
-
-         VarInt.write(buf, this.argTypeIds.length);
-
-         for (String item : this.argTypeIds) {
-            PacketIO.writeVarString(buf, item, 4096000);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.argTypeIds != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.argTypeIds != null) {
-         if (this.argTypeIds.length > 4096000) {
-            throw ProtocolException.arrayTooLong("ArgTypeIds", this.argTypeIds.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.argTypeIds.length);
-         int argTypeIdsValueOffset = 0;
-
-         for (int i = 0; i < this.argTypeIds.length; i++) {
-            argTypeIdsValueOffset += PacketIO.writeVarString(mem, varOffset + argTypeIdsValueOffset, this.argTypeIds[i], 16384000);
-         }
-
-         varOffset += argTypeIdsValueOffset;
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.argTypeIds != null) {
-         int argTypeIdsSize = 0;
-
-         for (String elem : this.argTypeIds) {
-            argTypeIdsSize += PacketIO.stringSize(elem);
-         }
-
-         size += VarInt.size(this.argTypeIds.length) + argTypeIdsSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int argTypeIdsCount = VarInt.peek(buffer, pos);
-         if (argTypeIdsCount < 0) {
-            return ValidationResult.error("Invalid array count for ArgTypeIds");
-         }
-
-         if (argTypeIdsCount > 4096000) {
-            return ValidationResult.error("ArgTypeIds exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(argTypeIdsCount);
-
-         for (int i = 0; i < argTypeIdsCount; i++) {
-            int strLen = VarInt.peek(buffer, pos);
-            if (strLen < 0) {
-               return ValidationResult.error("Invalid string length in ArgTypeIds");
-            }
-
-            pos += VarInt.size(strLen);
-            pos += strLen;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading string in ArgTypeIds");
-            }
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ArgCacheInvalidation clone() {
-      ArgCacheInvalidation copy = new ArgCacheInvalidation();
-      copy.argTypeIds = this.argTypeIds != null ? Arrays.copyOf(this.argTypeIds, this.argTypeIds.length) : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof ArgCacheInvalidation other ? Arrays.equals(this.argTypeIds, other.argTypeIds) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.argTypeIds);
-   }
-}
+}

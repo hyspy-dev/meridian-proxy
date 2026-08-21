@@ -1,29 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum Opacity {
-   Solid(0),
-   Semitransparent(1),
-   Cutout(2),
-   Transparent(3);
+    Solid(0),
+    Semitransparent(1),
+    Cutout(2),
+    Transparent(3);
 
-   public static final Opacity[] VALUES = values();
-   private final int value;
+    public static final Opacity[] VALUES = values();
 
-   Opacity(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    Opacity(int value) {
+        this.value = value;
+    }
 
-   public static Opacity fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("Opacity", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static Opacity fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("Opacity", value);
+    }
+}

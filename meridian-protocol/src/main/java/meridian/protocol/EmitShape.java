@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum EmitShape {
-   Sphere(0),
-   Cube(1);
+    Sphere(0),
+    Cube(1);
 
-   public static final EmitShape[] VALUES = values();
-   private final int value;
+    public static final EmitShape[] VALUES = values();
 
-   EmitShape(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    EmitShape(int value) {
+        this.value = value;
+    }
 
-   public static EmitShape fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("EmitShape", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static EmitShape fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("EmitShape", value);
+    }
+}

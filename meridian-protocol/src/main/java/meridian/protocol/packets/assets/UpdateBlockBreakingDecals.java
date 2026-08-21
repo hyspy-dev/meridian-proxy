@@ -1,367 +1,200 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.BlockBreakingDecal;
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.BlockBreakingDecal;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateBlockBreakingDecals implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 45;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 2;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 2;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   @Nullable
-   public Map<String, BlockBreakingDecal> blockBreakingDecals;
+    public static final int PACKET_ID = 45;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 45;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateBlockBreakingDecals() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    @Nonnull public java.util.Map<String, BlockBreakingDecal> blockBreakingDecals = new java.util.HashMap<>();
 
-   public UpdateBlockBreakingDecals(@Nonnull UpdateType type, @Nullable Map<String, BlockBreakingDecal> blockBreakingDecals) {
-      this.type = type;
-      this.blockBreakingDecals = blockBreakingDecals;
-   }
+    public UpdateBlockBreakingDecals() {
+    }
 
-   public UpdateBlockBreakingDecals(@Nonnull UpdateBlockBreakingDecals other) {
-      this.type = other.type;
-      this.blockBreakingDecals = other.blockBreakingDecals;
-   }
+    public UpdateBlockBreakingDecals(@Nonnull UpdateType type, @Nonnull java.util.Map<String, BlockBreakingDecal> blockBreakingDecals) {
+        this.type = type;
+        this.blockBreakingDecals = blockBreakingDecals;
+    }
 
-   @Nonnull
-   public static UpdateBlockBreakingDecals deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 2) {
-         throw ProtocolException.bufferTooSmall("UpdateBlockBreakingDecals", 2, buf.readableBytes() - offset);
-      }
+    public UpdateBlockBreakingDecals(@Nonnull UpdateBlockBreakingDecals other) {
+        this.type = other.type;
+        this.blockBreakingDecals = other.blockBreakingDecals;
+    }
 
-      UpdateBlockBreakingDecals obj = new UpdateBlockBreakingDecals();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      int pos = offset + 2;
-      if ((nullBits & 1) != 0) {
-         int blockBreakingDecalsCount = VarInt.peek(buf, pos);
-         if (blockBreakingDecalsCount < 0) {
-            throw ProtocolException.invalidVarInt("BlockBreakingDecals");
-         }
-
-         int blockBreakingDecalsVarLen = VarInt.size(blockBreakingDecalsCount);
-         if (blockBreakingDecalsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", blockBreakingDecalsCount, 4096000);
-         }
-
-         pos += blockBreakingDecalsVarLen;
-         obj.blockBreakingDecals = new HashMap<>(blockBreakingDecalsCount);
-
-         for (int i = 0; i < blockBreakingDecalsCount; i++) {
-            int keyLen = VarInt.peek(buf, pos);
-            if (keyLen < 0) {
-               throw ProtocolException.invalidVarInt("key");
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateBlockBreakingDecals", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateBlockBreakingDecals", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 0));
+    }
+    
+    public static java.util.Map<String, BlockBreakingDecal> getBlockBreakingDecals(MemorySegment mem) {
+        return getBlockBreakingDecals(mem, 0);
+    }
+    
+    public static java.util.Map<String, BlockBreakingDecal> getBlockBreakingDecals(MemorySegment mem, int offset) {
+        var walkCursor = new ReadCursor();
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("BlockBreakingDecals");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("BlockBreakingDecals", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<String, BlockBreakingDecal> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var keyPacked = VarInt.getWithLength(mem, off);
+                var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                off += (int) keyPacked + (int) (keyPacked >>> 32);
+            var value = BlockBreakingDecal.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("BlockBreakingDecals", key);
             }
-
-            int keyVarLen = VarInt.size(keyLen);
-            if (keyLen > 4096000) {
-               throw ProtocolException.stringTooLong("key", keyLen, 4096000);
+        }
+        return data;
+    }
+    
+    
+    
+    
+    
+    public static UpdateBlockBreakingDecals toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateBlockBreakingDecals toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateBlockBreakingDecals and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateBlockBreakingDecals toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<String, BlockBreakingDecal> v1;
+        {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("BlockBreakingDecals");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("BlockBreakingDecals", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+            v1 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var keyPacked = VarInt.getWithLength(mem, off);
+                    var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                    off += (int) keyPacked + (int) (keyPacked >>> 32);
+                var value = BlockBreakingDecal.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v1.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("BlockBreakingDecals", key);
+                }
             }
-
-            if (pos + keyVarLen + keyLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("key", pos + keyVarLen + keyLen, buf.readableBytes());
-            }
-
-            String key = PacketIO.readVarString(buf, pos);
-            pos += keyVarLen + keyLen;
-            BlockBreakingDecal val = BlockBreakingDecal.deserialize(buf, pos);
-            pos += BlockBreakingDecal.computeBytesConsumed(buf, pos);
-            if (obj.blockBreakingDecals.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("blockBreakingDecals", key);
-            }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 2;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            int sl = VarInt.peek(buf, pos);
-            pos += VarInt.size(sl) + sl;
-            pos += BlockBreakingDecal.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 2L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   @Nullable
-   public static Map<String, BlockBreakingDecal> getBlockBreakingDecals(MemorySegment mem) {
-      return getBlockBreakingDecals(mem, 0);
-   }
-
-   @Nullable
-   public static Map<String, BlockBreakingDecal> getBlockBreakingDecals(MemorySegment mem, int offset) {
-      if (!hasBlockBreakingDecals(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 2;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("BlockBreakingDecals", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", len, 4096000);
-      }
-
-      Map<String, BlockBreakingDecal> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         long keyPacked = VarInt.getWithLength(mem, off);
-         int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-         String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-         off += nkey;
-         BlockBreakingDecal value = BlockBreakingDecal.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("BlockBreakingDecals", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasBlockBreakingDecals(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateBlockBreakingDecals toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateBlockBreakingDecals toObject(MemorySegment mem, int offset) {
-      if (offset + 2 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateBlockBreakingDecals", offset + 2, (int)mem.byteSize());
-      }
-
-      Map<String, BlockBreakingDecal> blockBreakingDecals = null;
-      if (hasBlockBreakingDecals(mem, offset)) {
-         int off = offset + 2;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("BlockBreakingDecals", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", len, 4096000);
-         }
-
-         blockBreakingDecals = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            long keyPacked = VarInt.getWithLength(mem, off);
-            int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-            String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-            off += nkey;
-            BlockBreakingDecal value = BlockBreakingDecal.toObject(mem, off);
-            off += value.computeSize();
-            if (blockBreakingDecals.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("BlockBreakingDecals", key);
-            }
-         }
-      }
-
-      return new UpdateBlockBreakingDecals(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), blockBreakingDecals);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.blockBreakingDecals != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      if (this.blockBreakingDecals != null) {
-         if (this.blockBreakingDecals.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", this.blockBreakingDecals.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.blockBreakingDecals.size());
-
-         for (Entry<String, BlockBreakingDecal> e : this.blockBreakingDecals.entrySet()) {
-            PacketIO.writeVarString(buf, e.getKey(), 4096000);
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.blockBreakingDecals != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      int varOffset = offset + 2;
-      if (this.blockBreakingDecals != null) {
-         if (this.blockBreakingDecals.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", this.blockBreakingDecals.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.blockBreakingDecals.size());
-
-         for (Entry<String, BlockBreakingDecal> e : this.blockBreakingDecals.entrySet()) {
-            varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 16384000);
+            varPos = off - varBase;
+        }
+        var result = new UpdateBlockBreakingDecals(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 0)),
+            v1
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, (byte) this.type.getValue());
+        var varOffset = offset + 1;
+        if (this.blockBreakingDecals.size() > 4096000) throw ProtocolException.dictionaryTooLarge("BlockBreakingDecals", blockBreakingDecals.size(), 4096000);
+        varOffset += VarInt.set(mem, varOffset, this.blockBreakingDecals.size());
+        for (var e : this.blockBreakingDecals.entrySet()) {
+            varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 4096000);
             varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        int blockBreakingDecalsSize = 0;
+for (var kvp : blockBreakingDecals.entrySet()) blockBreakingDecalsSize += PacketIO.stringSize(kvp.getKey()) + kvp.getValue().computeSize();
+size += VarInt.size(blockBreakingDecals.size()) + blockBreakingDecalsSize;
 
-      return varOffset - offset;
-   }
+        return size;
+    }
 
-   @Override
-   public int computeSize() {
-      int size = 2;
-      if (this.blockBreakingDecals != null) {
-         int blockBreakingDecalsSize = 0;
+    public UpdateBlockBreakingDecals clone() {
+        UpdateBlockBreakingDecals copy = new UpdateBlockBreakingDecals();
+        copy.type = this.type;
+        {
+            java.util.Map<String, BlockBreakingDecal> m = new java.util.HashMap<>();
+            for (var e : this.blockBreakingDecals.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.blockBreakingDecals = m;
+        }
+        return copy;
+    }
 
-         for (Entry<String, BlockBreakingDecal> kvp : this.blockBreakingDecals.entrySet()) {
-            blockBreakingDecalsSize += PacketIO.stringSize(kvp.getKey()) + kvp.getValue().computeSize();
-         }
 
-         size += VarInt.size(this.blockBreakingDecals.size()) + blockBreakingDecalsSize;
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateBlockBreakingDecals other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && java.util.Objects.equals(this.blockBreakingDecals, other.blockBreakingDecals);
+    }
 
-      return size;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, blockBreakingDecals);
+    }
 
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 2) {
-         return ValidationResult.error("Buffer too small: expected at least 2 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 2;
-      if ((nullBits & 1) != 0) {
-         int blockBreakingDecalsCount = VarInt.peek(buffer, v);
-         if (blockBreakingDecalsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for BlockBreakingDecals");
-         }
-
-         if (blockBreakingDecalsCount > 4096000) {
-            return ValidationResult.error("BlockBreakingDecals exceeds max length 4096000");
-         }
-
-         v += VarInt.size(blockBreakingDecalsCount);
-
-         for (int i = 0; i < blockBreakingDecalsCount; i++) {
-            int keyLen = VarInt.peek(buffer, v);
-            if (keyLen < 0) {
-               return ValidationResult.error("Invalid string length for key");
-            }
-
-            if (keyLen > 4096000) {
-               return ValidationResult.error("key exceeds max length 4096000");
-            }
-
-            v += VarInt.size(keyLen);
-            v += keyLen;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
-            }
-
-            v += BlockBreakingDecal.computeBytesConsumed(buffer, v);
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public UpdateBlockBreakingDecals clone() {
-      UpdateBlockBreakingDecals copy = new UpdateBlockBreakingDecals();
-      copy.type = this.type;
-      if (this.blockBreakingDecals != null) {
-         Map<String, BlockBreakingDecal> m = new HashMap<>();
-
-         for (Entry<String, BlockBreakingDecal> e : this.blockBreakingDecals.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
-
-         copy.blockBreakingDecals = m;
-      }
-
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateBlockBreakingDecals other)
-            ? false
-            : Objects.equals(this.type, other.type) && Objects.equals(this.blockBreakingDecals, other.blockBreakingDecals);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.blockBreakingDecals);
-   }
-}
+}

@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum RotationType {
-   AttachedToPlusOffset(0),
-   Custom(1);
+    AttachedToPlusOffset(0),
+    Custom(1);
 
-   public static final RotationType[] VALUES = values();
-   private final int value;
+    public static final RotationType[] VALUES = values();
 
-   RotationType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    RotationType(int value) {
+        this.value = value;
+    }
 
-   public static RotationType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("RotationType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static RotationType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("RotationType", value);
+    }
+}

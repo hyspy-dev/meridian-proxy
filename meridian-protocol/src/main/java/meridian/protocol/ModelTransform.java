@@ -1,240 +1,174 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class ModelTransform {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 49;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 49;
-   public static final int MAX_SIZE = 49;
-   @Nullable
-   public Position position;
-   @Nullable
-   public Direction bodyOrientation;
-   @Nullable
-   public Direction lookOrientation;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 49;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 49;
+    public static final int MAX_SIZE = 49;
 
-   public ModelTransform() {
-   }
+    @Nullable public Position position;
+    @Nullable public Direction bodyOrientation;
+    @Nullable public Direction lookOrientation;
 
-   public ModelTransform(@Nullable Position position, @Nullable Direction bodyOrientation, @Nullable Direction lookOrientation) {
-      this.position = position;
-      this.bodyOrientation = bodyOrientation;
-      this.lookOrientation = lookOrientation;
-   }
+    public ModelTransform() {
+    }
 
-   public ModelTransform(@Nonnull ModelTransform other) {
-      this.position = other.position;
-      this.bodyOrientation = other.bodyOrientation;
-      this.lookOrientation = other.lookOrientation;
-   }
+    public ModelTransform(@Nullable Position position, @Nullable Direction bodyOrientation, @Nullable Direction lookOrientation) {
+        this.position = position;
+        this.bodyOrientation = bodyOrientation;
+        this.lookOrientation = lookOrientation;
+    }
 
-   @Nonnull
-   public static ModelTransform deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 49) {
-         throw ProtocolException.bufferTooSmall("ModelTransform", 49, buf.readableBytes() - offset);
-      }
+    public ModelTransform(@Nonnull ModelTransform other) {
+        this.position = other.position;
+        this.bodyOrientation = other.bodyOrientation;
+        this.lookOrientation = other.lookOrientation;
+    }
 
-      ModelTransform obj = new ModelTransform();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.position = Position.deserialize(buf, offset + 1);
-      }
-
-      if ((nullBits & 2) != 0) {
-         obj.bodyOrientation = Direction.deserialize(buf, offset + 25);
-      }
-
-      if ((nullBits & 4) != 0) {
-         obj.lookOrientation = Direction.deserialize(buf, offset + 37);
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 49;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 49L;
-   }
-
-   @Nullable
-   public static Position getPosition(MemorySegment mem) {
-      return getPosition(mem, 0);
-   }
-
-   @Nullable
-   public static Position getPosition(MemorySegment mem, int offset) {
-      return hasPosition(mem, offset) ? Position.toObject(mem, offset + 1) : null;
-   }
-
-   @Nullable
-   public static Direction getBodyOrientation(MemorySegment mem) {
-      return getBodyOrientation(mem, 0);
-   }
-
-   @Nullable
-   public static Direction getBodyOrientation(MemorySegment mem, int offset) {
-      return hasBodyOrientation(mem, offset) ? Direction.toObject(mem, offset + 25) : null;
-   }
-
-   @Nullable
-   public static Direction getLookOrientation(MemorySegment mem) {
-      return getLookOrientation(mem, 0);
-   }
-
-   @Nullable
-   public static Direction getLookOrientation(MemorySegment mem, int offset) {
-      return hasLookOrientation(mem, offset) ? Direction.toObject(mem, offset + 37) : null;
-   }
-
-   public static boolean hasPosition(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasBodyOrientation(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static boolean hasLookOrientation(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 4) != 0;
-   }
-
-   public static ModelTransform toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ModelTransform toObject(MemorySegment mem, int offset) {
-      if (offset + 49 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ModelTransform", offset + 49, (int)mem.byteSize());
-      } else {
-         return new ModelTransform(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ModelTransform", offset, (int) mem.byteSize());
+        long needed = (long) offset + 49;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ModelTransform", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static Position getPosition(MemorySegment mem) {
+        return getPosition(mem, 0);
+    }
+    
+    @Nullable
+    public static Position getPosition(MemorySegment mem, int offset) {
+        return hasPosition(mem, offset) ? Position.toObject(mem, offset + 1): null;
+    }
+    
+    @Nullable
+    public static Direction getBodyOrientation(MemorySegment mem) {
+        return getBodyOrientation(mem, 0);
+    }
+    
+    @Nullable
+    public static Direction getBodyOrientation(MemorySegment mem, int offset) {
+        return hasBodyOrientation(mem, offset) ? Direction.toObject(mem, offset + 25): null;
+    }
+    
+    @Nullable
+    public static Direction getLookOrientation(MemorySegment mem) {
+        return getLookOrientation(mem, 0);
+    }
+    
+    @Nullable
+    public static Direction getLookOrientation(MemorySegment mem, int offset) {
+        return hasLookOrientation(mem, offset) ? Direction.toObject(mem, offset + 37): null;
+    }
+    
+    public static boolean hasPosition(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasBodyOrientation(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    public static boolean hasLookOrientation(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x04) != 0;
+    }
+    
+    
+    
+    public static ModelTransform toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ModelTransform toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ModelTransform and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ModelTransform toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new ModelTransform(
             hasPosition(mem, offset) ? Position.toObject(mem, offset + 1) : null,
             hasBodyOrientation(mem, offset) ? Direction.toObject(mem, offset + 25) : null,
             hasLookOrientation(mem, offset) ? Direction.toObject(mem, offset + 37) : null
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = offset + 49;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.position != null) nullBits |= 0x01;
+        if (this.bodyOrientation != null) nullBits |= 0x02;
+        if (this.lookOrientation != null) nullBits |= 0x04;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        if (this.position != null) {
+            this.position.serialize(mem, offset + 1);
+        } else {
+            mem.asSlice(offset + 1, 24).fill((byte) 0); 
+        }
+        if (this.bodyOrientation != null) {
+            this.bodyOrientation.serialize(mem, offset + 25);
+        } else {
+            mem.asSlice(offset + 25, 12).fill((byte) 0); 
+        }
+        if (this.lookOrientation != null) {
+            this.lookOrientation.serialize(mem, offset + 37);
+        } else {
+            mem.asSlice(offset + 37, 12).fill((byte) 0); 
+        }
+        
+        
+    
+       return 49;
+    }
+    public int computeSize() {
+        return 49;
+    }
 
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.position != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+    public ModelTransform clone() {
+        ModelTransform copy = new ModelTransform();
+        copy.position = this.position != null ? this.position.clone() : null;
+        copy.bodyOrientation = this.bodyOrientation != null ? this.bodyOrientation.clone() : null;
+        copy.lookOrientation = this.lookOrientation != null ? this.lookOrientation.clone() : null;
+        return copy;
+    }
 
-      if (this.bodyOrientation != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
 
-      if (this.lookOrientation != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ModelTransform other)) return false;
+        return java.util.Objects.equals(this.position, other.position) && java.util.Objects.equals(this.bodyOrientation, other.bodyOrientation) && java.util.Objects.equals(this.lookOrientation, other.lookOrientation);
+    }
 
-      buf.writeByte(nullBits);
-      if (this.position != null) {
-         this.position.serialize(buf);
-      } else {
-         buf.writeZero(24);
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(position, bodyOrientation, lookOrientation);
+    }
 
-      if (this.bodyOrientation != null) {
-         this.bodyOrientation.serialize(buf);
-      } else {
-         buf.writeZero(12);
-      }
-
-      if (this.lookOrientation != null) {
-         this.lookOrientation.serialize(buf);
-      } else {
-         buf.writeZero(12);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.position != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.bodyOrientation != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.lookOrientation != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.position != null) {
-         this.position.serialize(mem, offset + 1);
-      } else {
-         mem.asSlice(offset + 1, 24L).fill((byte)0);
-      }
-
-      if (this.bodyOrientation != null) {
-         this.bodyOrientation.serialize(mem, offset + 25);
-      } else {
-         mem.asSlice(offset + 25, 12L).fill((byte)0);
-      }
-
-      if (this.lookOrientation != null) {
-         this.lookOrientation.serialize(mem, offset + 37);
-      } else {
-         mem.asSlice(offset + 37, 12L).fill((byte)0);
-      }
-
-      return 49;
-   }
-
-   public int computeSize() {
-      return 49;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 49) {
-         return ValidationResult.error("Buffer too small: expected at least 49 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      return ValidationResult.OK;
-   }
-
-   public ModelTransform clone() {
-      ModelTransform copy = new ModelTransform();
-      copy.position = this.position != null ? this.position.clone() : null;
-      copy.bodyOrientation = this.bodyOrientation != null ? this.bodyOrientation.clone() : null;
-      copy.lookOrientation = this.lookOrientation != null ? this.lookOrientation.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ModelTransform other)
-            ? false
-            : Objects.equals(this.position, other.position)
-               && Objects.equals(this.bodyOrientation, other.bodyOrientation)
-               && Objects.equals(this.lookOrientation, other.lookOrientation);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.position, this.bodyOrientation, this.lookOrientation);
-   }
-}
+}

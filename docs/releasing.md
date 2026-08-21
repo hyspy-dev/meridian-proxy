@@ -8,7 +8,7 @@ together — each moves at its own pace.
 | Artifact | Versioning | Changes when |
 |----------|------------|--------------|
 | `meridian-api` | own SemVer, **independent of Hytale** | a module-facing signature is added/changed |
-| `meridian-protocol` | `<hytale-tag>-<patch>` (e.g. `pre-release-45-1`); **BETA**, no guarantees | every Hytale build |
+| `meridian-protocol` | `<hytale-build>-<patch>` (e.g. `0.6.0-pre.13-1`); **BETA**, no guarantees | every Hytale build |
 | `meridian-proxy` | own SemVer | the proxy implementation changes |
 | `meridian-core-api` | own SemVer | a core service/type is added or extended |
 | `meridian-core` (impl) | own SemVer | mapper or service implementation changes |
@@ -30,7 +30,7 @@ Each artifact prefixes its own tag, so a multi-module repo can carry several:
 
 ```
 api-v1.2.0
-protocol-v-pre-release-45-1
+protocol-v-0.6.0-pre.13-1
 proxy-v1.5.0
 core-api-v0.2.0
 core-v0.1.0
@@ -60,16 +60,13 @@ on them with `<scope>provided</scope>`; the uber-jar to a GitHub Release.
 
 When a new Hytale server build ships:
 
-1. Decompile the new server jar following [`decompile.md`](decompile.md) — same
-   tool (Vineflower 1.12.0), same flags, same output dir as the previous sync
-   point. Diff the new tree against the previously-synced one.
-2. Apply changed files under `com.hypixel.hytale.protocol` to
-   `meridian-protocol`, rewriting the package to `meridian.protocol`. Walk the
-   manual checklist: removed files, non-protocol imports, `ProtocolSettings`,
-   `PacketRegistry` registrations, interaction discriminators.
-3. `mvn -pl meridian-protocol install`, then build `meridian-core` — its mapper
-   is where a renamed/removed field surfaces as a compile error. Fix the mapper
-   (usually one line), bump `meridian-core` patch.
+1. Regenerate `meridian-protocol` from the shared source following
+   [`protocol-sync.md`](protocol-sync.md), re-applying the one local patch.
+2. Build everything with `build-releases.ps1` — it cleans each module, which
+   plain `mvn package` does not, and a stale `target/` reports a false success.
+   Renamed and removed fields surface as compile errors here.
+3. Diff the field lists of the protocol types the proxy constructs: **added**
+   fields never break the build, they just default silently.
 4. If framing/encoding changed, patch `meridian-proxy`.
 5. Layer-2 modules (camera-tweaks, …) are untouched — they never see
    `meridian-protocol`.

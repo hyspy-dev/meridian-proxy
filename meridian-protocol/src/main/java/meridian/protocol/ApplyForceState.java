@@ -1,29 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ApplyForceState {
-   Waiting(0),
-   Ground(1),
-   Collision(2),
-   Timer(3);
+    Waiting(0),
+    Ground(1),
+    Collision(2),
+    Timer(3);
 
-   public static final ApplyForceState[] VALUES = values();
-   private final int value;
+    public static final ApplyForceState[] VALUES = values();
 
-   ApplyForceState(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ApplyForceState(int value) {
+        this.value = value;
+    }
 
-   public static ApplyForceState fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ApplyForceState", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ApplyForceState fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ApplyForceState", value);
+    }
+}

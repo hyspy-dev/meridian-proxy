@@ -1,251 +1,173 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
+
 
 public class UpdateServersideUIPage implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 1200;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 0;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 0;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public ServersideUICommand[] commands = new ServersideUICommand[0];
+    public static final int PACKET_ID = 1200;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 0;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 0;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 1200;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateServersideUIPage() {
-   }
+    @Nonnull public ServersideUICommand[] commands = new ServersideUICommand[0];
 
-   public UpdateServersideUIPage(@Nonnull ServersideUICommand[] commands) {
-      this.commands = commands;
-   }
+    public UpdateServersideUIPage() {
+    }
 
-   public UpdateServersideUIPage(@Nonnull UpdateServersideUIPage other) {
-      this.commands = other.commands;
-   }
+    public UpdateServersideUIPage(@Nonnull ServersideUICommand[] commands) {
+        this.commands = commands;
+    }
 
-   @Nonnull
-   public static UpdateServersideUIPage deserialize(@Nonnull ByteBuf buf, int offset) {
-      UpdateServersideUIPage obj = new UpdateServersideUIPage();
-      int pos = offset + 0;
-      int commandsCount = VarInt.peek(buf, pos);
-      if (commandsCount < 0) {
-         throw ProtocolException.invalidVarInt("Commands");
-      }
+    public UpdateServersideUIPage(@Nonnull UpdateServersideUIPage other) {
+        this.commands = other.commands;
+    }
 
-      int commandsVarLen = VarInt.size(commandsCount);
-      if (commandsCount > 4096000) {
-         throw ProtocolException.arrayTooLong("Commands", commandsCount, 4096000);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateServersideUIPage", offset, (int) mem.byteSize());
+        long needed = (long) offset + 0;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateServersideUIPage", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static ServersideUICommand[] getCommands(MemorySegment mem) {
+        return getCommands(mem, 0);
+    }
+    
+    public static ServersideUICommand[] getCommands(MemorySegment mem, int offset) {
+        var walkCursor = new ReadCursor();
+        var off = offset + 0;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Commands");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Commands", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Commands", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new ServersideUICommand[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = ServersideUICommand.toObject(mem, off, walkCursor);
+            off = walkCursor.position;
+        }
+        return data;
+    }
+    
+    
+    
+    
+    
+    public static UpdateServersideUIPage toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateServersideUIPage toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateServersideUIPage and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateServersideUIPage toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 0;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        ServersideUICommand[] v0;
+        {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Commands");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Commands", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Commands", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new ServersideUICommand[len];
+            for (var i = 0; i < len; i++) {
+                v0[i] = ServersideUICommand.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            }
+            varPos = off - varBase;
+        }
+        var result = new UpdateServersideUIPage(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        
+        var varOffset = offset + 0;
+        if (commands.length > 4096000) throw ProtocolException.arrayTooLong("Commands", commands.length, 4096000);
+        varOffset += VarInt.set(mem, varOffset, this.commands.length);
+        
+        var commandsValueOffset = 0;
+        for (var i = 0; i < this.commands.length; i++) {
+            commandsValueOffset += this.commands[i].serializeWithTypeId(mem, varOffset + commandsValueOffset);
+        }
+        varOffset += commandsValueOffset;
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 0;
+        int commandsSize = 0;
+for (var elem : commands) commandsSize += elem.computeSizeWithTypeId();
+size += VarInt.size(commands.length) + commandsSize;
 
-      if (pos + commandsVarLen + commandsCount * 1L > buf.readableBytes()) {
-         throw ProtocolException.bufferTooSmall("Commands", pos + commandsVarLen + commandsCount * 1, buf.readableBytes());
-      }
+        return size;
+    }
 
-      pos += commandsVarLen;
-      obj.commands = new ServersideUICommand[commandsCount];
+    public UpdateServersideUIPage clone() {
+        UpdateServersideUIPage copy = new UpdateServersideUIPage();
+        copy.commands = java.util.Arrays.copyOf(this.commands, this.commands.length);
+        return copy;
+    }
 
-      for (int i = 0; i < commandsCount; i++) {
-         obj.commands[i] = ServersideUICommand.deserialize(buf, pos);
-         pos += ServersideUICommand.computeBytesConsumed(buf, pos);
-      }
 
-      return obj;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateServersideUIPage other)) return false;
+        return java.util.Arrays.equals(this.commands, other.commands);
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int pos = offset + 0;
-      int arrLen = VarInt.peek(buf, pos);
-      pos += VarInt.size(arrLen);
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(commands);
+        return result;
+    }
 
-      for (int i = 0; i < arrLen; i++) {
-         pos += ServersideUICommand.computeBytesConsumed(buf, pos);
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 0L;
-   }
-
-   public static ServersideUICommand[] getCommands(MemorySegment mem) {
-      return getCommands(mem, 0);
-   }
-
-   public static ServersideUICommand[] getCommands(MemorySegment mem, int offset) {
-      int off = offset + 0;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Commands", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Commands", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Commands", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      ServersideUICommand[] data = new ServersideUICommand[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = ServersideUICommand.toObject(mem, off);
-         off += data[i].computeSizeWithTypeId();
-      }
-
-      return data;
-   }
-
-   public static UpdateServersideUIPage toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateServersideUIPage toObject(MemorySegment mem, int offset) {
-      if (offset + 0 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateServersideUIPage", offset + 0, (int)mem.byteSize());
-      }
-
-      int off = offset + 0;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Commands", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Commands", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Commands", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      ServersideUICommand[] commands = new ServersideUICommand[len];
-
-      for (int i = 0; i < len; i++) {
-         commands[i] = ServersideUICommand.toObject(mem, off);
-         off += commands[i].computeSizeWithTypeId();
-      }
-
-      return new UpdateServersideUIPage(commands);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      if (this.commands.length > 4096000) {
-         throw ProtocolException.arrayTooLong("Commands", this.commands.length, 4096000);
-      }
-
-      VarInt.write(buf, this.commands.length);
-
-      for (ServersideUICommand item : this.commands) {
-         item.serializeWithTypeId(buf);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      int varOffset = offset + 0;
-      if (this.commands.length > 4096000) {
-         throw ProtocolException.arrayTooLong("Commands", this.commands.length, 4096000);
-      }
-
-      varOffset += VarInt.set(mem, varOffset, this.commands.length);
-      int commandsValueOffset = 0;
-
-      for (int i = 0; i < this.commands.length; i++) {
-         commandsValueOffset += this.commands[i].serializeWithTypeId(mem, varOffset + commandsValueOffset);
-      }
-
-      varOffset += commandsValueOffset;
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 0;
-      int commandsSize = 0;
-
-      for (ServersideUICommand elem : this.commands) {
-         commandsSize += elem.computeSizeWithTypeId();
-      }
-
-      return size + VarInt.size(this.commands.length) + commandsSize;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 0) {
-         return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-      }
-
-      int pos = offset + 0;
-      int commandsCount = VarInt.peek(buffer, pos);
-      if (commandsCount < 0) {
-         return ValidationResult.error("Invalid array count for Commands");
-      }
-
-      if (commandsCount > 4096000) {
-         return ValidationResult.error("Commands exceeds max length 4096000");
-      }
-
-      pos += VarInt.size(commandsCount);
-
-      for (int i = 0; i < commandsCount; i++) {
-         ValidationResult structResult = ServersideUICommand.validateStructure(buffer, pos);
-         if (!structResult.isValid()) {
-            return ValidationResult.error("Invalid ServersideUICommand in Commands[" + i + "]: " + structResult.error());
-         }
-
-         pos += ServersideUICommand.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public UpdateServersideUIPage clone() {
-      UpdateServersideUIPage copy = new UpdateServersideUIPage();
-      copy.commands = Arrays.copyOf(this.commands, this.commands.length);
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof UpdateServersideUIPage other ? Arrays.equals(this.commands, other.commands) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.commands);
-   }
-}
+}

@@ -1,160 +1,134 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+
 
 public class Asset {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 64;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 64;
-   public static final int MAX_SIZE = 2117;
-   @Nonnull
-   public String hash = "";
-   @Nonnull
-   public String name = "";
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 64;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 64;
+    public static final int MAX_SIZE = 2117;
 
-   public Asset() {
-   }
+    @Nonnull public String hash = "";
+    @Nonnull public String name = "";
 
-   public Asset(@Nonnull String hash, @Nonnull String name) {
-      this.hash = hash;
-      this.name = name;
-   }
+    public Asset() {
+    }
 
-   public Asset(@Nonnull Asset other) {
-      this.hash = other.hash;
-      this.name = other.name;
-   }
+    public Asset(@Nonnull String hash, @Nonnull String name) {
+        this.hash = hash;
+        this.name = name;
+    }
 
-   @Nonnull
-   public static Asset deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 64) {
-         throw ProtocolException.bufferTooSmall("Asset", 64, buf.readableBytes() - offset);
-      }
+    public Asset(@Nonnull Asset other) {
+        this.hash = other.hash;
+        this.name = other.name;
+    }
 
-      Asset obj = new Asset();
-      obj.hash = PacketIO.readFixedAsciiString(buf, offset + 0, 64);
-      int pos = offset + 64;
-      int nameLen = VarInt.peek(buf, pos);
-      if (nameLen < 0) {
-         throw ProtocolException.invalidVarInt("Name");
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("Asset", offset, (int) mem.byteSize());
+        long needed = (long) offset + 64;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("Asset", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static String getHash(MemorySegment mem) {
+        return getHash(mem, 0);
+    }
+    
+    public static String getHash(MemorySegment mem, int offset) {
+        return PacketIO.readFixedAsciiString(mem, offset + 0, 64);
+    }
+    
+    public static String getName(MemorySegment mem) {
+        return getName(mem, 0);
+    }
+    
+    public static String getName(MemorySegment mem, int offset) {
+        return PacketIO.readVarString("Name", mem, offset + 64, 512);
+    }
+    
+    
+    
+    
+    
+    public static Asset toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static Asset toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one Asset and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static Asset toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 64;
+        var varPos = 0;
+        String v1;
+        {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v1 = PacketIO.readVarString("Name", mem, off, 0, 512, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new Asset(
+            PacketIO.readFixedAsciiString(mem, offset + 0, 64),
+            v1
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        PacketIO.writeFixedAsciiString(mem, offset + 0, this.hash, 64);
+        var varOffset = offset + 64;
+        varOffset += PacketIO.writeVarString(mem, varOffset, this.name, 512);
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 64;
+        size += PacketIO.stringSize(name);
 
-      int nameVarLen = VarInt.size(nameLen);
-      if (nameLen > 512) {
-         throw ProtocolException.stringTooLong("Name", nameLen, 512);
-      }
+        return size;
+    }
 
-      if (pos + nameVarLen + nameLen > buf.readableBytes()) {
-         throw ProtocolException.bufferTooSmall("Name", pos + nameVarLen + nameLen, buf.readableBytes());
-      }
+    public Asset clone() {
+        Asset copy = new Asset();
+        copy.hash = this.hash;
+        copy.name = this.name;
+        return copy;
+    }
 
-      obj.name = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-      pos += nameVarLen + nameLen;
-      return obj;
-   }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int pos = offset + 64;
-      int sl = VarInt.peek(buf, pos);
-      pos += VarInt.size(sl) + sl;
-      return pos - offset;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Asset other)) return false;
+        return java.util.Objects.equals(this.hash, other.hash) && java.util.Objects.equals(this.name, other.name);
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 64L;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(hash, name);
+    }
 
-   public static String getHash(MemorySegment mem) {
-      return getHash(mem, 0);
-   }
-
-   public static String getHash(MemorySegment mem, int offset) {
-      return PacketIO.readFixedAsciiString(mem, offset + 0, 64);
-   }
-
-   public static String getName(MemorySegment mem) {
-      return getName(mem, 0);
-   }
-
-   public static String getName(MemorySegment mem, int offset) {
-      return PacketIO.readVarString("Name", mem, offset + 64, 512, PacketIO.UTF8);
-   }
-
-   public static Asset toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static Asset toObject(MemorySegment mem, int offset) {
-      if (offset + 64 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Asset", offset + 64, (int)mem.byteSize());
-      } else {
-         return new Asset(PacketIO.readFixedAsciiString(mem, offset + 0, 64), PacketIO.readVarString("Name", mem, offset + 64, 512, PacketIO.UTF8));
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      PacketIO.writeFixedAsciiString(buf, this.hash, 64);
-      PacketIO.writeVarString(buf, this.name, 512);
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      PacketIO.writeFixedAsciiString(mem, offset + 0, this.hash, 64);
-      int varOffset = offset + 64;
-      varOffset += PacketIO.writeVarString(mem, varOffset, this.name, 512);
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 64;
-      return size + PacketIO.stringSize(this.name);
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 64) {
-         return ValidationResult.error("Buffer too small: expected at least 64 bytes");
-      }
-
-      int pos = offset + 64;
-      int nameLen = VarInt.peek(buffer, pos);
-      if (nameLen < 0) {
-         return ValidationResult.error("Invalid string length for Name");
-      }
-
-      if (nameLen > 512) {
-         return ValidationResult.error("Name exceeds max length 512");
-      }
-
-      pos += VarInt.size(nameLen);
-      pos += nameLen;
-      return pos > buffer.writerIndex() ? ValidationResult.error("Buffer overflow reading Name") : ValidationResult.OK;
-   }
-
-   public Asset clone() {
-      Asset copy = new Asset();
-      copy.hash = this.hash;
-      copy.name = this.name;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof Asset other) ? false : Objects.equals(this.hash, other.hash) && Objects.equals(this.name, other.name);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.hash, this.name);
-   }
-}
+}

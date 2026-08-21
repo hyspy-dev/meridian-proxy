@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.buildertools;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ExtrudeMode {
-   Extrude(0),
-   Shrink(1),
-   Fill(2);
+    Extrude(0),
+    Shrink(1),
+    Fill(2);
 
-   public static final ExtrudeMode[] VALUES = values();
-   private final int value;
+    public static final ExtrudeMode[] VALUES = values();
 
-   ExtrudeMode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ExtrudeMode(int value) {
+        this.value = value;
+    }
 
-   public static ExtrudeMode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ExtrudeMode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ExtrudeMode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ExtrudeMode", value);
+    }
+}

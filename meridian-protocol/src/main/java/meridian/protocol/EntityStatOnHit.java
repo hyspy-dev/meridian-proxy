@@ -1,317 +1,188 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class EntityStatOnHit {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 13;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 13;
-   public static final int MAX_SIZE = 16384018;
-   public int entityStatIndex;
-   public float amount;
-   @Nullable
-   public float[] multipliersPerEntitiesHit;
-   public float multiplierPerExtraEntityHit;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 12;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 12;
+    public static final int MAX_SIZE = 16384017;
 
-   public EntityStatOnHit() {
-   }
+    public int entityStatIndex;
+    public float amount;
+    @Nonnull public float[] multipliersPerEntitiesHit = new float[0];
+    public float multiplierPerExtraEntityHit;
 
-   public EntityStatOnHit(int entityStatIndex, float amount, @Nullable float[] multipliersPerEntitiesHit, float multiplierPerExtraEntityHit) {
-      this.entityStatIndex = entityStatIndex;
-      this.amount = amount;
-      this.multipliersPerEntitiesHit = multipliersPerEntitiesHit;
-      this.multiplierPerExtraEntityHit = multiplierPerExtraEntityHit;
-   }
+    public EntityStatOnHit() {
+    }
 
-   public EntityStatOnHit(@Nonnull EntityStatOnHit other) {
-      this.entityStatIndex = other.entityStatIndex;
-      this.amount = other.amount;
-      this.multipliersPerEntitiesHit = other.multipliersPerEntitiesHit;
-      this.multiplierPerExtraEntityHit = other.multiplierPerExtraEntityHit;
-   }
+    public EntityStatOnHit(int entityStatIndex, float amount, @Nonnull float[] multipliersPerEntitiesHit, float multiplierPerExtraEntityHit) {
+        this.entityStatIndex = entityStatIndex;
+        this.amount = amount;
+        this.multipliersPerEntitiesHit = multipliersPerEntitiesHit;
+        this.multiplierPerExtraEntityHit = multiplierPerExtraEntityHit;
+    }
 
-   @Nonnull
-   public static EntityStatOnHit deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 13) {
-         throw ProtocolException.bufferTooSmall("EntityStatOnHit", 13, buf.readableBytes() - offset);
-      }
+    public EntityStatOnHit(@Nonnull EntityStatOnHit other) {
+        this.entityStatIndex = other.entityStatIndex;
+        this.amount = other.amount;
+        this.multipliersPerEntitiesHit = other.multipliersPerEntitiesHit;
+        this.multiplierPerExtraEntityHit = other.multiplierPerExtraEntityHit;
+    }
 
-      EntityStatOnHit obj = new EntityStatOnHit();
-      byte nullBits = buf.getByte(offset);
-      obj.entityStatIndex = buf.getIntLE(offset + 1);
-      obj.amount = buf.getFloatLE(offset + 5);
-      obj.multiplierPerExtraEntityHit = buf.getFloatLE(offset + 9);
-      int pos = offset + 13;
-      if ((nullBits & 1) != 0) {
-         int multipliersPerEntitiesHitCount = VarInt.peek(buf, pos);
-         if (multipliersPerEntitiesHitCount < 0) {
-            throw ProtocolException.invalidVarInt("MultipliersPerEntitiesHit");
-         }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("EntityStatOnHit", offset, (int) mem.byteSize());
+        long needed = (long) offset + 12;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("EntityStatOnHit", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getEntityStatIndex(MemorySegment mem) {
+        return getEntityStatIndex(mem, 0);
+    }
+    
+    public static int getEntityStatIndex(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    public static float getAmount(MemorySegment mem) {
+        return getAmount(mem, 0);
+    }
+    
+    public static float getAmount(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 4), "Amount");
+    }
+    
+    public static float[] getMultipliersPerEntitiesHit(MemorySegment mem) {
+        return getMultipliersPerEntitiesHit(mem, 0);
+    }
+    
+    public static float[] getMultipliersPerEntitiesHit(MemorySegment mem, int offset) {
+        var off = offset + 12;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("MultipliersPerEntitiesHit");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("MultipliersPerEntitiesHit", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new float[len];
+        MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, data, 0, len);
+        return data;
+    }
+    
+    public static float getMultiplierPerExtraEntityHit(MemorySegment mem) {
+        return getMultiplierPerExtraEntityHit(mem, 0);
+    }
+    
+    public static float getMultiplierPerExtraEntityHit(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 8), "MultiplierPerExtraEntityHit");
+    }
+    
+    
+    
+    
+    
+    public static EntityStatOnHit toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static EntityStatOnHit toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one EntityStatOnHit and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static EntityStatOnHit toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 12;
+        var varPos = 0;
+        float[] v2;
+        {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("MultipliersPerEntitiesHit");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("MultipliersPerEntitiesHit", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v2 = new float[len];
+            MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, v2, 0, len);
+            varPos = off + len * 4 - varBase;
+        }
+        var result = new EntityStatOnHit(
+            mem.get(PacketIO.PROTO_INT, offset + 0),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 4), "Amount"),
+            v2,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 8), "MultiplierPerExtraEntityHit")
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.entityStatIndex);
+        PacketIO.requireFinite(this.amount, "Amount"); mem.set(PacketIO.PROTO_FLOAT, offset + 4, this.amount);
+        PacketIO.requireFinite(this.multiplierPerExtraEntityHit, "MultiplierPerExtraEntityHit"); mem.set(PacketIO.PROTO_FLOAT, offset + 8, this.multiplierPerExtraEntityHit);
+        var varOffset = offset + 12;
+        if (multipliersPerEntitiesHit.length > 4096000) throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", multipliersPerEntitiesHit.length, 4096000);
+        varOffset += VarInt.set(mem, varOffset, this.multipliersPerEntitiesHit.length);
+        
+        MemorySegment.copy(this.multipliersPerEntitiesHit, 0, mem, PacketIO.PROTO_FLOAT, varOffset, this.multipliersPerEntitiesHit.length);
+        varOffset += this.multipliersPerEntitiesHit.length * 4;
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 12;
+        size += VarInt.size(multipliersPerEntitiesHit.length) + multipliersPerEntitiesHit.length * 4;
 
-         int multipliersPerEntitiesHitVarLen = VarInt.size(multipliersPerEntitiesHitCount);
-         if (multipliersPerEntitiesHitCount > 4096000) {
-            throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", multipliersPerEntitiesHitCount, 4096000);
-         }
+        return size;
+    }
 
-         if (pos + multipliersPerEntitiesHitVarLen + multipliersPerEntitiesHitCount * 4L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall(
-               "MultipliersPerEntitiesHit", pos + multipliersPerEntitiesHitVarLen + multipliersPerEntitiesHitCount * 4, buf.readableBytes()
-            );
-         }
+    public EntityStatOnHit clone() {
+        EntityStatOnHit copy = new EntityStatOnHit();
+        copy.entityStatIndex = this.entityStatIndex;
+        copy.amount = this.amount;
+        copy.multipliersPerEntitiesHit = java.util.Arrays.copyOf(this.multipliersPerEntitiesHit, this.multipliersPerEntitiesHit.length);
+        copy.multiplierPerExtraEntityHit = this.multiplierPerExtraEntityHit;
+        return copy;
+    }
 
-         pos += multipliersPerEntitiesHitVarLen;
-         obj.multipliersPerEntitiesHit = new float[multipliersPerEntitiesHitCount];
 
-         for (int i = 0; i < multipliersPerEntitiesHitCount; i++) {
-            obj.multipliersPerEntitiesHit[i] = buf.getFloatLE(pos + i * 4);
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof EntityStatOnHit other)) return false;
+        return this.entityStatIndex == other.entityStatIndex && this.amount == other.amount && java.util.Arrays.equals(this.multipliersPerEntitiesHit, other.multipliersPerEntitiesHit) && this.multiplierPerExtraEntityHit == other.multiplierPerExtraEntityHit;
+    }
 
-         pos += multipliersPerEntitiesHitCount * 4;
-      }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + Integer.hashCode(entityStatIndex);
+        result = 31 * result + Float.hashCode(amount);
+        result = 31 * result + java.util.Arrays.hashCode(multipliersPerEntitiesHit);
+        result = 31 * result + Float.hashCode(multiplierPerExtraEntityHit);
+        return result;
+    }
 
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 13;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen) + arrLen * 4;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 13L;
-   }
-
-   public static int getEntityStatIndex(MemorySegment mem) {
-      return getEntityStatIndex(mem, 0);
-   }
-
-   public static int getEntityStatIndex(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   public static float getAmount(MemorySegment mem) {
-      return getAmount(mem, 0);
-   }
-
-   public static float getAmount(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 5);
-   }
-
-   @Nullable
-   public static float[] getMultipliersPerEntitiesHit(MemorySegment mem) {
-      return getMultipliersPerEntitiesHit(mem, 0);
-   }
-
-   @Nullable
-   public static float[] getMultipliersPerEntitiesHit(MemorySegment mem, int offset) {
-      if (!hasMultipliersPerEntitiesHit(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 13;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("MultipliersPerEntitiesHit", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 4L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("MultipliersPerEntitiesHit", off + lenOffset + len * 4, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      float[] data = new float[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, data, 0, len);
-      return data;
-   }
-
-   public static float getMultiplierPerExtraEntityHit(MemorySegment mem) {
-      return getMultiplierPerExtraEntityHit(mem, 0);
-   }
-
-   public static float getMultiplierPerExtraEntityHit(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 9);
-   }
-
-   public static boolean hasMultipliersPerEntitiesHit(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static EntityStatOnHit toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static EntityStatOnHit toObject(MemorySegment mem, int offset) {
-      if (offset + 13 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("EntityStatOnHit", offset + 13, (int)mem.byteSize());
-      }
-
-      float[] multipliersPerEntitiesHit = null;
-      if (hasMultipliersPerEntitiesHit(mem, offset)) {
-         int off = offset + 13;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("MultipliersPerEntitiesHit", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 4L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("MultipliersPerEntitiesHit", off + lenOffset + len * 4, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         multipliersPerEntitiesHit = new float[len];
-         MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, multipliersPerEntitiesHit, 0, len);
-      }
-
-      return new EntityStatOnHit(
-         mem.get(PacketIO.PROTO_INT, offset + 1),
-         mem.get(PacketIO.PROTO_FLOAT, offset + 5),
-         multipliersPerEntitiesHit,
-         mem.get(PacketIO.PROTO_FLOAT, offset + 9)
-      );
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.multipliersPerEntitiesHit != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.entityStatIndex);
-      buf.writeFloatLE(this.amount);
-      buf.writeFloatLE(this.multiplierPerExtraEntityHit);
-      if (this.multipliersPerEntitiesHit != null) {
-         if (this.multipliersPerEntitiesHit.length > 4096000) {
-            throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", this.multipliersPerEntitiesHit.length, 4096000);
-         }
-
-         VarInt.write(buf, this.multipliersPerEntitiesHit.length);
-
-         for (float item : this.multipliersPerEntitiesHit) {
-            buf.writeFloatLE(item);
-         }
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.multipliersPerEntitiesHit != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.entityStatIndex);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 5, this.amount);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 9, this.multiplierPerExtraEntityHit);
-      int varOffset = offset + 13;
-      if (this.multipliersPerEntitiesHit != null) {
-         if (this.multipliersPerEntitiesHit.length > 4096000) {
-            throw ProtocolException.arrayTooLong("MultipliersPerEntitiesHit", this.multipliersPerEntitiesHit.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.multipliersPerEntitiesHit.length);
-         MemorySegment.copy(this.multipliersPerEntitiesHit, 0, mem, PacketIO.PROTO_FLOAT, varOffset, this.multipliersPerEntitiesHit.length);
-         varOffset += this.multipliersPerEntitiesHit.length * 4;
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 13;
-      if (this.multipliersPerEntitiesHit != null) {
-         size += VarInt.size(this.multipliersPerEntitiesHit.length) + this.multipliersPerEntitiesHit.length * 4;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 13) {
-         return ValidationResult.error("Buffer too small: expected at least 13 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 13;
-      if ((nullBits & 1) != 0) {
-         int multipliersPerEntitiesHitCount = VarInt.peek(buffer, pos);
-         if (multipliersPerEntitiesHitCount < 0) {
-            return ValidationResult.error("Invalid array count for MultipliersPerEntitiesHit");
-         }
-
-         if (multipliersPerEntitiesHitCount > 4096000) {
-            return ValidationResult.error("MultipliersPerEntitiesHit exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(multipliersPerEntitiesHitCount);
-         pos += multipliersPerEntitiesHitCount * 4;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading MultipliersPerEntitiesHit");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public EntityStatOnHit clone() {
-      EntityStatOnHit copy = new EntityStatOnHit();
-      copy.entityStatIndex = this.entityStatIndex;
-      copy.amount = this.amount;
-      copy.multipliersPerEntitiesHit = this.multipliersPerEntitiesHit != null
-         ? Arrays.copyOf(this.multipliersPerEntitiesHit, this.multipliersPerEntitiesHit.length)
-         : null;
-      copy.multiplierPerExtraEntityHit = this.multiplierPerExtraEntityHit;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof EntityStatOnHit other)
-            ? false
-            : this.entityStatIndex == other.entityStatIndex
-               && this.amount == other.amount
-               && Arrays.equals(this.multipliersPerEntitiesHit, other.multipliersPerEntitiesHit)
-               && this.multiplierPerExtraEntityHit == other.multiplierPerExtraEntityHit;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Integer.hashCode(this.entityStatIndex);
-      result = 31 * result + Float.hashCode(this.amount);
-      result = 31 * result + Arrays.hashCode(this.multipliersPerEntitiesHit);
-      return 31 * result + Float.hashCode(this.multiplierPerExtraEntityHit);
-   }
-}
+}

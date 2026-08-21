@@ -1,311 +1,196 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import java.util.HashMap;
 
 public class InventorySection {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 3;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 3;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public Map<Integer, ItemWithAllMetadata> items;
-   public short capacity;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 3;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 3;
+    public static final int MAX_SIZE = 1677721600;
 
-   public InventorySection() {
-   }
+    @Nullable public java.util.Map<Integer, ItemWithAllMetadata> items;
+    public short capacity;
 
-   public InventorySection(@Nullable Map<Integer, ItemWithAllMetadata> items, short capacity) {
-      this.items = items;
-      this.capacity = capacity;
-   }
+    public InventorySection() {
+    }
 
-   public InventorySection(@Nonnull InventorySection other) {
-      this.items = other.items;
-      this.capacity = other.capacity;
-   }
+    public InventorySection(@Nullable java.util.Map<Integer, ItemWithAllMetadata> items, short capacity) {
+        this.items = items;
+        this.capacity = capacity;
+    }
 
-   @Nonnull
-   public static InventorySection deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 3) {
-         throw ProtocolException.bufferTooSmall("InventorySection", 3, buf.readableBytes() - offset);
-      }
+    public InventorySection(@Nonnull InventorySection other) {
+        this.items = other.items;
+        this.capacity = other.capacity;
+    }
 
-      InventorySection obj = new InventorySection();
-      byte nullBits = buf.getByte(offset);
-      obj.capacity = buf.getShortLE(offset + 1);
-      int pos = offset + 3;
-      if ((nullBits & 1) != 0) {
-         int itemsCount = VarInt.peek(buf, pos);
-         if (itemsCount < 0) {
-            throw ProtocolException.invalidVarInt("Items");
-         }
-
-         int itemsVarLen = VarInt.size(itemsCount);
-         if (itemsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Items", itemsCount, 4096000);
-         }
-
-         pos += itemsVarLen;
-         obj.items = new HashMap<>(itemsCount);
-
-         for (int i = 0; i < itemsCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            ItemWithAllMetadata val = ItemWithAllMetadata.deserialize(buf, pos);
-            pos += ItemWithAllMetadata.computeBytesConsumed(buf, pos);
-            if (obj.items.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("items", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("InventorySection", offset, (int) mem.byteSize());
+        long needed = (long) offset + 3;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("InventorySection", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, ItemWithAllMetadata> getItems(MemorySegment mem) {
+        return getItems(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, ItemWithAllMetadata> getItems(MemorySegment mem, int offset) {
+        if (!hasItems(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 3;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Items");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Items", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 38 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Items", (int) java.lang.Math.min(off + (long) len * 38, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, ItemWithAllMetadata> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = ItemWithAllMetadata.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("Items", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 3;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += ItemWithAllMetadata.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 3L;
-   }
-
-   @Nullable
-   public static Map<Integer, ItemWithAllMetadata> getItems(MemorySegment mem) {
-      return getItems(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, ItemWithAllMetadata> getItems(MemorySegment mem, int offset) {
-      if (!hasItems(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 3;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Items", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("Items", len, 4096000);
-      }
-
-      Map<Integer, ItemWithAllMetadata> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         ItemWithAllMetadata value = ItemWithAllMetadata.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("Items", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static short getCapacity(MemorySegment mem) {
-      return getCapacity(mem, 0);
-   }
-
-   public static short getCapacity(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_SHORT, offset + 1);
-   }
-
-   public static boolean hasItems(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static InventorySection toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static InventorySection toObject(MemorySegment mem, int offset) {
-      if (offset + 3 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("InventorySection", offset + 3, (int)mem.byteSize());
-      }
-
-      Map<Integer, ItemWithAllMetadata> items = null;
-      if (hasItems(mem, offset)) {
-         int off = offset + 3;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Items", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Items", len, 4096000);
-         }
-
-         items = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            ItemWithAllMetadata value = ItemWithAllMetadata.toObject(mem, off);
-            off += value.computeSize();
-            if (items.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("Items", key);
+        }
+        return data;
+    }
+    
+    public static short getCapacity(MemorySegment mem) {
+        return getCapacity(mem, 0);
+    }
+    
+    public static short getCapacity(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_SHORT, offset + 1);
+    }
+    
+    public static boolean hasItems(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static InventorySection toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static InventorySection toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one InventorySection and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static InventorySection toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 3;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<Integer, ItemWithAllMetadata> v0 = null;
+        if (hasItems(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Items");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Items", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 38 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Items", (int) java.lang.Math.min(off + (long) len * 38, Integer.MAX_VALUE), (int) mem.byteSize());
+            v0 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = ItemWithAllMetadata.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v0.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("Items", key);
+                }
             }
-         }
-      }
-
-      return new InventorySection(items, mem.get(PacketIO.PROTO_SHORT, offset + 1));
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.items != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeShortLE(this.capacity);
-      if (this.items != null) {
-         if (this.items.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Items", this.items.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.items.size());
-
-         for (Entry<Integer, ItemWithAllMetadata> e : this.items.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.items != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_SHORT, offset + 1, this.capacity);
-      int varOffset = offset + 3;
-      if (this.items != null) {
-         if (this.items.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Items", this.items.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.items.size());
-
-         for (Entry<Integer, ItemWithAllMetadata> e : this.items.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 3;
-      if (this.items != null) {
-         int itemsSize = 0;
-
-         for (Entry<Integer, ItemWithAllMetadata> kvp : this.items.entrySet()) {
-            itemsSize += 4 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.items.size()) + itemsSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 3) {
-         return ValidationResult.error("Buffer too small: expected at least 3 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 3;
-      if ((nullBits & 1) != 0) {
-         int itemsCount = VarInt.peek(buffer, pos);
-         if (itemsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for Items");
-         }
-
-         if (itemsCount > 4096000) {
-            return ValidationResult.error("Items exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(itemsCount);
-
-         for (int i = 0; i < itemsCount; i++) {
-            pos += 4;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new InventorySection(
+            v0,
+            mem.get(PacketIO.PROTO_SHORT, offset + 1)
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.items != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_SHORT, offset + 1, this.capacity);
+        var varOffset = offset + 3;
+        if (this.items != null) {
+            
+            if (this.items.size() > 4096000) throw ProtocolException.dictionaryTooLarge("Items", items.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.items.size());
+            for (var e : this.items.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 3;
+        if (items != null) {
+        int itemsSize = 0;
+for (var kvp : items.entrySet()) itemsSize += 4 + kvp.getValue().computeSize();
+size += VarInt.size(items.size()) + itemsSize;
+    }
 
-            pos += ItemWithAllMetadata.computeBytesConsumed(buffer, pos);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public InventorySection clone() {
+        InventorySection copy = new InventorySection();
+        if (this.items != null) {
+            java.util.Map<Integer, ItemWithAllMetadata> m = new java.util.HashMap<>();
+            for (var e : this.items.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.items = m;
+        }
+        copy.capacity = this.capacity;
+        return copy;
+    }
 
-   public InventorySection clone() {
-      InventorySection copy = new InventorySection();
-      if (this.items != null) {
-         Map<Integer, ItemWithAllMetadata> m = new HashMap<>();
 
-         for (Entry<Integer, ItemWithAllMetadata> e : this.items.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof InventorySection other)) return false;
+        return java.util.Objects.equals(this.items, other.items) && this.capacity == other.capacity;
+    }
 
-         copy.items = m;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(items, capacity);
+    }
 
-      copy.capacity = this.capacity;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof InventorySection other) ? false : Objects.equals(this.items, other.items) && this.capacity == other.capacity;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.items, this.capacity);
-   }
-}
+}

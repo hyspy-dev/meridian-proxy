@@ -127,7 +127,7 @@ public final class ConnectionScope {
             //    x509Fingerprint used in every REST call (see architecture.md).
             SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
             QuicSslContext sslContext = QuicSslContextBuilder.forServer(ssc.key(), null, ssc.cert())
-                    .applicationProtocols("hytale/2", "hytale/1")
+                    .applicationProtocols(HytaleAlpn.CURRENT, HytaleAlpn.PREVIOUS)
                     .clientAuth(ClientAuth.NONE)
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
                     .build();

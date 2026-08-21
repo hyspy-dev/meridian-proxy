@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ApplyLookType {
-   LocalPlayerLookOrientation(0),
-   Rotation(1);
+    LocalPlayerLookOrientation(0),
+    Rotation(1);
 
-   public static final ApplyLookType[] VALUES = values();
-   private final int value;
+    public static final ApplyLookType[] VALUES = values();
 
-   ApplyLookType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ApplyLookType(int value) {
+        this.value = value;
+    }
 
-   public static ApplyLookType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ApplyLookType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ApplyLookType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ApplyLookType", value);
+    }
+}

@@ -3,7 +3,6 @@ package meridian.internal.core;
 import meridian.api.packet.Direction;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -119,21 +118,4 @@ public class PacketForwarder extends ChannelInboundHandlerAdapter {
         };
     }
 
-    /** Serialize into a fresh framed ByteBuf [len|id|body]. Caller releases. */
-    public static ByteBuf serializeFramed(int pktId, int bodySize, PacketSerializer serializer) {
-        ByteBuf body = Unpooled.buffer(bodySize);
-        serializer.serialize(body);
-        int len = body.readableBytes();
-        ByteBuf out = Unpooled.buffer(8 + len);
-        out.writeIntLE(len);
-        out.writeIntLE(pktId);
-        out.writeBytes(body);
-        body.release();
-        return out;
-    }
-
-    @FunctionalInterface
-    public interface PacketSerializer {
-        void serialize(ByteBuf buf);
-    }
 }

@@ -1,29 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ShadingMode {
-   Standard(0),
-   Flat(1),
-   Fullbright(2),
-   Reflective(3);
+    Standard(0),
+    Flat(1),
+    Fullbright(2),
+    Reflective(3);
 
-   public static final ShadingMode[] VALUES = values();
-   private final int value;
+    public static final ShadingMode[] VALUES = values();
 
-   ShadingMode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ShadingMode(int value) {
+        this.value = value;
+    }
 
-   public static ShadingMode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ShadingMode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ShadingMode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ShadingMode", value);
+    }
+}

@@ -1,218 +1,175 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class AssetEditorFetchJsonAssetWithParents implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 311;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 32768025;
-   public int token;
-   @Nullable
-   public AssetPath path;
-   public boolean isFromOpenedTab;
+    public static final int PACKET_ID = 311;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 32768025;
 
-   @Override
-   public int getId() {
-      return 311;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public AssetEditorFetchJsonAssetWithParents() {
-   }
+    public int token;
+    @Nullable public AssetPath path;
+    public boolean isFromOpenedTab;
 
-   public AssetEditorFetchJsonAssetWithParents(int token, @Nullable AssetPath path, boolean isFromOpenedTab) {
-      this.token = token;
-      this.path = path;
-      this.isFromOpenedTab = isFromOpenedTab;
-   }
+    public AssetEditorFetchJsonAssetWithParents() {
+    }
 
-   public AssetEditorFetchJsonAssetWithParents(@Nonnull AssetEditorFetchJsonAssetWithParents other) {
-      this.token = other.token;
-      this.path = other.path;
-      this.isFromOpenedTab = other.isFromOpenedTab;
-   }
+    public AssetEditorFetchJsonAssetWithParents(int token, @Nullable AssetPath path, boolean isFromOpenedTab) {
+        this.token = token;
+        this.path = path;
+        this.isFromOpenedTab = isFromOpenedTab;
+    }
 
-   @Nonnull
-   public static AssetEditorFetchJsonAssetWithParents deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("AssetEditorFetchJsonAssetWithParents", 6, buf.readableBytes() - offset);
-      }
+    public AssetEditorFetchJsonAssetWithParents(@Nonnull AssetEditorFetchJsonAssetWithParents other) {
+        this.token = other.token;
+        this.path = other.path;
+        this.isFromOpenedTab = other.isFromOpenedTab;
+    }
 
-      AssetEditorFetchJsonAssetWithParents obj = new AssetEditorFetchJsonAssetWithParents();
-      byte nullBits = buf.getByte(offset);
-      obj.token = buf.getIntLE(offset + 1);
-      obj.isFromOpenedTab = buf.getByte(offset + 5) != 0;
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         obj.path = AssetPath.deserialize(buf, pos);
-         pos += AssetPath.computeBytesConsumed(buf, pos);
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         pos += AssetPath.computeBytesConsumed(buf, pos);
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static int getToken(MemorySegment mem) {
-      return getToken(mem, 0);
-   }
-
-   public static int getToken(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   @Nullable
-   public static AssetPath getPath(MemorySegment mem) {
-      return getPath(mem, 0);
-   }
-
-   @Nullable
-   public static AssetPath getPath(MemorySegment mem, int offset) {
-      return hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 6) : null;
-   }
-
-   public static boolean getIsFromOpenedTab(MemorySegment mem) {
-      return getIsFromOpenedTab(mem, 0);
-   }
-
-   public static boolean getIsFromOpenedTab(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 5);
-   }
-
-   public static boolean hasPath(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static AssetEditorFetchJsonAssetWithParents toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static AssetEditorFetchJsonAssetWithParents toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("AssetEditorFetchJsonAssetWithParents", offset + 6, (int)mem.byteSize());
-      } else {
-         return new AssetEditorFetchJsonAssetWithParents(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("AssetEditorFetchJsonAssetWithParents", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("AssetEditorFetchJsonAssetWithParents", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getToken(MemorySegment mem) {
+        return getToken(mem, 0);
+    }
+    
+    public static int getToken(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 1);
+    }
+    
+    @Nullable
+    public static AssetPath getPath(MemorySegment mem) {
+        return getPath(mem, 0);
+    }
+    
+    @Nullable
+    public static AssetPath getPath(MemorySegment mem, int offset) {
+        return hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 6): null;
+    }
+    
+    public static boolean getIsFromOpenedTab(MemorySegment mem) {
+        return getIsFromOpenedTab(mem, 0);
+    }
+    
+    public static boolean getIsFromOpenedTab(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BOOL, offset + 5);
+    }
+    
+    public static boolean hasPath(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static AssetEditorFetchJsonAssetWithParents toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static AssetEditorFetchJsonAssetWithParents toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one AssetEditorFetchJsonAssetWithParents and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static AssetEditorFetchJsonAssetWithParents toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        AssetPath v1 = null;
+        if (hasPath(mem, offset)) {
+            v1 = AssetPath.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new AssetEditorFetchJsonAssetWithParents(
             mem.get(PacketIO.PROTO_INT, offset + 1),
-            hasPath(mem, offset) ? AssetPath.toObject(mem, offset + 6) : null,
+            v1,
             mem.get(PacketIO.PROTO_BOOL, offset + 5)
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.path != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_INT, offset + 1, this.token);
+        mem.set(PacketIO.PROTO_BOOL, offset + 5, this.isFromOpenedTab);
+        var varOffset = offset + 6;
+        if (this.path != null) {
+            
+            varOffset += this.path.serialize(mem, varOffset);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (path != null) size += path.computeSize();
 
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.path != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+        return size;
+    }
 
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.token);
-      buf.writeByte(this.isFromOpenedTab ? 1 : 0);
-      if (this.path != null) {
-         this.path.serialize(buf);
-      }
-   }
+    public AssetEditorFetchJsonAssetWithParents clone() {
+        AssetEditorFetchJsonAssetWithParents copy = new AssetEditorFetchJsonAssetWithParents();
+        copy.token = this.token;
+        copy.path = this.path != null ? this.path.clone() : null;
+        copy.isFromOpenedTab = this.isFromOpenedTab;
+        return copy;
+    }
 
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.path != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.token);
-      mem.set(PacketIO.PROTO_BOOL, offset + 5, this.isFromOpenedTab);
-      int varOffset = offset + 6;
-      if (this.path != null) {
-         varOffset += this.path.serialize(mem, varOffset);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof AssetEditorFetchJsonAssetWithParents other)) return false;
+        return this.token == other.token && java.util.Objects.equals(this.path, other.path) && this.isFromOpenedTab == other.isFromOpenedTab;
+    }
 
-      return varOffset - offset;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(token, path, isFromOpenedTab);
+    }
 
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.path != null) {
-         size += this.path.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         ValidationResult pathResult = AssetPath.validateStructure(buffer, pos);
-         if (!pathResult.isValid()) {
-            return ValidationResult.error("Invalid Path: " + pathResult.error());
-         }
-
-         pos += AssetPath.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public AssetEditorFetchJsonAssetWithParents clone() {
-      AssetEditorFetchJsonAssetWithParents copy = new AssetEditorFetchJsonAssetWithParents();
-      copy.token = this.token;
-      copy.path = this.path != null ? this.path.clone() : null;
-      copy.isFromOpenedTab = this.isFromOpenedTab;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof AssetEditorFetchJsonAssetWithParents other)
-            ? false
-            : this.token == other.token && Objects.equals(this.path, other.path) && this.isFromOpenedTab == other.isFromOpenedTab;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.token, this.path, this.isFromOpenedTab);
-   }
-}
+}

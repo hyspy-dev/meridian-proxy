@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ResistanceCalculationType {
-   Flat(0),
-   Percent(1);
+    Flat(0),
+    Percent(1);
 
-   public static final ResistanceCalculationType[] VALUES = values();
-   private final int value;
+    public static final ResistanceCalculationType[] VALUES = values();
 
-   ResistanceCalculationType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ResistanceCalculationType(int value) {
+        this.value = value;
+    }
 
-   public static ResistanceCalculationType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ResistanceCalculationType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ResistanceCalculationType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ResistanceCalculationType", value);
+    }
+}

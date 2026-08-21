@@ -1,354 +1,228 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.Fluid;
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.Fluid;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateFluids implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 83;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   public int maxId;
-   @Nullable
-   public Map<Integer, Fluid> fluids;
+    public static final int PACKET_ID = 83;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 83;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateFluids() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    public int maxId;
+    @Nullable public java.util.Map<Integer, Fluid> fluids;
 
-   public UpdateFluids(@Nonnull UpdateType type, int maxId, @Nullable Map<Integer, Fluid> fluids) {
-      this.type = type;
-      this.maxId = maxId;
-      this.fluids = fluids;
-   }
+    public UpdateFluids() {
+    }
 
-   public UpdateFluids(@Nonnull UpdateFluids other) {
-      this.type = other.type;
-      this.maxId = other.maxId;
-      this.fluids = other.fluids;
-   }
+    public UpdateFluids(@Nonnull UpdateType type, int maxId, @Nullable java.util.Map<Integer, Fluid> fluids) {
+        this.type = type;
+        this.maxId = maxId;
+        this.fluids = fluids;
+    }
 
-   @Nonnull
-   public static UpdateFluids deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("UpdateFluids", 6, buf.readableBytes() - offset);
-      }
+    public UpdateFluids(@Nonnull UpdateFluids other) {
+        this.type = other.type;
+        this.maxId = other.maxId;
+        this.fluids = other.fluids;
+    }
 
-      UpdateFluids obj = new UpdateFluids();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      obj.maxId = buf.getIntLE(offset + 2);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int fluidsCount = VarInt.peek(buf, pos);
-         if (fluidsCount < 0) {
-            throw ProtocolException.invalidVarInt("Fluids");
-         }
-
-         int fluidsVarLen = VarInt.size(fluidsCount);
-         if (fluidsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Fluids", fluidsCount, 4096000);
-         }
-
-         pos += fluidsVarLen;
-         obj.fluids = new HashMap<>(fluidsCount);
-
-         for (int i = 0; i < fluidsCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            Fluid val = Fluid.deserialize(buf, pos);
-            pos += Fluid.computeBytesConsumed(buf, pos);
-            if (obj.fluids.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("fluids", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateFluids", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateFluids", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static int getMaxId(MemorySegment mem) {
+        return getMaxId(mem, 0);
+    }
+    
+    public static int getMaxId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 2);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, Fluid> getFluids(MemorySegment mem) {
+        return getFluids(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, Fluid> getFluids(MemorySegment mem, int offset) {
+        if (!hasFluids(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 6;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Fluids");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Fluids", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 51 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Fluids", (int) java.lang.Math.min(off + (long) len * 51, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, Fluid> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = Fluid.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("Fluids", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += Fluid.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static int getMaxId(MemorySegment mem) {
-      return getMaxId(mem, 0);
-   }
-
-   public static int getMaxId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 2);
-   }
-
-   @Nullable
-   public static Map<Integer, Fluid> getFluids(MemorySegment mem) {
-      return getFluids(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, Fluid> getFluids(MemorySegment mem, int offset) {
-      if (!hasFluids(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 6;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Fluids", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("Fluids", len, 4096000);
-      }
-
-      Map<Integer, Fluid> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         Fluid value = Fluid.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("Fluids", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasFluids(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateFluids toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateFluids toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateFluids", offset + 6, (int)mem.byteSize());
-      }
-
-      Map<Integer, Fluid> fluids = null;
-      if (hasFluids(mem, offset)) {
-         int off = offset + 6;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Fluids", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Fluids", len, 4096000);
-         }
-
-         fluids = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            Fluid value = Fluid.toObject(mem, off);
-            off += value.computeSize();
-            if (fluids.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("Fluids", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasFluids(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateFluids toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateFluids toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateFluids and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateFluids toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<Integer, Fluid> v2 = null;
+        if (hasFluids(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Fluids");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Fluids", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 51 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Fluids", (int) java.lang.Math.min(off + (long) len * 51, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = Fluid.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("Fluids", key);
+                }
             }
-         }
-      }
-
-      return new UpdateFluids(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), mem.get(PacketIO.PROTO_INT, offset + 2), fluids);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.fluids != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      buf.writeIntLE(this.maxId);
-      if (this.fluids != null) {
-         if (this.fluids.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Fluids", this.fluids.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.fluids.size());
-
-         for (Entry<Integer, Fluid> e : this.fluids.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.fluids != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
-      int varOffset = offset + 6;
-      if (this.fluids != null) {
-         if (this.fluids.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Fluids", this.fluids.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.fluids.size());
-
-         for (Entry<Integer, Fluid> e : this.fluids.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.fluids != null) {
-         int fluidsSize = 0;
-
-         for (Entry<Integer, Fluid> kvp : this.fluids.entrySet()) {
-            fluidsSize += 4 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.fluids.size()) + fluidsSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int fluidsCount = VarInt.peek(buffer, v);
-         if (fluidsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for Fluids");
-         }
-
-         if (fluidsCount > 4096000) {
-            return ValidationResult.error("Fluids exceeds max length 4096000");
-         }
-
-         v += VarInt.size(fluidsCount);
-
-         for (int i = 0; i < fluidsCount; i++) {
-            v += 4;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new UpdateFluids(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_INT, offset + 2),
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.fluids != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
+        var varOffset = offset + 6;
+        if (this.fluids != null) {
+            
+            if (this.fluids.size() > 4096000) throw ProtocolException.dictionaryTooLarge("Fluids", fluids.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.fluids.size());
+            for (var e : this.fluids.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (fluids != null) {
+        int fluidsSize = 0;
+for (var kvp : fluids.entrySet()) fluidsSize += 4 + kvp.getValue().computeSize();
+size += VarInt.size(fluids.size()) + fluidsSize;
+    }
 
-            v += Fluid.computeBytesConsumed(buffer, v);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateFluids clone() {
+        UpdateFluids copy = new UpdateFluids();
+        copy.type = this.type;
+        copy.maxId = this.maxId;
+        if (this.fluids != null) {
+            java.util.Map<Integer, Fluid> m = new java.util.HashMap<>();
+            for (var e : this.fluids.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.fluids = m;
+        }
+        return copy;
+    }
 
-   public UpdateFluids clone() {
-      UpdateFluids copy = new UpdateFluids();
-      copy.type = this.type;
-      copy.maxId = this.maxId;
-      if (this.fluids != null) {
-         Map<Integer, Fluid> m = new HashMap<>();
 
-         for (Entry<Integer, Fluid> e : this.fluids.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateFluids other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && this.maxId == other.maxId && java.util.Objects.equals(this.fluids, other.fluids);
+    }
 
-         copy.fluids = m;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, maxId, fluids);
+    }
 
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateFluids other)
-            ? false
-            : Objects.equals(this.type, other.type) && this.maxId == other.maxId && Objects.equals(this.fluids, other.fluids);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.maxId, this.fluids);
-   }
-}
+}

@@ -1,123 +1,125 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class AssetEditorAuthorization implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 303;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1;
-   public boolean canUse;
+    public static final int PACKET_ID = 303;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1;
 
-   @Override
-   public int getId() {
-      return 303;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public AssetEditorAuthorization() {
-   }
+    public boolean canUse;
 
-   public AssetEditorAuthorization(boolean canUse) {
-      this.canUse = canUse;
-   }
+    public AssetEditorAuthorization() {
+    }
 
-   public AssetEditorAuthorization(@Nonnull AssetEditorAuthorization other) {
-      this.canUse = other.canUse;
-   }
+    public AssetEditorAuthorization(boolean canUse) {
+        this.canUse = canUse;
+    }
 
-   @Nonnull
-   public static AssetEditorAuthorization deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("AssetEditorAuthorization", 1, buf.readableBytes() - offset);
-      }
+    public AssetEditorAuthorization(@Nonnull AssetEditorAuthorization other) {
+        this.canUse = other.canUse;
+    }
 
-      AssetEditorAuthorization obj = new AssetEditorAuthorization();
-      obj.canUse = buf.getByte(offset + 0) != 0;
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("AssetEditorAuthorization", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("AssetEditorAuthorization", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static boolean getCanUse(MemorySegment mem) {
+        return getCanUse(mem, 0);
+    }
+    
+    public static boolean getCanUse(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BOOL, offset + 0);
+    }
+    
+    
+    
+    
+    
+    public static AssetEditorAuthorization toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static AssetEditorAuthorization toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one AssetEditorAuthorization and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static AssetEditorAuthorization toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new AssetEditorAuthorization(
+            mem.get(PacketIO.PROTO_BOOL, offset + 0)
+        );
+        if (cursor != null) cursor.position = offset + 1;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_BOOL, offset + 0, this.canUse);
+        
+        
+    
+       return 1;
+    }
+    public int computeSize() {
+        return 1;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 1;
-   }
+    public AssetEditorAuthorization clone() {
+        AssetEditorAuthorization copy = new AssetEditorAuthorization();
+        copy.canUse = this.canUse;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
 
-   public static boolean getCanUse(MemorySegment mem) {
-      return getCanUse(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof AssetEditorAuthorization other)) return false;
+        return this.canUse == other.canUse;
+    }
 
-   public static boolean getCanUse(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(canUse);
+    }
 
-   public static AssetEditorAuthorization toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static AssetEditorAuthorization toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("AssetEditorAuthorization", offset + 1, (int)mem.byteSize());
-      } else {
-         return new AssetEditorAuthorization(mem.get(PacketIO.PROTO_BOOL, offset + 0));
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeByte(this.canUse ? 1 : 0);
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_BOOL, offset + 0, this.canUse);
-      return 1;
-   }
-
-   @Override
-   public int computeSize() {
-      return 1;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      return buffer.readableBytes() - offset < 1 ? ValidationResult.error("Buffer too small: expected at least 1 bytes") : ValidationResult.OK;
-   }
-
-   public AssetEditorAuthorization clone() {
-      AssetEditorAuthorization copy = new AssetEditorAuthorization();
-      copy.canUse = this.canUse;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof AssetEditorAuthorization other ? this.canUse == other.canUse : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.canUse);
-   }
-}
+}

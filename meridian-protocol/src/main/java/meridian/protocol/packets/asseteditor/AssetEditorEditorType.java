@@ -1,32 +1,33 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum AssetEditorEditorType {
-   None(0),
-   Text(1),
-   JsonSource(2),
-   JsonConfig(3),
-   Model(4),
-   Texture(5),
-   Animation(6);
+    None(0),
+    Text(1),
+    JsonSource(2),
+    JsonConfig(3),
+    Model(4),
+    Texture(5),
+    Animation(6);
 
-   public static final AssetEditorEditorType[] VALUES = values();
-   private final int value;
+    public static final AssetEditorEditorType[] VALUES = values();
 
-   AssetEditorEditorType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    AssetEditorEditorType(int value) {
+        this.value = value;
+    }
 
-   public static AssetEditorEditorType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("AssetEditorEditorType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static AssetEditorEditorType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("AssetEditorEditorType", value);
+    }
+}

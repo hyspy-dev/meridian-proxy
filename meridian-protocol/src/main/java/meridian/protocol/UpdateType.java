@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum UpdateType {
-   Init(0),
-   AddOrUpdate(1),
-   Remove(2);
+    Init(0),
+    AddOrUpdate(1),
+    Remove(2);
 
-   public static final UpdateType[] VALUES = values();
-   private final int value;
+    public static final UpdateType[] VALUES = values();
 
-   UpdateType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    UpdateType(int value) {
+        this.value = value;
+    }
 
-   public static UpdateType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("UpdateType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static UpdateType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("UpdateType", value);
+    }
+}

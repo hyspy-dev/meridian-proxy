@@ -1,30 +1,31 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.buildertools;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BrushAxis {
-   None(0),
-   Auto(1),
-   X(2),
-   Y(3),
-   Z(4);
+    None(0),
+    Auto(1),
+    X(2),
+    Y(3),
+    Z(4);
 
-   public static final BrushAxis[] VALUES = values();
-   private final int value;
+    public static final BrushAxis[] VALUES = values();
 
-   BrushAxis(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    BrushAxis(int value) {
+        this.value = value;
+    }
 
-   public static BrushAxis fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("BrushAxis", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static BrushAxis fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("BrushAxis", value);
+    }
+}

@@ -1,280 +1,174 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import java.util.HashMap;
 
 public class InteractionPriority {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 20480006;
-   @Nullable
-   public Map<PrioritySlot, Integer> values;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 20480006;
 
-   public InteractionPriority() {
-   }
+    @Nullable public java.util.Map<PrioritySlot, Integer> values;
 
-   public InteractionPriority(@Nullable Map<PrioritySlot, Integer> values) {
-      this.values = values;
-   }
+    public InteractionPriority() {
+    }
 
-   public InteractionPriority(@Nonnull InteractionPriority other) {
-      this.values = other.values;
-   }
+    public InteractionPriority(@Nullable java.util.Map<PrioritySlot, Integer> values) {
+        this.values = values;
+    }
 
-   @Nonnull
-   public static InteractionPriority deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("InteractionPriority", 1, buf.readableBytes() - offset);
-      }
+    public InteractionPriority(@Nonnull InteractionPriority other) {
+        this.values = other.values;
+    }
 
-      InteractionPriority obj = new InteractionPriority();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int valuesCount = VarInt.peek(buf, pos);
-         if (valuesCount < 0) {
-            throw ProtocolException.invalidVarInt("Values");
-         }
-
-         int valuesVarLen = VarInt.size(valuesCount);
-         if (valuesCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Values", valuesCount, 4096000);
-         }
-
-         pos += valuesVarLen;
-         obj.values = new HashMap<>(valuesCount);
-
-         for (int i = 0; i < valuesCount; i++) {
-            PrioritySlot key = PrioritySlot.fromValue(buf.getByte(pos));
-            int val = buf.getIntLE(++pos);
-            pos += 4;
-            if (obj.values.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("values", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("InteractionPriority", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("InteractionPriority", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static java.util.Map<PrioritySlot, Integer> getValues(MemorySegment mem) {
+        return getValues(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<PrioritySlot, Integer> getValues(MemorySegment mem, int offset) {
+        if (!hasValues(mem, offset)) return null;
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Values");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Values", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Values", (int) java.lang.Math.min(off + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<PrioritySlot, Integer> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = PrioritySlot.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
+                off += 1;
+            var value = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("Values", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos = ++pos + 4;
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static Map<PrioritySlot, Integer> getValues(MemorySegment mem) {
-      return getValues(mem, 0);
-   }
-
-   @Nullable
-   public static Map<PrioritySlot, Integer> getValues(MemorySegment mem, int offset) {
-      if (!hasValues(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Values", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("Values", len, 4096000);
-      }
-
-      Map<PrioritySlot, Integer> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         PrioritySlot key = PrioritySlot.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
-         int value = mem.get(PacketIO.PROTO_INT, ++off);
-         off += 4;
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("Values", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasValues(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static InteractionPriority toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static InteractionPriority toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("InteractionPriority", offset + 1, (int)mem.byteSize());
-      }
-
-      Map<PrioritySlot, Integer> values = null;
-      if (hasValues(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Values", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Values", len, 4096000);
-         }
-
-         values = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            PrioritySlot key = PrioritySlot.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
-            int value = mem.get(PacketIO.PROTO_INT, ++off);
-            off += 4;
-            if (values.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("Values", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasValues(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static InteractionPriority toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static InteractionPriority toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one InteractionPriority and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static InteractionPriority toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        java.util.Map<PrioritySlot, Integer> v0 = null;
+        if (hasValues(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Values");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Values", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Values", (int) java.lang.Math.min(off + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+            v0 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = PrioritySlot.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
+                    off += 1;
+                var value = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                if (v0.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("Values", key);
+                }
             }
-         }
-      }
-
-      return new InteractionPriority(values);
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.values != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.values != null) {
-         if (this.values.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Values", this.values.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.values.size());
-
-         for (Entry<PrioritySlot, Integer> e : this.values.entrySet()) {
-            buf.writeByte(e.getKey().getValue());
-            buf.writeIntLE(e.getValue());
-         }
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.values != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.values != null) {
-         if (this.values.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Values", this.values.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.values.size());
-
-         for (Entry<PrioritySlot, Integer> e : this.values.entrySet()) {
-            mem.set(PacketIO.PROTO_BYTE, varOffset, (byte)e.getKey().getValue());
-            mem.set(PacketIO.PROTO_INT, ++varOffset, e.getValue());
-            varOffset += 4;
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 1;
-      if (this.values != null) {
-         size += VarInt.size(this.values.size()) + this.values.size() * 5;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int valuesCount = VarInt.peek(buffer, pos);
-         if (valuesCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for Values");
-         }
-
-         if (valuesCount > 4096000) {
-            return ValidationResult.error("Values exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(valuesCount);
-
-         for (int i = 0; i < valuesCount; i++) {
-            int v = buffer.getByte(pos) & 255;
-            if (v >= 3) {
-               return ValidationResult.error("Invalid PrioritySlot value for key");
+            varPos = off - varBase;
+        }
+        var result = new InteractionPriority(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.values != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.values != null) {
+            
+            if (this.values.size() > 4096000) throw ProtocolException.dictionaryTooLarge("Values", values.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.values.size());
+            for (var e : this.values.entrySet()) {
+                mem.set(PacketIO.PROTO_BYTE, varOffset, (byte) e.getKey().getValue());
+                varOffset += 1;
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getValue());
+                varOffset += 4;
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (values != null) size += VarInt.size(values.size()) + values.size() * (1 + 4);
 
-            pos = ++pos + 4;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading value");
-            }
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public InteractionPriority clone() {
+        InteractionPriority copy = new InteractionPriority();
+        copy.values = this.values != null ? new java.util.HashMap<>(this.values) : null;
+        return copy;
+    }
 
-   public InteractionPriority clone() {
-      InteractionPriority copy = new InteractionPriority();
-      copy.values = this.values != null ? new HashMap<>(this.values) : null;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof InteractionPriority other ? Objects.equals(this.values, other.values) : false;
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof InteractionPriority other)) return false;
+        return java.util.Objects.equals(this.values, other.values);
+    }
 
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.values);
-   }
-}
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(values);
+    }
+
+}

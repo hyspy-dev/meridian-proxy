@@ -1,27 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ChangeStatBehaviour {
-   Add(0),
-   Set(1);
+    Add(0),
+    Set(1),
+    Min(2),
+    Max(3);
 
-   public static final ChangeStatBehaviour[] VALUES = values();
-   private final int value;
+    public static final ChangeStatBehaviour[] VALUES = values();
 
-   ChangeStatBehaviour(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ChangeStatBehaviour(int value) {
+        this.value = value;
+    }
 
-   public static ChangeStatBehaviour fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ChangeStatBehaviour", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ChangeStatBehaviour fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ChangeStatBehaviour", value);
+    }
+}

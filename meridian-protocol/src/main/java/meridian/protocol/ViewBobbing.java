@@ -1,164 +1,120 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class ViewBobbing {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 565248085;
-   @Nullable
-   public CameraShakeConfig firstPerson;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 0;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 0;
+    public static final int MAX_SIZE = 540672081;
 
-   public ViewBobbing() {
-   }
+    @Nonnull public CameraShakeConfig firstPerson = new CameraShakeConfig();
 
-   public ViewBobbing(@Nullable CameraShakeConfig firstPerson) {
-      this.firstPerson = firstPerson;
-   }
+    public ViewBobbing() {
+    }
 
-   public ViewBobbing(@Nonnull ViewBobbing other) {
-      this.firstPerson = other.firstPerson;
-   }
+    public ViewBobbing(@Nonnull CameraShakeConfig firstPerson) {
+        this.firstPerson = firstPerson;
+    }
 
-   @Nonnull
-   public static ViewBobbing deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("ViewBobbing", 1, buf.readableBytes() - offset);
-      }
+    public ViewBobbing(@Nonnull ViewBobbing other) {
+        this.firstPerson = other.firstPerson;
+    }
 
-      ViewBobbing obj = new ViewBobbing();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         obj.firstPerson = CameraShakeConfig.deserialize(buf, pos);
-         pos += CameraShakeConfig.computeBytesConsumed(buf, pos);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ViewBobbing", offset, (int) mem.byteSize());
+        long needed = (long) offset + 0;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ViewBobbing", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static CameraShakeConfig getFirstPerson(MemorySegment mem) {
+        return getFirstPerson(mem, 0);
+    }
+    
+    public static CameraShakeConfig getFirstPerson(MemorySegment mem, int offset) {
+        return CameraShakeConfig.toObject(mem, offset + 0);
+    }
+    
+    
+    
+    
+    
+    public static ViewBobbing toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ViewBobbing toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ViewBobbing and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ViewBobbing toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 0;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        CameraShakeConfig v0;
+        {
+            v0 = CameraShakeConfig.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new ViewBobbing(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        
+        var varOffset = offset + 0;
+        varOffset += this.firstPerson.serialize(mem, varOffset);
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 0;
+        size += firstPerson.computeSize();
 
-      return obj;
-   }
+        return size;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         pos += CameraShakeConfig.computeBytesConsumed(buf, pos);
-      }
+    public ViewBobbing clone() {
+        ViewBobbing copy = new ViewBobbing();
+        copy.firstPerson = this.firstPerson.clone();
+        return copy;
+    }
 
-      return pos - offset;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ViewBobbing other)) return false;
+        return java.util.Objects.equals(this.firstPerson, other.firstPerson);
+    }
 
-   @Nullable
-   public static CameraShakeConfig getFirstPerson(MemorySegment mem) {
-      return getFirstPerson(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(firstPerson);
+    }
 
-   @Nullable
-   public static CameraShakeConfig getFirstPerson(MemorySegment mem, int offset) {
-      return hasFirstPerson(mem, offset) ? CameraShakeConfig.toObject(mem, offset + 1) : null;
-   }
-
-   public static boolean hasFirstPerson(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ViewBobbing toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ViewBobbing toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ViewBobbing", offset + 1, (int)mem.byteSize());
-      } else {
-         return new ViewBobbing(hasFirstPerson(mem, offset) ? CameraShakeConfig.toObject(mem, offset + 1) : null);
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.firstPerson != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.firstPerson != null) {
-         this.firstPerson.serialize(buf);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.firstPerson != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.firstPerson != null) {
-         varOffset += this.firstPerson.serialize(mem, varOffset);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 1;
-      if (this.firstPerson != null) {
-         size += this.firstPerson.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         ValidationResult firstPersonResult = CameraShakeConfig.validateStructure(buffer, pos);
-         if (!firstPersonResult.isValid()) {
-            return ValidationResult.error("Invalid FirstPerson: " + firstPersonResult.error());
-         }
-
-         pos += CameraShakeConfig.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ViewBobbing clone() {
-      ViewBobbing copy = new ViewBobbing();
-      copy.firstPerson = this.firstPerson != null ? this.firstPerson.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof ViewBobbing other ? Objects.equals(this.firstPerson, other.firstPerson) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.firstPerson);
-   }
-}
+}

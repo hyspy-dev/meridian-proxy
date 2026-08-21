@@ -1,34 +1,35 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum BlockSoundEvent {
-   Walk(0),
-   Land(1),
-   MoveIn(2),
-   MoveOut(3),
-   Hit(4),
-   Break(5),
-   Build(6),
-   Clone(7),
-   Harvest(8);
+    Walk(0),
+    Land(1),
+    MoveIn(2),
+    MoveOut(3),
+    Hit(4),
+    Break(5),
+    Build(6),
+    Clone(7),
+    Harvest(8);
 
-   public static final BlockSoundEvent[] VALUES = values();
-   private final int value;
+    public static final BlockSoundEvent[] VALUES = values();
 
-   BlockSoundEvent(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    BlockSoundEvent(int value) {
+        this.value = value;
+    }
 
-   public static BlockSoundEvent fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("BlockSoundEvent", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static BlockSoundEvent fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("BlockSoundEvent", value);
+    }
+}

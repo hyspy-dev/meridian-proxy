@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.ProtocolException;
+public final class DebugFlags {
+    private DebugFlags() {
+    }
 
-public enum DebugFlags {
-   Fade(0),
-   NoWireframe(1),
-   NoSolid(2);
+    public static final byte None = (byte) 0;
+    public static final byte Fade = (byte) 1;
+    public static final byte NoWireframe = (byte) 2;
+    public static final byte NoSolid = (byte) 4;
+    public static final byte ALL = (byte) 7;
 
-   public static final DebugFlags[] VALUES = values();
-   private final int value;
+    public static boolean has(byte value, byte flag) {
+        return (value & flag) == flag;
+    }
 
-   DebugFlags(int value) {
-      this.value = value;
-   }
+    public static byte with(byte value, byte flag) {
+        return (byte) (value | flag);
+    }
 
-   public int getValue() {
-      return this.value;
-   }
+    public static byte without(byte value, byte flag) {
+        return (byte) (value & ~flag);
+    }
 
-   public static DebugFlags fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("DebugFlags", value);
-      }
-   }
-}
+    public static byte none() {
+        return (byte) 0;
+    }
+}

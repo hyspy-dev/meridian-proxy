@@ -1,32 +1,34 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.connection;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum QuicApplicationErrorCode {
-   NoError(0),
-   RateLimited(1),
-   AuthFailed(2),
-   InvalidVersion(3),
-   Timeout(4),
-   ClientOutdated(5),
-   ServerOutdated(6);
+    NoError(0),
+    RateLimited(1),
+    AuthFailed(2),
+    InvalidVersion(3),
+    Timeout(4),
+    ClientOutdated(5),
+    ServerOutdated(6),
+    Crash(7);
 
-   public static final QuicApplicationErrorCode[] VALUES = values();
-   private final int value;
+    public static final QuicApplicationErrorCode[] VALUES = values();
 
-   QuicApplicationErrorCode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    QuicApplicationErrorCode(int value) {
+        this.value = value;
+    }
 
-   public static QuicApplicationErrorCode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("QuicApplicationErrorCode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static QuicApplicationErrorCode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("QuicApplicationErrorCode", value);
+    }
+}

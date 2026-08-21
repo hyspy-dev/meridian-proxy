@@ -1,29 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum SwitchTo {
-   Disappear(0),
-   PostColor(1),
-   Distortion(2),
-   Transparency(3);
+    Disappear(0),
+    PostColor(1),
+    Distortion(2),
+    Transparency(3);
 
-   public static final SwitchTo[] VALUES = values();
-   private final int value;
+    public static final SwitchTo[] VALUES = values();
 
-   SwitchTo(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    SwitchTo(int value) {
+        this.value = value;
+    }
 
-   public static SwitchTo fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("SwitchTo", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static SwitchTo fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("SwitchTo", value);
+    }
+}

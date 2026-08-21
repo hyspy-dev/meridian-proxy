@@ -1,991 +1,720 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class RandomMusicContainer extends MusicContainer {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 68;
-   public static final int VARIABLE_FIELD_COUNT = 3;
-   public static final int VARIABLE_BLOCK_START = 80;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public RandomMode mode = RandomMode.Shuffle;
-   public int avoidRepeatCount;
-   @Nullable
-   public int[] children;
-
-   public RandomMusicContainer() {
-   }
-
-   public RandomMusicContainer(
-      float volume,
-      int loopCount,
-      float weight,
-      @Nullable Rangef silenceAfter,
-      @Nullable Rangef exitSilence,
-      float fadeInDuration,
-      float fadeOutDuration,
-      @Nonnull MusicTransitionType transitionType,
-      float transitionDuration,
-      boolean playToCompletion,
-      float resumeMemoryDuration,
-      @Nullable String nameTranslationKey,
-      int audioCategoryIndex,
-      @Nullable TempoSettings tempo,
-      @Nullable StateBinding[] stateBindings,
-      @Nonnull RandomMode mode,
-      int avoidRepeatCount,
-      @Nullable int[] children
-   ) {
-      this.volume = volume;
-      this.loopCount = loopCount;
-      this.weight = weight;
-      this.silenceAfter = silenceAfter;
-      this.exitSilence = exitSilence;
-      this.fadeInDuration = fadeInDuration;
-      this.fadeOutDuration = fadeOutDuration;
-      this.transitionType = transitionType;
-      this.transitionDuration = transitionDuration;
-      this.playToCompletion = playToCompletion;
-      this.resumeMemoryDuration = resumeMemoryDuration;
-      this.nameTranslationKey = nameTranslationKey;
-      this.audioCategoryIndex = audioCategoryIndex;
-      this.tempo = tempo;
-      this.stateBindings = stateBindings;
-      this.mode = mode;
-      this.avoidRepeatCount = avoidRepeatCount;
-      this.children = children;
-   }
-
-   public RandomMusicContainer(@Nonnull RandomMusicContainer other) {
-      this.volume = other.volume;
-      this.loopCount = other.loopCount;
-      this.weight = other.weight;
-      this.silenceAfter = other.silenceAfter;
-      this.exitSilence = other.exitSilence;
-      this.fadeInDuration = other.fadeInDuration;
-      this.fadeOutDuration = other.fadeOutDuration;
-      this.transitionType = other.transitionType;
-      this.transitionDuration = other.transitionDuration;
-      this.playToCompletion = other.playToCompletion;
-      this.resumeMemoryDuration = other.resumeMemoryDuration;
-      this.nameTranslationKey = other.nameTranslationKey;
-      this.audioCategoryIndex = other.audioCategoryIndex;
-      this.tempo = other.tempo;
-      this.stateBindings = other.stateBindings;
-      this.mode = other.mode;
-      this.avoidRepeatCount = other.avoidRepeatCount;
-      this.children = other.children;
-   }
-
-   @Nonnull
-   public static RandomMusicContainer deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 80) {
-         throw ProtocolException.bufferTooSmall("RandomMusicContainer", 80, buf.readableBytes() - offset);
-      }
-
-      RandomMusicContainer obj = new RandomMusicContainer();
-      byte nullBits = buf.getByte(offset);
-      obj.volume = buf.getFloatLE(offset + 1);
-      obj.loopCount = buf.getIntLE(offset + 5);
-      obj.weight = buf.getFloatLE(offset + 9);
-      if ((nullBits & 1) != 0) {
-         obj.silenceAfter = Rangef.deserialize(buf, offset + 13);
-      }
-
-      if ((nullBits & 2) != 0) {
-         obj.exitSilence = Rangef.deserialize(buf, offset + 21);
-      }
-
-      obj.fadeInDuration = buf.getFloatLE(offset + 29);
-      obj.fadeOutDuration = buf.getFloatLE(offset + 33);
-      obj.transitionType = MusicTransitionType.fromValue(buf.getByte(offset + 37));
-      obj.transitionDuration = buf.getFloatLE(offset + 38);
-      obj.playToCompletion = buf.getByte(offset + 42) != 0;
-      obj.resumeMemoryDuration = buf.getFloatLE(offset + 43);
-      obj.audioCategoryIndex = buf.getIntLE(offset + 47);
-      if ((nullBits & 4) != 0) {
-         obj.tempo = TempoSettings.deserialize(buf, offset + 51);
-      }
-
-      obj.mode = RandomMode.fromValue(buf.getByte(offset + 63));
-      obj.avoidRepeatCount = buf.getIntLE(offset + 64);
-      if ((nullBits & 8) != 0) {
-         int varPosBase0 = buf.getIntLE(offset + 68);
-         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 80) {
-            throw ProtocolException.invalidOffset("NameTranslationKey", varPosBase0, buf.readableBytes());
-         }
-
-         int varPos0 = offset + 80 + varPosBase0;
-         int nameTranslationKeyLen = VarInt.peek(buf, varPos0);
-         if (nameTranslationKeyLen < 0) {
-            throw ProtocolException.invalidVarInt("NameTranslationKey");
-         }
-
-         int nameTranslationKeyVarIntLen = VarInt.size(nameTranslationKeyLen);
-         if (nameTranslationKeyLen > 4096000) {
-            throw ProtocolException.stringTooLong("NameTranslationKey", nameTranslationKeyLen, 4096000);
-         }
-
-         if (varPos0 + nameTranslationKeyVarIntLen + nameTranslationKeyLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("NameTranslationKey", varPos0 + nameTranslationKeyVarIntLen + nameTranslationKeyLen, buf.readableBytes());
-         }
-
-         obj.nameTranslationKey = PacketIO.readVarString(buf, varPos0, PacketIO.UTF8);
-      }
-
-      if ((nullBits & 16) != 0) {
-         int varPosBase1 = buf.getIntLE(offset + 72);
-         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 80) {
-            throw ProtocolException.invalidOffset("StateBindings", varPosBase1, buf.readableBytes());
-         }
-
-         int varPos1 = offset + 80 + varPosBase1;
-         int stateBindingsCount = VarInt.peek(buf, varPos1);
-         if (stateBindingsCount < 0) {
-            throw ProtocolException.invalidVarInt("StateBindings");
-         }
-
-         int varIntLen = VarInt.size(stateBindingsCount);
-         if (stateBindingsCount > 4096000) {
-            throw ProtocolException.arrayTooLong("StateBindings", stateBindingsCount, 4096000);
-         }
-
-         if (varPos1 + varIntLen + stateBindingsCount * 5L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("StateBindings", varPos1 + varIntLen + stateBindingsCount * 5, buf.readableBytes());
-         }
-
-         obj.stateBindings = new StateBinding[stateBindingsCount];
-         int elemPos = varPos1 + varIntLen;
-
-         for (int i = 0; i < stateBindingsCount; i++) {
-            obj.stateBindings[i] = StateBinding.deserialize(buf, elemPos);
-            elemPos += StateBinding.computeBytesConsumed(buf, elemPos);
-         }
-      }
-
-      if ((nullBits & 32) != 0) {
-         int varPosBase2 = buf.getIntLE(offset + 76);
-         if (varPosBase2 < 0 || varPosBase2 > buf.writerIndex() - offset - 80) {
-            throw ProtocolException.invalidOffset("Children", varPosBase2, buf.readableBytes());
-         }
-
-         int varPos2 = offset + 80 + varPosBase2;
-         int childrenCount = VarInt.peek(buf, varPos2);
-         if (childrenCount < 0) {
-            throw ProtocolException.invalidVarInt("Children");
-         }
-
-         int varIntLen = VarInt.size(childrenCount);
-         if (childrenCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Children", childrenCount, 4096000);
-         }
-
-         if (varPos2 + varIntLen + childrenCount * 4L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Children", varPos2 + varIntLen + childrenCount * 4, buf.readableBytes());
-         }
-
-         obj.children = new int[childrenCount];
-
-         for (int i = 0; i < childrenCount; i++) {
-            obj.children[i] = buf.getIntLE(varPos2 + varIntLen + i * 4);
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int maxEnd = 80;
-      if ((nullBits & 8) != 0) {
-         int fieldOffset0 = buf.getIntLE(offset + 68);
-         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 80) {
-            throw ProtocolException.invalidOffset("NameTranslationKey", fieldOffset0, maxEnd);
-         }
-
-         int pos0 = offset + 80 + fieldOffset0;
-         int sl = VarInt.peek(buf, pos0);
-         pos0 += VarInt.size(sl) + sl;
-         if (pos0 - offset > maxEnd) {
-            maxEnd = pos0 - offset;
-         }
-      }
-
-      if ((nullBits & 16) != 0) {
-         int fieldOffset1 = buf.getIntLE(offset + 72);
-         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 80) {
-            throw ProtocolException.invalidOffset("StateBindings", fieldOffset1, maxEnd);
-         }
-
-         int pos1 = offset + 80 + fieldOffset1;
-         int arrLen = VarInt.peek(buf, pos1);
-         pos1 += VarInt.size(arrLen);
-
-         for (int i = 0; i < arrLen; i++) {
-            pos1 += StateBinding.computeBytesConsumed(buf, pos1);
-         }
-
-         if (pos1 - offset > maxEnd) {
-            maxEnd = pos1 - offset;
-         }
-      }
-
-      if ((nullBits & 32) != 0) {
-         int fieldOffset2 = buf.getIntLE(offset + 76);
-         if (fieldOffset2 < 0 || fieldOffset2 > buf.writerIndex() - offset - 80) {
-            throw ProtocolException.invalidOffset("Children", fieldOffset2, maxEnd);
-         }
-
-         int pos2 = offset + 80 + fieldOffset2;
-         int arrLen = VarInt.peek(buf, pos2);
-         pos2 += VarInt.size(arrLen) + arrLen * 4;
-         if (pos2 - offset > maxEnd) {
-            maxEnd = pos2 - offset;
-         }
-      }
-
-      return maxEnd;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 80L;
-   }
-
-   public static float getVolume(MemorySegment mem) {
-      return getVolume(mem, 0);
-   }
-
-   public static float getVolume(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 1);
-   }
-
-   public static int getLoopCount(MemorySegment mem) {
-      return getLoopCount(mem, 0);
-   }
-
-   public static int getLoopCount(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 5);
-   }
-
-   public static float getWeight(MemorySegment mem) {
-      return getWeight(mem, 0);
-   }
-
-   public static float getWeight(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 9);
-   }
-
-   @Nullable
-   public static Rangef getSilenceAfter(MemorySegment mem) {
-      return getSilenceAfter(mem, 0);
-   }
-
-   @Nullable
-   public static Rangef getSilenceAfter(MemorySegment mem, int offset) {
-      return hasSilenceAfter(mem, offset) ? Rangef.toObject(mem, offset + 13) : null;
-   }
-
-   @Nullable
-   public static Rangef getExitSilence(MemorySegment mem) {
-      return getExitSilence(mem, 0);
-   }
-
-   @Nullable
-   public static Rangef getExitSilence(MemorySegment mem, int offset) {
-      return hasExitSilence(mem, offset) ? Rangef.toObject(mem, offset + 21) : null;
-   }
-
-   public static float getFadeInDuration(MemorySegment mem) {
-      return getFadeInDuration(mem, 0);
-   }
-
-   public static float getFadeInDuration(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 29);
-   }
-
-   public static float getFadeOutDuration(MemorySegment mem) {
-      return getFadeOutDuration(mem, 0);
-   }
-
-   public static float getFadeOutDuration(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 33);
-   }
-
-   public static MusicTransitionType getTransitionType(MemorySegment mem) {
-      return getTransitionType(mem, 0);
-   }
-
-   public static MusicTransitionType getTransitionType(MemorySegment mem, int offset) {
-      return MusicTransitionType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 37));
-   }
-
-   public static float getTransitionDuration(MemorySegment mem) {
-      return getTransitionDuration(mem, 0);
-   }
-
-   public static float getTransitionDuration(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 38);
-   }
-
-   public static boolean getPlayToCompletion(MemorySegment mem) {
-      return getPlayToCompletion(mem, 0);
-   }
-
-   public static boolean getPlayToCompletion(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 42);
-   }
-
-   public static float getResumeMemoryDuration(MemorySegment mem) {
-      return getResumeMemoryDuration(mem, 0);
-   }
-
-   public static float getResumeMemoryDuration(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 43);
-   }
-
-   @Nullable
-   public static String getNameTranslationKey(MemorySegment mem) {
-      return getNameTranslationKey(mem, 0);
-   }
-
-   @Nullable
-   public static String getNameTranslationKey(MemorySegment mem, int offset) {
-      return hasNameTranslationKey(mem, offset)
-         ? PacketIO.readVarString("NameTranslationKey", mem, offset + getValidatedOffset(mem, offset, 68, 80, "NameTranslationKey"), 4096000, PacketIO.UTF8)
-         : null;
-   }
-
-   public static int getAudioCategoryIndex(MemorySegment mem) {
-      return getAudioCategoryIndex(mem, 0);
-   }
-
-   public static int getAudioCategoryIndex(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 47);
-   }
-
-   @Nullable
-   public static TempoSettings getTempo(MemorySegment mem) {
-      return getTempo(mem, 0);
-   }
-
-   @Nullable
-   public static TempoSettings getTempo(MemorySegment mem, int offset) {
-      return hasTempo(mem, offset) ? TempoSettings.toObject(mem, offset + 51) : null;
-   }
-
-   @Nullable
-   public static StateBinding[] getStateBindings(MemorySegment mem) {
-      return getStateBindings(mem, 0);
-   }
-
-   @Nullable
-   public static StateBinding[] getStateBindings(MemorySegment mem, int offset) {
-      if (!hasStateBindings(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 72, 80, "StateBindings");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("StateBindings", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("StateBindings", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("StateBindings", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      StateBinding[] data = new StateBinding[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = StateBinding.toObject(mem, off);
-         off += data[i].computeSize();
-      }
-
-      return data;
-   }
-
-   public static RandomMode getMode(MemorySegment mem) {
-      return getMode(mem, 0);
-   }
-
-   public static RandomMode getMode(MemorySegment mem, int offset) {
-      return RandomMode.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 63));
-   }
-
-   public static int getAvoidRepeatCount(MemorySegment mem) {
-      return getAvoidRepeatCount(mem, 0);
-   }
-
-   public static int getAvoidRepeatCount(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 64);
-   }
-
-   @Nullable
-   public static int[] getChildren(MemorySegment mem) {
-      return getChildren(mem, 0);
-   }
-
-   @Nullable
-   public static int[] getChildren(MemorySegment mem, int offset) {
-      if (!hasChildren(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 76, 80, "Children");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Children", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Children", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 4L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Children", off + lenOffset + len * 4, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      int[] data = new int[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_INT, off, data, 0, len);
-      return data;
-   }
-
-   public static boolean hasSilenceAfter(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasExitSilence(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static boolean hasTempo(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 4) != 0;
-   }
-
-   public static boolean hasNameTranslationKey(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 8) != 0;
-   }
-
-   public static boolean hasStateBindings(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 16) != 0;
-   }
-
-   public static boolean hasChildren(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 32) != 0;
-   }
-
-   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
-      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
-      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
-         return varBlockStart + offset;
-      } else {
-         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
-      }
-   }
-
-   public static RandomMusicContainer toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static RandomMusicContainer toObject(MemorySegment mem, int offset) {
-      if (offset + 80 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("RandomMusicContainer", offset + 80, (int)mem.byteSize());
-      }
-
-      StateBinding[] stateBindings = null;
-      if (hasStateBindings(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 72, 80, "StateBindings");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("StateBindings", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("StateBindings", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("StateBindings", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         stateBindings = new StateBinding[len];
-
-         for (int i = 0; i < len; i++) {
-            stateBindings[i] = StateBinding.toObject(mem, off);
-            off += stateBindings[i].computeSize();
-         }
-      }
-
-      int[] children = null;
-      if (hasChildren(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 76, 80, "Children");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Children", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Children", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 4L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Children", off + lenOffset + len * 4, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         children = new int[len];
-         MemorySegment.copy(mem, PacketIO.PROTO_INT, off, children, 0, len);
-      }
-
-      return new RandomMusicContainer(
-         mem.get(PacketIO.PROTO_FLOAT, offset + 1),
-         mem.get(PacketIO.PROTO_INT, offset + 5),
-         mem.get(PacketIO.PROTO_FLOAT, offset + 9),
-         hasSilenceAfter(mem, offset) ? Rangef.toObject(mem, offset + 13) : null,
-         hasExitSilence(mem, offset) ? Rangef.toObject(mem, offset + 21) : null,
-         mem.get(PacketIO.PROTO_FLOAT, offset + 29),
-         mem.get(PacketIO.PROTO_FLOAT, offset + 33),
-         MusicTransitionType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 37)),
-         mem.get(PacketIO.PROTO_FLOAT, offset + 38),
-         mem.get(PacketIO.PROTO_BOOL, offset + 42),
-         mem.get(PacketIO.PROTO_FLOAT, offset + 43),
-         hasNameTranslationKey(mem, offset)
-            ? PacketIO.readVarString("NameTranslationKey", mem, offset + getValidatedOffset(mem, offset, 68, 80, "NameTranslationKey"), 4096000, PacketIO.UTF8)
-            : null,
-         mem.get(PacketIO.PROTO_INT, offset + 47),
-         hasTempo(mem, offset) ? TempoSettings.toObject(mem, offset + 51) : null,
-         stateBindings,
-         RandomMode.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 63)),
-         mem.get(PacketIO.PROTO_INT, offset + 64),
-         children
-      );
-   }
-
-   @Override
-   public int serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      byte nullBits = 0;
-      if (this.silenceAfter != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.exitSilence != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.tempo != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.nameTranslationKey != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      if (this.stateBindings != null) {
-         nullBits = (byte)(nullBits | 16);
-      }
-
-      if (this.children != null) {
-         nullBits = (byte)(nullBits | 32);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeFloatLE(this.volume);
-      buf.writeIntLE(this.loopCount);
-      buf.writeFloatLE(this.weight);
-      if (this.silenceAfter != null) {
-         this.silenceAfter.serialize(buf);
-      } else {
-         buf.writeZero(8);
-      }
-
-      if (this.exitSilence != null) {
-         this.exitSilence.serialize(buf);
-      } else {
-         buf.writeZero(8);
-      }
-
-      buf.writeFloatLE(this.fadeInDuration);
-      buf.writeFloatLE(this.fadeOutDuration);
-      buf.writeByte(this.transitionType.getValue());
-      buf.writeFloatLE(this.transitionDuration);
-      buf.writeByte(this.playToCompletion ? 1 : 0);
-      buf.writeFloatLE(this.resumeMemoryDuration);
-      buf.writeIntLE(this.audioCategoryIndex);
-      if (this.tempo != null) {
-         this.tempo.serialize(buf);
-      } else {
-         buf.writeZero(12);
-      }
-
-      buf.writeByte(this.mode.getValue());
-      buf.writeIntLE(this.avoidRepeatCount);
-      int nameTranslationKeyOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int stateBindingsOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int childrenOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int varBlockStart = buf.writerIndex();
-      if (this.nameTranslationKey != null) {
-         buf.setIntLE(nameTranslationKeyOffsetSlot, buf.writerIndex() - varBlockStart);
-         PacketIO.writeVarString(buf, this.nameTranslationKey, 4096000);
-      } else {
-         buf.setIntLE(nameTranslationKeyOffsetSlot, -1);
-      }
-
-      if (this.stateBindings != null) {
-         buf.setIntLE(stateBindingsOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.stateBindings.length > 4096000) {
-            throw ProtocolException.arrayTooLong("StateBindings", this.stateBindings.length, 4096000);
-         }
-
-         VarInt.write(buf, this.stateBindings.length);
-
-         for (StateBinding item : this.stateBindings) {
-            item.serialize(buf);
-         }
-      } else {
-         buf.setIntLE(stateBindingsOffsetSlot, -1);
-      }
-
-      if (this.children != null) {
-         buf.setIntLE(childrenOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.children.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Children", this.children.length, 4096000);
-         }
-
-         VarInt.write(buf, this.children.length);
-
-         for (int item : this.children) {
-            buf.writeIntLE(item);
-         }
-      } else {
-         buf.setIntLE(childrenOffsetSlot, -1);
-      }
-
-      return buf.writerIndex() - startPos;
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.silenceAfter != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.exitSilence != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.tempo != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.nameTranslationKey != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      if (this.stateBindings != null) {
-         nullBits = (byte)(nullBits | 16);
-      }
-
-      if (this.children != null) {
-         nullBits = (byte)(nullBits | 32);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 1, this.volume);
-      mem.set(PacketIO.PROTO_INT, offset + 5, this.loopCount);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 9, this.weight);
-      if (this.silenceAfter != null) {
-         this.silenceAfter.serialize(mem, offset + 13);
-      } else {
-         mem.asSlice(offset + 13, 8L).fill((byte)0);
-      }
-
-      if (this.exitSilence != null) {
-         this.exitSilence.serialize(mem, offset + 21);
-      } else {
-         mem.asSlice(offset + 21, 8L).fill((byte)0);
-      }
-
-      mem.set(PacketIO.PROTO_FLOAT, offset + 29, this.fadeInDuration);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 33, this.fadeOutDuration);
-      mem.set(PacketIO.PROTO_BYTE, offset + 37, (byte)this.transitionType.getValue());
-      mem.set(PacketIO.PROTO_FLOAT, offset + 38, this.transitionDuration);
-      mem.set(PacketIO.PROTO_BOOL, offset + 42, this.playToCompletion);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 43, this.resumeMemoryDuration);
-      mem.set(PacketIO.PROTO_INT, offset + 47, this.audioCategoryIndex);
-      if (this.tempo != null) {
-         this.tempo.serialize(mem, offset + 51);
-      } else {
-         mem.asSlice(offset + 51, 12L).fill((byte)0);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 63, (byte)this.mode.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 64, this.avoidRepeatCount);
-      int varOffset = offset + 80;
-      if (this.nameTranslationKey != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 68, varOffset - offset - 80);
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.nameTranslationKey, 4096000);
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 68, -1);
-      }
-
-      if (this.stateBindings != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 72, varOffset - offset - 80);
-         if (this.stateBindings.length > 4096000) {
-            throw ProtocolException.arrayTooLong("StateBindings", this.stateBindings.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.stateBindings.length);
-         int stateBindingsValueOffset = 0;
-
-         for (int i = 0; i < this.stateBindings.length; i++) {
-            stateBindingsValueOffset += this.stateBindings[i].serialize(mem, varOffset + stateBindingsValueOffset);
-         }
-
-         varOffset += stateBindingsValueOffset;
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 72, -1);
-      }
-
-      if (this.children != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 76, varOffset - offset - 80);
-         if (this.children.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Children", this.children.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.children.length);
-         MemorySegment.copy(this.children, 0, mem, PacketIO.PROTO_INT, varOffset, this.children.length);
-         varOffset += this.children.length * 4;
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 76, -1);
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 80;
-      if (this.nameTranslationKey != null) {
-         size += PacketIO.stringSize(this.nameTranslationKey);
-      }
-
-      if (this.stateBindings != null) {
-         int stateBindingsSize = 0;
-
-         for (StateBinding elem : this.stateBindings) {
-            stateBindingsSize += elem.computeSize();
-         }
-
-         size += VarInt.size(this.stateBindings.length) + stateBindingsSize;
-      }
-
-      if (this.children != null) {
-         size += VarInt.size(this.children.length) + this.children.length * 4;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 80) {
-         return ValidationResult.error("Buffer too small: expected at least 80 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 37) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid MusicTransitionType value for TransitionType");
-      }
-
-      v = buffer.getByte(offset + 63) & 255;
-      if (v >= 2) {
-         return ValidationResult.error("Invalid RandomMode value for Mode");
-      }
-
-      if ((nullBits & 8) != 0) {
-         v = buffer.getIntLE(offset + 68);
-         if (v < 0 || v > buffer.writerIndex() - offset - 80) {
-            return ValidationResult.error("Invalid offset for NameTranslationKey");
-         }
-
-         int pos = offset + 80 + v;
-         int nameTranslationKeyLen = VarInt.peek(buffer, pos);
-         if (nameTranslationKeyLen < 0) {
-            return ValidationResult.error("Invalid string length for NameTranslationKey");
-         }
-
-         if (nameTranslationKeyLen > 4096000) {
-            return ValidationResult.error("NameTranslationKey exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(nameTranslationKeyLen);
-         pos += nameTranslationKeyLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading NameTranslationKey");
-         }
-      }
-
-      if ((nullBits & 16) != 0) {
-         v = buffer.getIntLE(offset + 72);
-         if (v < 0 || v > buffer.writerIndex() - offset - 80) {
-            return ValidationResult.error("Invalid offset for StateBindings");
-         }
-
-         int pos = offset + 80 + v;
-         int stateBindingsCount = VarInt.peek(buffer, pos);
-         if (stateBindingsCount < 0) {
-            return ValidationResult.error("Invalid array count for StateBindings");
-         }
-
-         if (stateBindingsCount > 4096000) {
-            return ValidationResult.error("StateBindings exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(stateBindingsCount);
-
-         for (int i = 0; i < stateBindingsCount; i++) {
-            ValidationResult structResult = StateBinding.validateStructure(buffer, pos);
-            if (!structResult.isValid()) {
-               return ValidationResult.error("Invalid StateBinding in StateBindings[" + i + "]: " + structResult.error());
+    public static final int NULLABLE_BIT_FIELD_SIZE = 2;
+    public static final int FIXED_BLOCK_SIZE = 70;
+    public static final int VARIABLE_FIELD_COUNT = 6;
+    public static final int VARIABLE_BLOCK_START = 94;
+    public static final int MAX_SIZE = 1677721600;
+
+    @Nonnull public RandomMode mode = RandomMode.Shuffle;
+    public int avoidRepeatCount;
+    @Nullable public int[] children;
+
+    public RandomMusicContainer() {
+    }
+
+    public RandomMusicContainer(float volume, int loopCount, float weight, @Nullable Rangef silenceAfter, @Nullable Rangef exitSilence, float fadeInDuration, float fadeOutDuration, @Nonnull MusicTransitionType transitionType, float transitionDuration, @Nullable MusicSync exitAt, @Nullable DestinationAlign align, @Nullable String alignMarkerName, boolean playToCompletion, float resumeMemoryDuration, @Nullable String nameTranslationKey, int audioCategoryIndex, @Nullable TempoSettings tempo, @Nullable StateBinding[] stateBindings, @Nullable StingerBinding[] stingers, @Nonnull RandomMode mode, int avoidRepeatCount, @Nullable int[] children) {
+        this.volume = volume;
+        this.loopCount = loopCount;
+        this.weight = weight;
+        this.silenceAfter = silenceAfter;
+        this.exitSilence = exitSilence;
+        this.fadeInDuration = fadeInDuration;
+        this.fadeOutDuration = fadeOutDuration;
+        this.transitionType = transitionType;
+        this.transitionDuration = transitionDuration;
+        this.exitAt = exitAt;
+        this.align = align;
+        this.alignMarkerName = alignMarkerName;
+        this.playToCompletion = playToCompletion;
+        this.resumeMemoryDuration = resumeMemoryDuration;
+        this.nameTranslationKey = nameTranslationKey;
+        this.audioCategoryIndex = audioCategoryIndex;
+        this.tempo = tempo;
+        this.stateBindings = stateBindings;
+        this.stingers = stingers;
+        this.mode = mode;
+        this.avoidRepeatCount = avoidRepeatCount;
+        this.children = children;
+    }
+
+    public RandomMusicContainer(@Nonnull RandomMusicContainer other) {
+        this.volume = other.volume;
+        this.loopCount = other.loopCount;
+        this.weight = other.weight;
+        this.silenceAfter = other.silenceAfter;
+        this.exitSilence = other.exitSilence;
+        this.fadeInDuration = other.fadeInDuration;
+        this.fadeOutDuration = other.fadeOutDuration;
+        this.transitionType = other.transitionType;
+        this.transitionDuration = other.transitionDuration;
+        this.exitAt = other.exitAt;
+        this.align = other.align;
+        this.alignMarkerName = other.alignMarkerName;
+        this.playToCompletion = other.playToCompletion;
+        this.resumeMemoryDuration = other.resumeMemoryDuration;
+        this.nameTranslationKey = other.nameTranslationKey;
+        this.audioCategoryIndex = other.audioCategoryIndex;
+        this.tempo = other.tempo;
+        this.stateBindings = other.stateBindings;
+        this.stingers = other.stingers;
+        this.mode = other.mode;
+        this.avoidRepeatCount = other.avoidRepeatCount;
+        this.children = other.children;
+    }
+
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("RandomMusicContainer", offset, (int) mem.byteSize());
+        long needed = (long) offset + 94;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("RandomMusicContainer", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static float getVolume(MemorySegment mem) {
+        return getVolume(mem, 0);
+    }
+    
+    public static float getVolume(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 2), "Volume");
+    }
+    
+    public static int getLoopCount(MemorySegment mem) {
+        return getLoopCount(mem, 0);
+    }
+    
+    public static int getLoopCount(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 6);
+    }
+    
+    public static float getWeight(MemorySegment mem) {
+        return getWeight(mem, 0);
+    }
+    
+    public static float getWeight(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 10), "Weight");
+    }
+    
+    @Nullable
+    public static Rangef getSilenceAfter(MemorySegment mem) {
+        return getSilenceAfter(mem, 0);
+    }
+    
+    @Nullable
+    public static Rangef getSilenceAfter(MemorySegment mem, int offset) {
+        return hasSilenceAfter(mem, offset) ? Rangef.toObject(mem, offset + 14): null;
+    }
+    
+    @Nullable
+    public static Rangef getExitSilence(MemorySegment mem) {
+        return getExitSilence(mem, 0);
+    }
+    
+    @Nullable
+    public static Rangef getExitSilence(MemorySegment mem, int offset) {
+        return hasExitSilence(mem, offset) ? Rangef.toObject(mem, offset + 22): null;
+    }
+    
+    public static float getFadeInDuration(MemorySegment mem) {
+        return getFadeInDuration(mem, 0);
+    }
+    
+    public static float getFadeInDuration(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 30), "FadeInDuration");
+    }
+    
+    public static float getFadeOutDuration(MemorySegment mem) {
+        return getFadeOutDuration(mem, 0);
+    }
+    
+    public static float getFadeOutDuration(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 34), "FadeOutDuration");
+    }
+    
+    public static MusicTransitionType getTransitionType(MemorySegment mem) {
+        return getTransitionType(mem, 0);
+    }
+    
+    public static MusicTransitionType getTransitionType(MemorySegment mem, int offset) {
+        return MusicTransitionType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 38));
+    }
+    
+    public static float getTransitionDuration(MemorySegment mem) {
+        return getTransitionDuration(mem, 0);
+    }
+    
+    public static float getTransitionDuration(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 39), "TransitionDuration");
+    }
+    
+    @Nullable
+    public static MusicSync getExitAt(MemorySegment mem) {
+        return getExitAt(mem, 0);
+    }
+    
+    @Nullable
+    public static MusicSync getExitAt(MemorySegment mem, int offset) {
+        return hasExitAt(mem, offset) ? MusicSync.toObject(mem, offset + getValidatedOffset(mem, offset, 70, 94, "ExitAt")): null;
+    }
+    
+    @Nullable
+    public static DestinationAlign getAlign(MemorySegment mem) {
+        return getAlign(mem, 0);
+    }
+    
+    @Nullable
+    public static DestinationAlign getAlign(MemorySegment mem, int offset) {
+        return hasAlign(mem, offset) ? DestinationAlign.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 43)): null;
+    }
+    
+    @Nullable
+    public static String getAlignMarkerName(MemorySegment mem) {
+        return getAlignMarkerName(mem, 0);
+    }
+    
+    @Nullable
+    public static String getAlignMarkerName(MemorySegment mem, int offset) {
+        return hasAlignMarkerName(mem, offset) ? PacketIO.readVarString("AlignMarkerName", mem, offset + getValidatedOffset(mem, offset, 74, 94, "AlignMarkerName"), 4096000): null;
+    }
+    
+    public static boolean getPlayToCompletion(MemorySegment mem) {
+        return getPlayToCompletion(mem, 0);
+    }
+    
+    public static boolean getPlayToCompletion(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BOOL, offset + 44);
+    }
+    
+    public static float getResumeMemoryDuration(MemorySegment mem) {
+        return getResumeMemoryDuration(mem, 0);
+    }
+    
+    public static float getResumeMemoryDuration(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 45), "ResumeMemoryDuration");
+    }
+    
+    @Nullable
+    public static String getNameTranslationKey(MemorySegment mem) {
+        return getNameTranslationKey(mem, 0);
+    }
+    
+    @Nullable
+    public static String getNameTranslationKey(MemorySegment mem, int offset) {
+        return hasNameTranslationKey(mem, offset) ? PacketIO.readVarString("NameTranslationKey", mem, offset + getValidatedOffset(mem, offset, 78, 94, "NameTranslationKey"), 4096000): null;
+    }
+    
+    public static int getAudioCategoryIndex(MemorySegment mem) {
+        return getAudioCategoryIndex(mem, 0);
+    }
+    
+    public static int getAudioCategoryIndex(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 49);
+    }
+    
+    @Nullable
+    public static TempoSettings getTempo(MemorySegment mem) {
+        return getTempo(mem, 0);
+    }
+    
+    @Nullable
+    public static TempoSettings getTempo(MemorySegment mem, int offset) {
+        return hasTempo(mem, offset) ? TempoSettings.toObject(mem, offset + 53): null;
+    }
+    
+    @Nullable
+    public static StateBinding[] getStateBindings(MemorySegment mem) {
+        return getStateBindings(mem, 0);
+    }
+    
+    @Nullable
+    public static StateBinding[] getStateBindings(MemorySegment mem, int offset) {
+        if (!hasStateBindings(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + getValidatedOffset(mem, offset, 82, 94, "StateBindings");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("StateBindings");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("StateBindings", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("StateBindings", (int) java.lang.Math.min(off + lenOffset + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new StateBinding[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = StateBinding.toObject(mem, off, walkCursor);
+            off = walkCursor.position;
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static StingerBinding[] getStingers(MemorySegment mem) {
+        return getStingers(mem, 0);
+    }
+    
+    @Nullable
+    public static StingerBinding[] getStingers(MemorySegment mem, int offset) {
+        if (!hasStingers(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + getValidatedOffset(mem, offset, 86, 94, "Stingers");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Stingers");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Stingers", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 18 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Stingers", (int) java.lang.Math.min(off + lenOffset + (long) len * 18, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new StingerBinding[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = StingerBinding.toObject(mem, off, walkCursor);
+            off = walkCursor.position;
+        }
+        return data;
+    }
+    
+    public static RandomMode getMode(MemorySegment mem) {
+        return getMode(mem, 0);
+    }
+    
+    public static RandomMode getMode(MemorySegment mem, int offset) {
+        return RandomMode.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 65));
+    }
+    
+    public static int getAvoidRepeatCount(MemorySegment mem) {
+        return getAvoidRepeatCount(mem, 0);
+    }
+    
+    public static int getAvoidRepeatCount(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 66);
+    }
+    
+    @Nullable
+    public static int[] getChildren(MemorySegment mem) {
+        return getChildren(mem, 0);
+    }
+    
+    @Nullable
+    public static int[] getChildren(MemorySegment mem, int offset) {
+        if (!hasChildren(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 90, 94, "Children");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Children");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Children", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Children", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new int[len];
+        MemorySegment.copy(mem, PacketIO.PROTO_INT, off, data, 0, len);
+        return data;
+    }
+    
+    public static boolean hasSilenceAfter(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasExitSilence(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    public static boolean hasAlign(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x04) != 0;
+    }
+    
+    public static boolean hasTempo(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x08) != 0;
+    }
+    
+    public static boolean hasExitAt(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x10) != 0;
+    }
+    
+    public static boolean hasAlignMarkerName(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x20) != 0;
+    }
+    
+    public static boolean hasNameTranslationKey(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x40) != 0;
+    }
+    
+    public static boolean hasStateBindings(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x80) != 0;
+    }
+    
+    public static boolean hasStingers(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 1);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasChildren(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 1);
+        return (b & 0x02) != 0;
+    }
+    
+    private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+        int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+        if (offset < 0 || offset > buffer.byteSize() - base - varBlockStart)
+            throw ProtocolException.invalidOffset(fieldName, offset, (int) buffer.byteSize());
+        return varBlockStart + offset;
+    }
+    
+    /**
+     * Rejects an offset slot that does not name the position the field-order walk reached. A
+     * present field must sit where the previous field ended, and an absent field carries -1, so
+     * the slot a random-access getter resolves and the walk describe the same bytes.
+     */
+    private static void requireSlot(MemorySegment mem, int slotPosition, int expected, String fieldName) {
+        int slot = mem.get(PacketIO.PROTO_INT, slotPosition);
+        if (slot != expected) throw ProtocolException.nonCanonicalLayout(fieldName, slot, expected);
+    }
+    
+    public static RandomMusicContainer toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static RandomMusicContainer toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one RandomMusicContainer and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static RandomMusicContainer toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 94;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        MusicSync v9 = null;
+        if (hasExitAt(mem, offset)) {
+            requireSlot(mem, offset + 70, varPos, "ExitAt");
+            v9 = MusicSync.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        } else {
+            requireSlot(mem, offset + 70, -1, "ExitAt");
+        }
+        
+        String v11 = null;
+        if (hasAlignMarkerName(mem, offset)) {
+            requireSlot(mem, offset + 74, varPos, "AlignMarkerName");
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v11 = PacketIO.readVarString("AlignMarkerName", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        } else {
+            requireSlot(mem, offset + 74, -1, "AlignMarkerName");
+        }
+        
+        String v14 = null;
+        if (hasNameTranslationKey(mem, offset)) {
+            requireSlot(mem, offset + 78, varPos, "NameTranslationKey");
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v14 = PacketIO.readVarString("NameTranslationKey", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        } else {
+            requireSlot(mem, offset + 78, -1, "NameTranslationKey");
+        }
+        
+        StateBinding[] v17 = null;
+        if (hasStateBindings(mem, offset)) {
+            requireSlot(mem, offset + 82, varPos, "StateBindings");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("StateBindings");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("StateBindings", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("StateBindings", (int) java.lang.Math.min(off + lenOffset + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v17 = new StateBinding[len];
+            for (var i = 0; i < len; i++) {
+                v17[i] = StateBinding.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
             }
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 82, -1, "StateBindings");
+        }
+        
+        StingerBinding[] v18 = null;
+        if (hasStingers(mem, offset)) {
+            requireSlot(mem, offset + 86, varPos, "Stingers");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Stingers");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Stingers", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 18 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Stingers", (int) java.lang.Math.min(off + lenOffset + (long) len * 18, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v18 = new StingerBinding[len];
+            for (var i = 0; i < len; i++) {
+                v18[i] = StingerBinding.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            }
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 86, -1, "Stingers");
+        }
+        
+        int[] v21 = null;
+        if (hasChildren(mem, offset)) {
+            requireSlot(mem, offset + 90, varPos, "Children");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Children");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Children", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Children", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v21 = new int[len];
+            MemorySegment.copy(mem, PacketIO.PROTO_INT, off, v21, 0, len);
+            varPos = off + len * 4 - varBase;
+        } else {
+            requireSlot(mem, offset + 90, -1, "Children");
+        }
+        var result = new RandomMusicContainer(
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 2), "Volume"),
+            mem.get(PacketIO.PROTO_INT, offset + 6),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 10), "Weight"),
+            hasSilenceAfter(mem, offset) ? Rangef.toObject(mem, offset + 14) : null,
+            hasExitSilence(mem, offset) ? Rangef.toObject(mem, offset + 22) : null,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 30), "FadeInDuration"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 34), "FadeOutDuration"),
+            MusicTransitionType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 38)),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 39), "TransitionDuration"),
+            v9,
+            hasAlign(mem, offset) ? DestinationAlign.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 43)) : null,
+            v11,
+            mem.get(PacketIO.PROTO_BOOL, offset + 44),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 45), "ResumeMemoryDuration"),
+            v14,
+            mem.get(PacketIO.PROTO_INT, offset + 49),
+            hasTempo(mem, offset) ? TempoSettings.toObject(mem, offset + 53) : null,
+            v17,
+            v18,
+            RandomMode.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 65)),
+            mem.get(PacketIO.PROTO_INT, offset + 66),
+            v21
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.silenceAfter != null) nullBits |= 0x01;
+        if (this.exitSilence != null) nullBits |= 0x02;
+        if (this.align != null) nullBits |= 0x04;
+        if (this.tempo != null) nullBits |= 0x08;
+        if (this.exitAt != null) nullBits |= 0x10;
+        if (this.alignMarkerName != null) nullBits |= 0x20;
+        if (this.nameTranslationKey != null) nullBits |= 0x40;
+        if (this.stateBindings != null) nullBits |= 0x80;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        nullBits = 0;
+        if (this.stingers != null) nullBits |= 0x01;
+        if (this.children != null) nullBits |= 0x02;
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, nullBits);
+        
+        PacketIO.requireFinite(this.volume, "Volume"); mem.set(PacketIO.PROTO_FLOAT, offset + 2, this.volume);
+        mem.set(PacketIO.PROTO_INT, offset + 6, this.loopCount);
+        PacketIO.requireFinite(this.weight, "Weight"); mem.set(PacketIO.PROTO_FLOAT, offset + 10, this.weight);
+        if (this.silenceAfter != null) {
+            this.silenceAfter.serialize(mem, offset + 14);
+        } else {
+            mem.asSlice(offset + 14, 8).fill((byte) 0); 
+        }
+        if (this.exitSilence != null) {
+            this.exitSilence.serialize(mem, offset + 22);
+        } else {
+            mem.asSlice(offset + 22, 8).fill((byte) 0); 
+        }
+        PacketIO.requireFinite(this.fadeInDuration, "FadeInDuration"); mem.set(PacketIO.PROTO_FLOAT, offset + 30, this.fadeInDuration);
+        PacketIO.requireFinite(this.fadeOutDuration, "FadeOutDuration"); mem.set(PacketIO.PROTO_FLOAT, offset + 34, this.fadeOutDuration);
+        mem.set(PacketIO.PROTO_BYTE, offset + 38, (byte) this.transitionType.getValue());
+        PacketIO.requireFinite(this.transitionDuration, "TransitionDuration"); mem.set(PacketIO.PROTO_FLOAT, offset + 39, this.transitionDuration);
+        if (this.align != null) {
+            mem.set(PacketIO.PROTO_BYTE, offset + 43, (byte) this.align.getValue());
+        } else {
+            mem.asSlice(offset + 43, 1).fill((byte) 0); 
+        }
+        mem.set(PacketIO.PROTO_BOOL, offset + 44, this.playToCompletion);
+        PacketIO.requireFinite(this.resumeMemoryDuration, "ResumeMemoryDuration"); mem.set(PacketIO.PROTO_FLOAT, offset + 45, this.resumeMemoryDuration);
+        mem.set(PacketIO.PROTO_INT, offset + 49, this.audioCategoryIndex);
+        if (this.tempo != null) {
+            this.tempo.serialize(mem, offset + 53);
+        } else {
+            mem.asSlice(offset + 53, 12).fill((byte) 0); 
+        }
+        mem.set(PacketIO.PROTO_BYTE, offset + 65, (byte) this.mode.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 66, this.avoidRepeatCount);
+        var varOffset = offset + 94;
+        if (this.exitAt != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 70, varOffset - offset - 94);
+            varOffset += this.exitAt.serialize(mem, varOffset);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 70, -1);
+        }
+        if (this.alignMarkerName != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 74, varOffset - offset - 94);
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.alignMarkerName, 4096000);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 74, -1);
+        }
+        if (this.nameTranslationKey != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 78, varOffset - offset - 94);
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.nameTranslationKey, 4096000);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 78, -1);
+        }
+        if (this.stateBindings != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 82, varOffset - offset - 94);
+            if (stateBindings.length > 4096000) throw ProtocolException.arrayTooLong("StateBindings", stateBindings.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.stateBindings.length);
+            
+            var stateBindingsValueOffset = 0;
+            for (var i = 0; i < this.stateBindings.length; i++) {
+                stateBindingsValueOffset += this.stateBindings[i].serialize(mem, varOffset + stateBindingsValueOffset);
+            }
+            varOffset += stateBindingsValueOffset;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 82, -1);
+        }
+        if (this.stingers != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 86, varOffset - offset - 94);
+            if (stingers.length > 4096000) throw ProtocolException.arrayTooLong("Stingers", stingers.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.stingers.length);
+            
+            var stingersValueOffset = 0;
+            for (var i = 0; i < this.stingers.length; i++) {
+                stingersValueOffset += this.stingers[i].serialize(mem, varOffset + stingersValueOffset);
+            }
+            varOffset += stingersValueOffset;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 86, -1);
+        }
+        if (this.children != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 90, varOffset - offset - 94);
+            if (children.length > 4096000) throw ProtocolException.arrayTooLong("Children", children.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.children.length);
+            
+            MemorySegment.copy(this.children, 0, mem, PacketIO.PROTO_INT, varOffset, this.children.length);
+            varOffset += this.children.length * 4;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 90, -1);
+        }
+    
+       return varOffset - offset;
+    }
+    @Override
+    public int computeSize() {
+        int size = 94;
+        if (exitAt != null) size += exitAt.computeSize();
+    if (alignMarkerName != null) size += PacketIO.stringSize(alignMarkerName);
+    if (nameTranslationKey != null) size += PacketIO.stringSize(nameTranslationKey);
+    if (stateBindings != null) {
+        int stateBindingsSize = 0;
+for (var elem : stateBindings) stateBindingsSize += elem.computeSize();
+size += VarInt.size(stateBindings.length) + stateBindingsSize;
+    }
+    if (stingers != null) {
+        int stingersSize = 0;
+for (var elem : stingers) stingersSize += elem.computeSize();
+size += VarInt.size(stingers.length) + stingersSize;
+    }
+    if (children != null) size += VarInt.size(children.length) + children.length * 4;
 
-            pos += StateBinding.computeBytesConsumed(buffer, pos);
-         }
-      }
+        return size;
+    }
 
-      if ((nullBits & 32) != 0) {
-         v = buffer.getIntLE(offset + 76);
-         if (v < 0 || v > buffer.writerIndex() - offset - 80) {
-            return ValidationResult.error("Invalid offset for Children");
-         }
+    public RandomMusicContainer clone() {
+        RandomMusicContainer copy = new RandomMusicContainer();
+        copy.volume = this.volume;
+        copy.loopCount = this.loopCount;
+        copy.weight = this.weight;
+        copy.silenceAfter = this.silenceAfter != null ? this.silenceAfter.clone() : null;
+        copy.exitSilence = this.exitSilence != null ? this.exitSilence.clone() : null;
+        copy.fadeInDuration = this.fadeInDuration;
+        copy.fadeOutDuration = this.fadeOutDuration;
+        copy.transitionType = this.transitionType;
+        copy.transitionDuration = this.transitionDuration;
+        copy.exitAt = this.exitAt != null ? this.exitAt.clone() : null;
+        copy.align = this.align;
+        copy.alignMarkerName = this.alignMarkerName;
+        copy.playToCompletion = this.playToCompletion;
+        copy.resumeMemoryDuration = this.resumeMemoryDuration;
+        copy.nameTranslationKey = this.nameTranslationKey;
+        copy.audioCategoryIndex = this.audioCategoryIndex;
+        copy.tempo = this.tempo != null ? this.tempo.clone() : null;
+        copy.stateBindings = this.stateBindings != null ? java.util.Arrays.stream(this.stateBindings).map(e -> e.clone()).toArray(StateBinding[]::new) : null;
+        copy.stingers = this.stingers != null ? java.util.Arrays.stream(this.stingers).map(e -> e.clone()).toArray(StingerBinding[]::new) : null;
+        copy.mode = this.mode;
+        copy.avoidRepeatCount = this.avoidRepeatCount;
+        copy.children = this.children != null ? java.util.Arrays.copyOf(this.children, this.children.length) : null;
+        return copy;
+    }
 
-         int pos = offset + 80 + v;
-         int childrenCount = VarInt.peek(buffer, pos);
-         if (childrenCount < 0) {
-            return ValidationResult.error("Invalid array count for Children");
-         }
 
-         if (childrenCount > 4096000) {
-            return ValidationResult.error("Children exceeds max length 4096000");
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof RandomMusicContainer other)) return false;
+        return this.volume == other.volume && this.loopCount == other.loopCount && this.weight == other.weight && java.util.Objects.equals(this.silenceAfter, other.silenceAfter) && java.util.Objects.equals(this.exitSilence, other.exitSilence) && this.fadeInDuration == other.fadeInDuration && this.fadeOutDuration == other.fadeOutDuration && java.util.Objects.equals(this.transitionType, other.transitionType) && this.transitionDuration == other.transitionDuration && java.util.Objects.equals(this.exitAt, other.exitAt) && java.util.Objects.equals(this.align, other.align) && java.util.Objects.equals(this.alignMarkerName, other.alignMarkerName) && this.playToCompletion == other.playToCompletion && this.resumeMemoryDuration == other.resumeMemoryDuration && java.util.Objects.equals(this.nameTranslationKey, other.nameTranslationKey) && this.audioCategoryIndex == other.audioCategoryIndex && java.util.Objects.equals(this.tempo, other.tempo) && java.util.Arrays.equals(this.stateBindings, other.stateBindings) && java.util.Arrays.equals(this.stingers, other.stingers) && java.util.Objects.equals(this.mode, other.mode) && this.avoidRepeatCount == other.avoidRepeatCount && java.util.Arrays.equals(this.children, other.children);
+    }
 
-         pos += VarInt.size(childrenCount);
-         pos += childrenCount * 4;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Children");
-         }
-      }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + Float.hashCode(volume);
+        result = 31 * result + Integer.hashCode(loopCount);
+        result = 31 * result + Float.hashCode(weight);
+        result = 31 * result + java.util.Objects.hashCode(silenceAfter);
+        result = 31 * result + java.util.Objects.hashCode(exitSilence);
+        result = 31 * result + Float.hashCode(fadeInDuration);
+        result = 31 * result + Float.hashCode(fadeOutDuration);
+        result = 31 * result + java.util.Objects.hashCode(transitionType);
+        result = 31 * result + Float.hashCode(transitionDuration);
+        result = 31 * result + java.util.Objects.hashCode(exitAt);
+        result = 31 * result + java.util.Objects.hashCode(align);
+        result = 31 * result + java.util.Objects.hashCode(alignMarkerName);
+        result = 31 * result + Boolean.hashCode(playToCompletion);
+        result = 31 * result + Float.hashCode(resumeMemoryDuration);
+        result = 31 * result + java.util.Objects.hashCode(nameTranslationKey);
+        result = 31 * result + Integer.hashCode(audioCategoryIndex);
+        result = 31 * result + java.util.Objects.hashCode(tempo);
+        result = 31 * result + java.util.Arrays.hashCode(stateBindings);
+        result = 31 * result + java.util.Arrays.hashCode(stingers);
+        result = 31 * result + java.util.Objects.hashCode(mode);
+        result = 31 * result + Integer.hashCode(avoidRepeatCount);
+        result = 31 * result + java.util.Arrays.hashCode(children);
+        return result;
+    }
 
-      return ValidationResult.OK;
-   }
-
-   public RandomMusicContainer clone() {
-      RandomMusicContainer copy = new RandomMusicContainer();
-      copy.volume = this.volume;
-      copy.loopCount = this.loopCount;
-      copy.weight = this.weight;
-      copy.silenceAfter = this.silenceAfter != null ? this.silenceAfter.clone() : null;
-      copy.exitSilence = this.exitSilence != null ? this.exitSilence.clone() : null;
-      copy.fadeInDuration = this.fadeInDuration;
-      copy.fadeOutDuration = this.fadeOutDuration;
-      copy.transitionType = this.transitionType;
-      copy.transitionDuration = this.transitionDuration;
-      copy.playToCompletion = this.playToCompletion;
-      copy.resumeMemoryDuration = this.resumeMemoryDuration;
-      copy.nameTranslationKey = this.nameTranslationKey;
-      copy.audioCategoryIndex = this.audioCategoryIndex;
-      copy.tempo = this.tempo != null ? this.tempo.clone() : null;
-      copy.stateBindings = this.stateBindings != null ? Arrays.stream(this.stateBindings).map(e -> e.clone()).toArray(StateBinding[]::new) : null;
-      copy.mode = this.mode;
-      copy.avoidRepeatCount = this.avoidRepeatCount;
-      copy.children = this.children != null ? Arrays.copyOf(this.children, this.children.length) : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof RandomMusicContainer other)
-            ? false
-            : this.volume == other.volume
-               && this.loopCount == other.loopCount
-               && this.weight == other.weight
-               && Objects.equals(this.silenceAfter, other.silenceAfter)
-               && Objects.equals(this.exitSilence, other.exitSilence)
-               && this.fadeInDuration == other.fadeInDuration
-               && this.fadeOutDuration == other.fadeOutDuration
-               && Objects.equals(this.transitionType, other.transitionType)
-               && this.transitionDuration == other.transitionDuration
-               && this.playToCompletion == other.playToCompletion
-               && this.resumeMemoryDuration == other.resumeMemoryDuration
-               && Objects.equals(this.nameTranslationKey, other.nameTranslationKey)
-               && this.audioCategoryIndex == other.audioCategoryIndex
-               && Objects.equals(this.tempo, other.tempo)
-               && Arrays.equals(this.stateBindings, other.stateBindings)
-               && Objects.equals(this.mode, other.mode)
-               && this.avoidRepeatCount == other.avoidRepeatCount
-               && Arrays.equals(this.children, other.children);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Float.hashCode(this.volume);
-      result = 31 * result + Integer.hashCode(this.loopCount);
-      result = 31 * result + Float.hashCode(this.weight);
-      result = 31 * result + Objects.hashCode(this.silenceAfter);
-      result = 31 * result + Objects.hashCode(this.exitSilence);
-      result = 31 * result + Float.hashCode(this.fadeInDuration);
-      result = 31 * result + Float.hashCode(this.fadeOutDuration);
-      result = 31 * result + Objects.hashCode(this.transitionType);
-      result = 31 * result + Float.hashCode(this.transitionDuration);
-      result = 31 * result + Boolean.hashCode(this.playToCompletion);
-      result = 31 * result + Float.hashCode(this.resumeMemoryDuration);
-      result = 31 * result + Objects.hashCode(this.nameTranslationKey);
-      result = 31 * result + Integer.hashCode(this.audioCategoryIndex);
-      result = 31 * result + Objects.hashCode(this.tempo);
-      result = 31 * result + Arrays.hashCode(this.stateBindings);
-      result = 31 * result + Objects.hashCode(this.mode);
-      result = 31 * result + Integer.hashCode(this.avoidRepeatCount);
-      return 31 * result + Arrays.hashCode(this.children);
-   }
-}
+}

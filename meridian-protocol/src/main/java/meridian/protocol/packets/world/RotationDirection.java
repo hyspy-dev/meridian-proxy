@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.world;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum RotationDirection {
-   Positive(0),
-   Negative(1);
+    Positive(0),
+    Negative(1);
 
-   public static final RotationDirection[] VALUES = values();
-   private final int value;
+    public static final RotationDirection[] VALUES = values();
 
-   RotationDirection(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    RotationDirection(int value) {
+        this.value = value;
+    }
 
-   public static RotationDirection fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("RotationDirection", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static RotationDirection fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("RotationDirection", value);
+    }
+}

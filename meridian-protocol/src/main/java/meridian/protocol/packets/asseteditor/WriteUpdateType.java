@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum WriteUpdateType {
-   Add(0),
-   Update(1),
-   Remove(2);
+    Add(0),
+    Update(1),
+    Remove(2);
 
-   public static final WriteUpdateType[] VALUES = values();
-   private final int value;
+    public static final WriteUpdateType[] VALUES = values();
 
-   WriteUpdateType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    WriteUpdateType(int value) {
+        this.value = value;
+    }
 
-   public static WriteUpdateType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("WriteUpdateType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static WriteUpdateType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("WriteUpdateType", value);
+    }
+}

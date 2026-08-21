@@ -1,590 +1,330 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
-import meridian.protocol.DebugShape;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.joml.Vector3fc;
+import meridian.protocol.DebugShape;
+import org.joml.*;
 
 public class DisplayDebug implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 114;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 23;
-   public static final int VARIABLE_FIELD_COUNT = 2;
-   public static final int VARIABLE_BLOCK_START = 31;
-   public static final int MAX_SIZE = 32768041;
-   @Nonnull
-   public DebugShape shape = DebugShape.Sphere;
-   @Nullable
-   public float[] matrix;
-   @Nonnull
-   public Vector3fc color = PacketIO.ZERO_VECTOR3;
-   public float time;
-   public byte flags;
-   @Nullable
-   public float[] frustumProjection;
-   public float opacity;
-
-   @Override
-   public int getId() {
-      return 114;
-   }
-
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
-
-   public DisplayDebug() {
-   }
-
-   public DisplayDebug(
-      @Nonnull DebugShape shape, @Nullable float[] matrix, @Nonnull Vector3fc color, float time, byte flags, @Nullable float[] frustumProjection, float opacity
-   ) {
-      this.shape = shape;
-      this.matrix = matrix;
-      this.color = color;
-      this.time = time;
-      this.flags = flags;
-      this.frustumProjection = frustumProjection;
-      this.opacity = opacity;
-   }
-
-   public DisplayDebug(@Nonnull DisplayDebug other) {
-      this.shape = other.shape;
-      this.matrix = other.matrix;
-      this.color = other.color;
-      this.time = other.time;
-      this.flags = other.flags;
-      this.frustumProjection = other.frustumProjection;
-      this.opacity = other.opacity;
-   }
-
-   @Nonnull
-   public static DisplayDebug deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 31) {
-         throw ProtocolException.bufferTooSmall("DisplayDebug", 31, buf.readableBytes() - offset);
-      }
-
-      DisplayDebug obj = new DisplayDebug();
-      byte nullBits = buf.getByte(offset);
-      obj.shape = DebugShape.fromValue(buf.getByte(offset + 1));
-      obj.color = PacketIO.readVector3f(buf, offset + 2);
-      obj.time = buf.getFloatLE(offset + 14);
-      obj.flags = buf.getByte(offset + 18);
-      obj.opacity = buf.getFloatLE(offset + 19);
-      if ((nullBits & 1) != 0) {
-         int varPosBase0 = buf.getIntLE(offset + 23);
-         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 31) {
-            throw ProtocolException.invalidOffset("Matrix", varPosBase0, buf.readableBytes());
-         }
-
-         int varPos0 = offset + 31 + varPosBase0;
-         int matrixCount = VarInt.peek(buf, varPos0);
-         if (matrixCount < 0) {
-            throw ProtocolException.invalidVarInt("Matrix");
-         }
-
-         int varIntLen = VarInt.size(matrixCount);
-         if (matrixCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Matrix", matrixCount, 4096000);
-         }
-
-         if (varPos0 + varIntLen + matrixCount * 4L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Matrix", varPos0 + varIntLen + matrixCount * 4, buf.readableBytes());
-         }
-
-         obj.matrix = new float[matrixCount];
-
-         for (int i = 0; i < matrixCount; i++) {
-            obj.matrix[i] = buf.getFloatLE(varPos0 + varIntLen + i * 4);
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int varPosBase1 = buf.getIntLE(offset + 27);
-         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 31) {
-            throw ProtocolException.invalidOffset("FrustumProjection", varPosBase1, buf.readableBytes());
-         }
-
-         int varPos1 = offset + 31 + varPosBase1;
-         int frustumProjectionCount = VarInt.peek(buf, varPos1);
-         if (frustumProjectionCount < 0) {
-            throw ProtocolException.invalidVarInt("FrustumProjection");
-         }
-
-         int varIntLen = VarInt.size(frustumProjectionCount);
-         if (frustumProjectionCount > 4096000) {
-            throw ProtocolException.arrayTooLong("FrustumProjection", frustumProjectionCount, 4096000);
-         }
-
-         if (varPos1 + varIntLen + frustumProjectionCount * 4L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("FrustumProjection", varPos1 + varIntLen + frustumProjectionCount * 4, buf.readableBytes());
-         }
-
-         obj.frustumProjection = new float[frustumProjectionCount];
-
-         for (int i = 0; i < frustumProjectionCount; i++) {
-            obj.frustumProjection[i] = buf.getFloatLE(varPos1 + varIntLen + i * 4);
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int maxEnd = 31;
-      if ((nullBits & 1) != 0) {
-         int fieldOffset0 = buf.getIntLE(offset + 23);
-         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 31) {
-            throw ProtocolException.invalidOffset("Matrix", fieldOffset0, maxEnd);
-         }
-
-         int pos0 = offset + 31 + fieldOffset0;
-         int arrLen = VarInt.peek(buf, pos0);
-         pos0 += VarInt.size(arrLen) + arrLen * 4;
-         if (pos0 - offset > maxEnd) {
-            maxEnd = pos0 - offset;
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int fieldOffset1 = buf.getIntLE(offset + 27);
-         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 31) {
-            throw ProtocolException.invalidOffset("FrustumProjection", fieldOffset1, maxEnd);
-         }
-
-         int pos1 = offset + 31 + fieldOffset1;
-         int arrLen = VarInt.peek(buf, pos1);
-         pos1 += VarInt.size(arrLen) + arrLen * 4;
-         if (pos1 - offset > maxEnd) {
-            maxEnd = pos1 - offset;
-         }
-      }
-
-      return maxEnd;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 31L;
-   }
-
-   public static DebugShape getShape(MemorySegment mem) {
-      return getShape(mem, 0);
-   }
-
-   public static DebugShape getShape(MemorySegment mem, int offset) {
-      return DebugShape.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   @Nullable
-   public static float[] getMatrix(MemorySegment mem) {
-      return getMatrix(mem, 0);
-   }
-
-   @Nullable
-   public static float[] getMatrix(MemorySegment mem, int offset) {
-      if (!hasMatrix(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 23, 31, "Matrix");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Matrix", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Matrix", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 4L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Matrix", off + lenOffset + len * 4, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      float[] data = new float[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, data, 0, len);
-      return data;
-   }
-
-   public static Vector3fc getColor(MemorySegment mem) {
-      return getColor(mem, 0);
-   }
-
-   public static Vector3fc getColor(MemorySegment mem, int offset) {
-      return PacketIO.readVector3f(mem, offset + 2);
-   }
-
-   public static float getTime(MemorySegment mem) {
-      return getTime(mem, 0);
-   }
-
-   public static float getTime(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 14);
-   }
-
-   public static byte getFlags(MemorySegment mem) {
-      return getFlags(mem, 0);
-   }
-
-   public static byte getFlags(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BYTE, offset + 18);
-   }
-
-   @Nullable
-   public static float[] getFrustumProjection(MemorySegment mem) {
-      return getFrustumProjection(mem, 0);
-   }
-
-   @Nullable
-   public static float[] getFrustumProjection(MemorySegment mem, int offset) {
-      if (!hasFrustumProjection(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 27, 31, "FrustumProjection");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("FrustumProjection", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("FrustumProjection", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 4L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("FrustumProjection", off + lenOffset + len * 4, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      float[] data = new float[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, data, 0, len);
-      return data;
-   }
-
-   public static float getOpacity(MemorySegment mem) {
-      return getOpacity(mem, 0);
-   }
-
-   public static float getOpacity(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 19);
-   }
-
-   public static boolean hasMatrix(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasFrustumProjection(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
-      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
-      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
-         return varBlockStart + offset;
-      } else {
-         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
-      }
-   }
-
-   public static DisplayDebug toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static DisplayDebug toObject(MemorySegment mem, int offset) {
-      if (offset + 31 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("DisplayDebug", offset + 31, (int)mem.byteSize());
-      }
-
-      float[] matrix = null;
-      if (hasMatrix(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 23, 31, "Matrix");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Matrix", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Matrix", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 4L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Matrix", off + lenOffset + len * 4, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         matrix = new float[len];
-         MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, matrix, 0, len);
-      }
-
-      float[] frustumProjection = null;
-      if (hasFrustumProjection(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 27, 31, "FrustumProjection");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("FrustumProjection", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("FrustumProjection", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 4L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("FrustumProjection", off + lenOffset + len * 4, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         frustumProjection = new float[len];
-         MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, frustumProjection, 0, len);
-      }
-
-      return new DisplayDebug(
-         DebugShape.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
-         matrix,
-         PacketIO.readVector3f(mem, offset + 2),
-         mem.get(PacketIO.PROTO_FLOAT, offset + 14),
-         mem.get(PacketIO.PROTO_BYTE, offset + 18),
-         frustumProjection,
-         mem.get(PacketIO.PROTO_FLOAT, offset + 19)
-      );
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      byte nullBits = 0;
-      if (this.matrix != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.frustumProjection != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.shape.getValue());
-      PacketIO.writeVector3f(buf, this.color);
-      buf.writeFloatLE(this.time);
-      buf.writeByte(this.flags);
-      buf.writeFloatLE(this.opacity);
-      int matrixOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int frustumProjectionOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int varBlockStart = buf.writerIndex();
-      if (this.matrix != null) {
-         buf.setIntLE(matrixOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.matrix.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Matrix", this.matrix.length, 4096000);
-         }
-
-         VarInt.write(buf, this.matrix.length);
-
-         for (float item : this.matrix) {
-            buf.writeFloatLE(item);
-         }
-      } else {
-         buf.setIntLE(matrixOffsetSlot, -1);
-      }
-
-      if (this.frustumProjection != null) {
-         buf.setIntLE(frustumProjectionOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.frustumProjection.length > 4096000) {
-            throw ProtocolException.arrayTooLong("FrustumProjection", this.frustumProjection.length, 4096000);
-         }
-
-         VarInt.write(buf, this.frustumProjection.length);
-
-         for (float item : this.frustumProjection) {
-            buf.writeFloatLE(item);
-         }
-      } else {
-         buf.setIntLE(frustumProjectionOffsetSlot, -1);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.matrix != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.frustumProjection != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.shape.getValue());
-      PacketIO.writeVector3f(mem, offset + 2, this.color);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 14, this.time);
-      mem.set(PacketIO.PROTO_BYTE, offset + 18, this.flags);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 19, this.opacity);
-      int varOffset = offset + 31;
-      if (this.matrix != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 23, varOffset - offset - 31);
-         if (this.matrix.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Matrix", this.matrix.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.matrix.length);
-         MemorySegment.copy(this.matrix, 0, mem, PacketIO.PROTO_FLOAT, varOffset, this.matrix.length);
-         varOffset += this.matrix.length * 4;
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 23, -1);
-      }
-
-      if (this.frustumProjection != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 27, varOffset - offset - 31);
-         if (this.frustumProjection.length > 4096000) {
-            throw ProtocolException.arrayTooLong("FrustumProjection", this.frustumProjection.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.frustumProjection.length);
-         MemorySegment.copy(this.frustumProjection, 0, mem, PacketIO.PROTO_FLOAT, varOffset, this.frustumProjection.length);
-         varOffset += this.frustumProjection.length * 4;
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 27, -1);
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 31;
-      if (this.matrix != null) {
-         size += VarInt.size(this.matrix.length) + this.matrix.length * 4;
-      }
-
-      if (this.frustumProjection != null) {
-         size += VarInt.size(this.frustumProjection.length) + this.frustumProjection.length * 4;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 31) {
-         return ValidationResult.error("Buffer too small: expected at least 31 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 7) {
-         return ValidationResult.error("Invalid DebugShape value for Shape");
-      }
-
-      if ((nullBits & 1) != 0) {
-         v = buffer.getIntLE(offset + 23);
-         if (v < 0 || v > buffer.writerIndex() - offset - 31) {
-            return ValidationResult.error("Invalid offset for Matrix");
-         }
-
-         int pos = offset + 31 + v;
-         int matrixCount = VarInt.peek(buffer, pos);
-         if (matrixCount < 0) {
-            return ValidationResult.error("Invalid array count for Matrix");
-         }
-
-         if (matrixCount > 4096000) {
-            return ValidationResult.error("Matrix exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(matrixCount);
-         pos += matrixCount * 4;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Matrix");
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         v = buffer.getIntLE(offset + 27);
-         if (v < 0 || v > buffer.writerIndex() - offset - 31) {
-            return ValidationResult.error("Invalid offset for FrustumProjection");
-         }
-
-         int pos = offset + 31 + v;
-         int frustumProjectionCount = VarInt.peek(buffer, pos);
-         if (frustumProjectionCount < 0) {
-            return ValidationResult.error("Invalid array count for FrustumProjection");
-         }
-
-         if (frustumProjectionCount > 4096000) {
-            return ValidationResult.error("FrustumProjection exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(frustumProjectionCount);
-         pos += frustumProjectionCount * 4;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading FrustumProjection");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public DisplayDebug clone() {
-      DisplayDebug copy = new DisplayDebug();
-      copy.shape = this.shape;
-      copy.matrix = this.matrix != null ? Arrays.copyOf(this.matrix, this.matrix.length) : null;
-      copy.color = this.color;
-      copy.time = this.time;
-      copy.flags = this.flags;
-      copy.frustumProjection = this.frustumProjection != null ? Arrays.copyOf(this.frustumProjection, this.frustumProjection.length) : null;
-      copy.opacity = this.opacity;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof DisplayDebug other)
-            ? false
-            : Objects.equals(this.shape, other.shape)
-               && Arrays.equals(this.matrix, other.matrix)
-               && Objects.equals(this.color, other.color)
-               && this.time == other.time
-               && this.flags == other.flags
-               && Arrays.equals(this.frustumProjection, other.frustumProjection)
-               && this.opacity == other.opacity;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Objects.hashCode(this.shape);
-      result = 31 * result + Arrays.hashCode(this.matrix);
-      result = 31 * result + Objects.hashCode(this.color);
-      result = 31 * result + Float.hashCode(this.time);
-      result = 31 * result + Byte.hashCode(this.flags);
-      result = 31 * result + Arrays.hashCode(this.frustumProjection);
-      return 31 * result + Float.hashCode(this.opacity);
-   }
-}
+    public static final int PACKET_ID = 114;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 23;
+    public static final int VARIABLE_FIELD_COUNT = 2;
+    public static final int VARIABLE_BLOCK_START = 31;
+    public static final int MAX_SIZE = 32768041;
+
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
+
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
+
+    @Nonnull public DebugShape shape = DebugShape.Sphere;
+    @Nullable public float[] matrix;
+    @Nonnull public Vector3fc color = PacketIO.ZERO_VECTOR3;
+    public float time;
+    @Nonnull public byte flags;
+    @Nullable public float[] frustumProjection;
+    public float opacity;
+
+    public DisplayDebug() {
+    }
+
+    public DisplayDebug(@Nonnull DebugShape shape, @Nullable float[] matrix, @Nonnull Vector3fc color, float time, @Nonnull byte flags, @Nullable float[] frustumProjection, float opacity) {
+        this.shape = shape;
+        this.matrix = matrix;
+        this.color = color;
+        this.time = time;
+        this.flags = flags;
+        this.frustumProjection = frustumProjection;
+        this.opacity = opacity;
+    }
+
+    public DisplayDebug(@Nonnull DisplayDebug other) {
+        this.shape = other.shape;
+        this.matrix = other.matrix;
+        this.color = other.color;
+        this.time = other.time;
+        this.flags = other.flags;
+        this.frustumProjection = other.frustumProjection;
+        this.opacity = other.opacity;
+    }
+
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("DisplayDebug", offset, (int) mem.byteSize());
+        long needed = (long) offset + 31;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("DisplayDebug", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static DebugShape getShape(MemorySegment mem) {
+        return getShape(mem, 0);
+    }
+    
+    public static DebugShape getShape(MemorySegment mem, int offset) {
+        return DebugShape.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    @Nullable
+    public static float[] getMatrix(MemorySegment mem) {
+        return getMatrix(mem, 0);
+    }
+    
+    @Nullable
+    public static float[] getMatrix(MemorySegment mem, int offset) {
+        if (!hasMatrix(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 23, 31, "Matrix");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Matrix");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Matrix", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Matrix", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new float[len];
+        MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, data, 0, len);
+        return data;
+    }
+    
+    public static Vector3fc getColor(MemorySegment mem) {
+        return getColor(mem, 0);
+    }
+    
+    public static Vector3fc getColor(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 2), "Color");
+    }
+    
+    public static float getTime(MemorySegment mem) {
+        return getTime(mem, 0);
+    }
+    
+    public static float getTime(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 14), "Time");
+    }
+    
+    public static byte getFlags(MemorySegment mem) {
+        return getFlags(mem, 0);
+    }
+    
+    public static byte getFlags(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BYTE, offset + 18);
+    }
+    
+    @Nullable
+    public static float[] getFrustumProjection(MemorySegment mem) {
+        return getFrustumProjection(mem, 0);
+    }
+    
+    @Nullable
+    public static float[] getFrustumProjection(MemorySegment mem, int offset) {
+        if (!hasFrustumProjection(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 27, 31, "FrustumProjection");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("FrustumProjection");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("FrustumProjection", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("FrustumProjection", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new float[len];
+        MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, data, 0, len);
+        return data;
+    }
+    
+    public static float getOpacity(MemorySegment mem) {
+        return getOpacity(mem, 0);
+    }
+    
+    public static float getOpacity(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 19), "Opacity");
+    }
+    
+    public static boolean hasMatrix(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasFrustumProjection(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+        int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+        if (offset < 0 || offset > buffer.byteSize() - base - varBlockStart)
+            throw ProtocolException.invalidOffset(fieldName, offset, (int) buffer.byteSize());
+        return varBlockStart + offset;
+    }
+    
+    /**
+     * Rejects an offset slot that does not name the position the field-order walk reached. A
+     * present field must sit where the previous field ended, and an absent field carries -1, so
+     * the slot a random-access getter resolves and the walk describe the same bytes.
+     */
+    private static void requireSlot(MemorySegment mem, int slotPosition, int expected, String fieldName) {
+        int slot = mem.get(PacketIO.PROTO_INT, slotPosition);
+        if (slot != expected) throw ProtocolException.nonCanonicalLayout(fieldName, slot, expected);
+    }
+    
+    public static DisplayDebug toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static DisplayDebug toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one DisplayDebug and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static DisplayDebug toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 31;
+        var varPos = 0;
+        float[] v1 = null;
+        if (hasMatrix(mem, offset)) {
+            requireSlot(mem, offset + 23, varPos, "Matrix");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Matrix");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Matrix", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Matrix", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v1 = new float[len];
+            MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, v1, 0, len);
+            varPos = off + len * 4 - varBase;
+        } else {
+            requireSlot(mem, offset + 23, -1, "Matrix");
+        }
+        
+        float[] v5 = null;
+        if (hasFrustumProjection(mem, offset)) {
+            requireSlot(mem, offset + 27, varPos, "FrustumProjection");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("FrustumProjection");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("FrustumProjection", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("FrustumProjection", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v5 = new float[len];
+            MemorySegment.copy(mem, PacketIO.PROTO_FLOAT, off, v5, 0, len);
+            varPos = off + len * 4 - varBase;
+        } else {
+            requireSlot(mem, offset + 27, -1, "FrustumProjection");
+        }
+        var result = new DisplayDebug(
+            DebugShape.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            v1,
+            PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 2), "Color"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 14), "Time"),
+            mem.get(PacketIO.PROTO_BYTE, offset + 18),
+            v5,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 19), "Opacity")
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.matrix != null) nullBits |= 0x01;
+        if (this.frustumProjection != null) nullBits |= 0x02;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.shape.getValue());
+        PacketIO.requireFinite(this.color, "Color"); PacketIO.writeVector3f(mem, offset + 2, this.color);
+        PacketIO.requireFinite(this.time, "Time"); mem.set(PacketIO.PROTO_FLOAT, offset + 14, this.time);
+        mem.set(PacketIO.PROTO_BYTE, offset + 18, this.flags);
+        PacketIO.requireFinite(this.opacity, "Opacity"); mem.set(PacketIO.PROTO_FLOAT, offset + 19, this.opacity);
+        var varOffset = offset + 31;
+        if (this.matrix != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 23, varOffset - offset - 31);
+            if (matrix.length > 4096000) throw ProtocolException.arrayTooLong("Matrix", matrix.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.matrix.length);
+            
+            MemorySegment.copy(this.matrix, 0, mem, PacketIO.PROTO_FLOAT, varOffset, this.matrix.length);
+            varOffset += this.matrix.length * 4;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 23, -1);
+        }
+        if (this.frustumProjection != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 27, varOffset - offset - 31);
+            if (frustumProjection.length > 4096000) throw ProtocolException.arrayTooLong("FrustumProjection", frustumProjection.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.frustumProjection.length);
+            
+            MemorySegment.copy(this.frustumProjection, 0, mem, PacketIO.PROTO_FLOAT, varOffset, this.frustumProjection.length);
+            varOffset += this.frustumProjection.length * 4;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 27, -1);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 31;
+        if (matrix != null) size += VarInt.size(matrix.length) + matrix.length * 4;
+    if (frustumProjection != null) size += VarInt.size(frustumProjection.length) + frustumProjection.length * 4;
+
+        return size;
+    }
+
+    public DisplayDebug clone() {
+        DisplayDebug copy = new DisplayDebug();
+        copy.shape = this.shape;
+        copy.matrix = this.matrix != null ? java.util.Arrays.copyOf(this.matrix, this.matrix.length) : null;
+        copy.color = this.color;
+        copy.time = this.time;
+        copy.flags = this.flags;
+        copy.frustumProjection = this.frustumProjection != null ? java.util.Arrays.copyOf(this.frustumProjection, this.frustumProjection.length) : null;
+        copy.opacity = this.opacity;
+        return copy;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof DisplayDebug other)) return false;
+        return java.util.Objects.equals(this.shape, other.shape) && java.util.Arrays.equals(this.matrix, other.matrix) && java.util.Objects.equals(this.color, other.color) && this.time == other.time && java.util.Objects.equals(this.flags, other.flags) && java.util.Arrays.equals(this.frustumProjection, other.frustumProjection) && this.opacity == other.opacity;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Objects.hashCode(shape);
+        result = 31 * result + java.util.Arrays.hashCode(matrix);
+        result = 31 * result + java.util.Objects.hashCode(color);
+        result = 31 * result + Float.hashCode(time);
+        result = 31 * result + java.util.Objects.hashCode(flags);
+        result = 31 * result + java.util.Arrays.hashCode(frustumProjection);
+        result = 31 * result + Float.hashCode(opacity);
+        return result;
+    }
+
+}

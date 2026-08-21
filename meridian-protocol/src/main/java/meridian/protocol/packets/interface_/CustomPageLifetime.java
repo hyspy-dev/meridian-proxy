@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum CustomPageLifetime {
-   CantClose(0),
-   CanDismiss(1),
-   CanDismissOrCloseThroughInteraction(2);
+    CantClose(0),
+    CanDismiss(1),
+    CanDismissOrCloseThroughInteraction(2);
 
-   public static final CustomPageLifetime[] VALUES = values();
-   private final int value;
+    public static final CustomPageLifetime[] VALUES = values();
 
-   CustomPageLifetime(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    CustomPageLifetime(int value) {
+        this.value = value;
+    }
 
-   public static CustomPageLifetime fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("CustomPageLifetime", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static CustomPageLifetime fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("CustomPageLifetime", value);
+    }
+}

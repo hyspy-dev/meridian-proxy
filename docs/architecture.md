@@ -387,7 +387,7 @@ meridian-proxy/                          # git root — parent (aggregator) POM
 │       service/  ServiceRegistry
 │       settings/ SettingsSpec, SettingNode
 │
-├── meridian-protocol/                   # decompiled Hytale packet model — meridian.protocol.*
+├── meridian-protocol/                   # Hytale packet model, mirrored from the shared source — meridian.protocol.*
 │   └── io/             PacketIO (framing + Zstd), VarInt
 │       packets/        AuthGrant, Connect, UpdateBlockTypes, …
 │       PacketRegistry  ID ↔ Class, compression flag, max size

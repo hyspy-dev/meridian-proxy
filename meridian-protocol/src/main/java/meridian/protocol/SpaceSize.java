@@ -1,31 +1,32 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum SpaceSize {
-   Any(0),
-   Tiny(1),
-   Small(2),
-   Medium(3),
-   Large(4),
-   Unbounded(5);
+    Any(0),
+    Tiny(1),
+    Small(2),
+    Medium(3),
+    Large(4),
+    Unbounded(5);
 
-   public static final SpaceSize[] VALUES = values();
-   private final int value;
+    public static final SpaceSize[] VALUES = values();
 
-   SpaceSize(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    SpaceSize(int value) {
+        this.value = value;
+    }
 
-   public static SpaceSize fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("SpaceSize", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static SpaceSize fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("SpaceSize", value);
+    }
+}

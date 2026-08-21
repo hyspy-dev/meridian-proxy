@@ -1,302 +1,253 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.worldmap;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class UpdateWorldMapSettings implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 240;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 19;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 19;
-   public static final int MAX_SIZE = 19;
-   public boolean enabled = true;
-   public boolean allowTeleportToCoordinates;
-   public boolean allowTeleportToMarkers;
-   public boolean allowShowOnMapToggle;
-   public boolean allowCompassTrackingToggle;
-   public boolean allowCreatingMapMarkers;
-   public boolean allowRemovingOtherPlayersMarkers;
-   public float defaultScale = 32.0F;
-   public float minScale = 2.0F;
-   public float maxScale = 256.0F;
+    public static final int PACKET_ID = 240;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 13;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 13;
+    public static final int MAX_SIZE = 13;
 
-   @Override
-   public int getId() {
-      return 240;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateWorldMapSettings() {
-   }
+    public boolean enabled = true;
+    public boolean allowTeleportToCoordinates;
+    public boolean allowTeleportToMarkers;
+    public boolean allowShowOnMapToggle;
+    public boolean allowCompassTrackingToggle;
+    public boolean allowCreatingMapMarkers;
+    public boolean allowRemovingOtherPlayersMarkers;
+    public float defaultScale = 32;
+    public float minScale = 2;
+    public float maxScale = 256;
 
-   public UpdateWorldMapSettings(
-      boolean enabled,
-      boolean allowTeleportToCoordinates,
-      boolean allowTeleportToMarkers,
-      boolean allowShowOnMapToggle,
-      boolean allowCompassTrackingToggle,
-      boolean allowCreatingMapMarkers,
-      boolean allowRemovingOtherPlayersMarkers,
-      float defaultScale,
-      float minScale,
-      float maxScale
-   ) {
-      this.enabled = enabled;
-      this.allowTeleportToCoordinates = allowTeleportToCoordinates;
-      this.allowTeleportToMarkers = allowTeleportToMarkers;
-      this.allowShowOnMapToggle = allowShowOnMapToggle;
-      this.allowCompassTrackingToggle = allowCompassTrackingToggle;
-      this.allowCreatingMapMarkers = allowCreatingMapMarkers;
-      this.allowRemovingOtherPlayersMarkers = allowRemovingOtherPlayersMarkers;
-      this.defaultScale = defaultScale;
-      this.minScale = minScale;
-      this.maxScale = maxScale;
-   }
+    public UpdateWorldMapSettings() {
+    }
 
-   public UpdateWorldMapSettings(@Nonnull UpdateWorldMapSettings other) {
-      this.enabled = other.enabled;
-      this.allowTeleportToCoordinates = other.allowTeleportToCoordinates;
-      this.allowTeleportToMarkers = other.allowTeleportToMarkers;
-      this.allowShowOnMapToggle = other.allowShowOnMapToggle;
-      this.allowCompassTrackingToggle = other.allowCompassTrackingToggle;
-      this.allowCreatingMapMarkers = other.allowCreatingMapMarkers;
-      this.allowRemovingOtherPlayersMarkers = other.allowRemovingOtherPlayersMarkers;
-      this.defaultScale = other.defaultScale;
-      this.minScale = other.minScale;
-      this.maxScale = other.maxScale;
-   }
+    public UpdateWorldMapSettings(boolean enabled, boolean allowTeleportToCoordinates, boolean allowTeleportToMarkers, boolean allowShowOnMapToggle, boolean allowCompassTrackingToggle, boolean allowCreatingMapMarkers, boolean allowRemovingOtherPlayersMarkers, float defaultScale, float minScale, float maxScale) {
+        this.enabled = enabled;
+        this.allowTeleportToCoordinates = allowTeleportToCoordinates;
+        this.allowTeleportToMarkers = allowTeleportToMarkers;
+        this.allowShowOnMapToggle = allowShowOnMapToggle;
+        this.allowCompassTrackingToggle = allowCompassTrackingToggle;
+        this.allowCreatingMapMarkers = allowCreatingMapMarkers;
+        this.allowRemovingOtherPlayersMarkers = allowRemovingOtherPlayersMarkers;
+        this.defaultScale = defaultScale;
+        this.minScale = minScale;
+        this.maxScale = maxScale;
+    }
 
-   @Nonnull
-   public static UpdateWorldMapSettings deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 19) {
-         throw ProtocolException.bufferTooSmall("UpdateWorldMapSettings", 19, buf.readableBytes() - offset);
-      }
+    public UpdateWorldMapSettings(@Nonnull UpdateWorldMapSettings other) {
+        this.enabled = other.enabled;
+        this.allowTeleportToCoordinates = other.allowTeleportToCoordinates;
+        this.allowTeleportToMarkers = other.allowTeleportToMarkers;
+        this.allowShowOnMapToggle = other.allowShowOnMapToggle;
+        this.allowCompassTrackingToggle = other.allowCompassTrackingToggle;
+        this.allowCreatingMapMarkers = other.allowCreatingMapMarkers;
+        this.allowRemovingOtherPlayersMarkers = other.allowRemovingOtherPlayersMarkers;
+        this.defaultScale = other.defaultScale;
+        this.minScale = other.minScale;
+        this.maxScale = other.maxScale;
+    }
 
-      UpdateWorldMapSettings obj = new UpdateWorldMapSettings();
-      obj.enabled = buf.getByte(offset + 0) != 0;
-      obj.allowTeleportToCoordinates = buf.getByte(offset + 1) != 0;
-      obj.allowTeleportToMarkers = buf.getByte(offset + 2) != 0;
-      obj.allowShowOnMapToggle = buf.getByte(offset + 3) != 0;
-      obj.allowCompassTrackingToggle = buf.getByte(offset + 4) != 0;
-      obj.allowCreatingMapMarkers = buf.getByte(offset + 5) != 0;
-      obj.allowRemovingOtherPlayersMarkers = buf.getByte(offset + 6) != 0;
-      obj.defaultScale = buf.getFloatLE(offset + 7);
-      obj.minScale = buf.getFloatLE(offset + 11);
-      obj.maxScale = buf.getFloatLE(offset + 15);
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateWorldMapSettings", offset, (int) mem.byteSize());
+        long needed = (long) offset + 13;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateWorldMapSettings", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static boolean getEnabled(MemorySegment mem) {
+        return getEnabled(mem, 0);
+    }
+    
+    public static boolean getEnabled(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x01) != 0;
+    }
+    
+    public static boolean getAllowTeleportToCoordinates(MemorySegment mem) {
+        return getAllowTeleportToCoordinates(mem, 0);
+    }
+    
+    public static boolean getAllowTeleportToCoordinates(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x02) != 0;
+    }
+    
+    public static boolean getAllowTeleportToMarkers(MemorySegment mem) {
+        return getAllowTeleportToMarkers(mem, 0);
+    }
+    
+    public static boolean getAllowTeleportToMarkers(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x04) != 0;
+    }
+    
+    public static boolean getAllowShowOnMapToggle(MemorySegment mem) {
+        return getAllowShowOnMapToggle(mem, 0);
+    }
+    
+    public static boolean getAllowShowOnMapToggle(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x08) != 0;
+    }
+    
+    public static boolean getAllowCompassTrackingToggle(MemorySegment mem) {
+        return getAllowCompassTrackingToggle(mem, 0);
+    }
+    
+    public static boolean getAllowCompassTrackingToggle(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x10) != 0;
+    }
+    
+    public static boolean getAllowCreatingMapMarkers(MemorySegment mem) {
+        return getAllowCreatingMapMarkers(mem, 0);
+    }
+    
+    public static boolean getAllowCreatingMapMarkers(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x20) != 0;
+    }
+    
+    public static boolean getAllowRemovingOtherPlayersMarkers(MemorySegment mem) {
+        return getAllowRemovingOtherPlayersMarkers(mem, 0);
+    }
+    
+    public static boolean getAllowRemovingOtherPlayersMarkers(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x40) != 0;
+    }
+    
+    public static float getDefaultScale(MemorySegment mem) {
+        return getDefaultScale(mem, 0);
+    }
+    
+    public static float getDefaultScale(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 1), "DefaultScale");
+    }
+    
+    public static float getMinScale(MemorySegment mem) {
+        return getMinScale(mem, 0);
+    }
+    
+    public static float getMinScale(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 5), "MinScale");
+    }
+    
+    public static float getMaxScale(MemorySegment mem) {
+        return getMaxScale(mem, 0);
+    }
+    
+    public static float getMaxScale(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 9), "MaxScale");
+    }
+    
+    
+    
+    
+    
+    public static UpdateWorldMapSettings toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateWorldMapSettings toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateWorldMapSettings and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateWorldMapSettings toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new UpdateWorldMapSettings(
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x01) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x02) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x04) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x08) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x10) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x20) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 0) & 0x40) != 0,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 1), "DefaultScale"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 5), "MinScale"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 9), "MaxScale")
+        );
+        if (cursor != null) cursor.position = offset + 13;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        byte boolBits0_0 = 0;
+        if (this.enabled) boolBits0_0 |= 0x01;
+        if (this.allowTeleportToCoordinates) boolBits0_0 |= 0x02;
+        if (this.allowTeleportToMarkers) boolBits0_0 |= 0x04;
+        if (this.allowShowOnMapToggle) boolBits0_0 |= 0x08;
+        if (this.allowCompassTrackingToggle) boolBits0_0 |= 0x10;
+        if (this.allowCreatingMapMarkers) boolBits0_0 |= 0x20;
+        if (this.allowRemovingOtherPlayersMarkers) boolBits0_0 |= 0x40;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0 + 0, boolBits0_0);
+        PacketIO.requireFinite(this.defaultScale, "DefaultScale"); mem.set(PacketIO.PROTO_FLOAT, offset + 1, this.defaultScale);
+        PacketIO.requireFinite(this.minScale, "MinScale"); mem.set(PacketIO.PROTO_FLOAT, offset + 5, this.minScale);
+        PacketIO.requireFinite(this.maxScale, "MaxScale"); mem.set(PacketIO.PROTO_FLOAT, offset + 9, this.maxScale);
+        
+        
+    
+       return 13;
+    }
+    public int computeSize() {
+        return 13;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 19;
-   }
+    public UpdateWorldMapSettings clone() {
+        UpdateWorldMapSettings copy = new UpdateWorldMapSettings();
+        copy.enabled = this.enabled;
+        copy.allowTeleportToCoordinates = this.allowTeleportToCoordinates;
+        copy.allowTeleportToMarkers = this.allowTeleportToMarkers;
+        copy.allowShowOnMapToggle = this.allowShowOnMapToggle;
+        copy.allowCompassTrackingToggle = this.allowCompassTrackingToggle;
+        copy.allowCreatingMapMarkers = this.allowCreatingMapMarkers;
+        copy.allowRemovingOtherPlayersMarkers = this.allowRemovingOtherPlayersMarkers;
+        copy.defaultScale = this.defaultScale;
+        copy.minScale = this.minScale;
+        copy.maxScale = this.maxScale;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 19L;
-   }
 
-   public static boolean getEnabled(MemorySegment mem) {
-      return getEnabled(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateWorldMapSettings other)) return false;
+        return this.enabled == other.enabled && this.allowTeleportToCoordinates == other.allowTeleportToCoordinates && this.allowTeleportToMarkers == other.allowTeleportToMarkers && this.allowShowOnMapToggle == other.allowShowOnMapToggle && this.allowCompassTrackingToggle == other.allowCompassTrackingToggle && this.allowCreatingMapMarkers == other.allowCreatingMapMarkers && this.allowRemovingOtherPlayersMarkers == other.allowRemovingOtherPlayersMarkers && this.defaultScale == other.defaultScale && this.minScale == other.minScale && this.maxScale == other.maxScale;
+    }
 
-   public static boolean getEnabled(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(enabled, allowTeleportToCoordinates, allowTeleportToMarkers, allowShowOnMapToggle, allowCompassTrackingToggle, allowCreatingMapMarkers, allowRemovingOtherPlayersMarkers, defaultScale, minScale, maxScale);
+    }
 
-   public static boolean getAllowTeleportToCoordinates(MemorySegment mem) {
-      return getAllowTeleportToCoordinates(mem, 0);
-   }
-
-   public static boolean getAllowTeleportToCoordinates(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 1);
-   }
-
-   public static boolean getAllowTeleportToMarkers(MemorySegment mem) {
-      return getAllowTeleportToMarkers(mem, 0);
-   }
-
-   public static boolean getAllowTeleportToMarkers(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 2);
-   }
-
-   public static boolean getAllowShowOnMapToggle(MemorySegment mem) {
-      return getAllowShowOnMapToggle(mem, 0);
-   }
-
-   public static boolean getAllowShowOnMapToggle(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 3);
-   }
-
-   public static boolean getAllowCompassTrackingToggle(MemorySegment mem) {
-      return getAllowCompassTrackingToggle(mem, 0);
-   }
-
-   public static boolean getAllowCompassTrackingToggle(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 4);
-   }
-
-   public static boolean getAllowCreatingMapMarkers(MemorySegment mem) {
-      return getAllowCreatingMapMarkers(mem, 0);
-   }
-
-   public static boolean getAllowCreatingMapMarkers(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 5);
-   }
-
-   public static boolean getAllowRemovingOtherPlayersMarkers(MemorySegment mem) {
-      return getAllowRemovingOtherPlayersMarkers(mem, 0);
-   }
-
-   public static boolean getAllowRemovingOtherPlayersMarkers(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 6);
-   }
-
-   public static float getDefaultScale(MemorySegment mem) {
-      return getDefaultScale(mem, 0);
-   }
-
-   public static float getDefaultScale(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 7);
-   }
-
-   public static float getMinScale(MemorySegment mem) {
-      return getMinScale(mem, 0);
-   }
-
-   public static float getMinScale(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 11);
-   }
-
-   public static float getMaxScale(MemorySegment mem) {
-      return getMaxScale(mem, 0);
-   }
-
-   public static float getMaxScale(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 15);
-   }
-
-   public static UpdateWorldMapSettings toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateWorldMapSettings toObject(MemorySegment mem, int offset) {
-      if (offset + 19 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateWorldMapSettings", offset + 19, (int)mem.byteSize());
-      } else {
-         return new UpdateWorldMapSettings(
-            mem.get(PacketIO.PROTO_BOOL, offset + 0),
-            mem.get(PacketIO.PROTO_BOOL, offset + 1),
-            mem.get(PacketIO.PROTO_BOOL, offset + 2),
-            mem.get(PacketIO.PROTO_BOOL, offset + 3),
-            mem.get(PacketIO.PROTO_BOOL, offset + 4),
-            mem.get(PacketIO.PROTO_BOOL, offset + 5),
-            mem.get(PacketIO.PROTO_BOOL, offset + 6),
-            mem.get(PacketIO.PROTO_FLOAT, offset + 7),
-            mem.get(PacketIO.PROTO_FLOAT, offset + 11),
-            mem.get(PacketIO.PROTO_FLOAT, offset + 15)
-         );
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeByte(this.enabled ? 1 : 0);
-      buf.writeByte(this.allowTeleportToCoordinates ? 1 : 0);
-      buf.writeByte(this.allowTeleportToMarkers ? 1 : 0);
-      buf.writeByte(this.allowShowOnMapToggle ? 1 : 0);
-      buf.writeByte(this.allowCompassTrackingToggle ? 1 : 0);
-      buf.writeByte(this.allowCreatingMapMarkers ? 1 : 0);
-      buf.writeByte(this.allowRemovingOtherPlayersMarkers ? 1 : 0);
-      buf.writeFloatLE(this.defaultScale);
-      buf.writeFloatLE(this.minScale);
-      buf.writeFloatLE(this.maxScale);
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_BOOL, offset + 0, this.enabled);
-      mem.set(PacketIO.PROTO_BOOL, offset + 1, this.allowTeleportToCoordinates);
-      mem.set(PacketIO.PROTO_BOOL, offset + 2, this.allowTeleportToMarkers);
-      mem.set(PacketIO.PROTO_BOOL, offset + 3, this.allowShowOnMapToggle);
-      mem.set(PacketIO.PROTO_BOOL, offset + 4, this.allowCompassTrackingToggle);
-      mem.set(PacketIO.PROTO_BOOL, offset + 5, this.allowCreatingMapMarkers);
-      mem.set(PacketIO.PROTO_BOOL, offset + 6, this.allowRemovingOtherPlayersMarkers);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 7, this.defaultScale);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 11, this.minScale);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 15, this.maxScale);
-      return 19;
-   }
-
-   @Override
-   public int computeSize() {
-      return 19;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      return buffer.readableBytes() - offset < 19 ? ValidationResult.error("Buffer too small: expected at least 19 bytes") : ValidationResult.OK;
-   }
-
-   public UpdateWorldMapSettings clone() {
-      UpdateWorldMapSettings copy = new UpdateWorldMapSettings();
-      copy.enabled = this.enabled;
-      copy.allowTeleportToCoordinates = this.allowTeleportToCoordinates;
-      copy.allowTeleportToMarkers = this.allowTeleportToMarkers;
-      copy.allowShowOnMapToggle = this.allowShowOnMapToggle;
-      copy.allowCompassTrackingToggle = this.allowCompassTrackingToggle;
-      copy.allowCreatingMapMarkers = this.allowCreatingMapMarkers;
-      copy.allowRemovingOtherPlayersMarkers = this.allowRemovingOtherPlayersMarkers;
-      copy.defaultScale = this.defaultScale;
-      copy.minScale = this.minScale;
-      copy.maxScale = this.maxScale;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateWorldMapSettings other)
-            ? false
-            : this.enabled == other.enabled
-               && this.allowTeleportToCoordinates == other.allowTeleportToCoordinates
-               && this.allowTeleportToMarkers == other.allowTeleportToMarkers
-               && this.allowShowOnMapToggle == other.allowShowOnMapToggle
-               && this.allowCompassTrackingToggle == other.allowCompassTrackingToggle
-               && this.allowCreatingMapMarkers == other.allowCreatingMapMarkers
-               && this.allowRemovingOtherPlayersMarkers == other.allowRemovingOtherPlayersMarkers
-               && this.defaultScale == other.defaultScale
-               && this.minScale == other.minScale
-               && this.maxScale == other.maxScale;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(
-         this.enabled,
-         this.allowTeleportToCoordinates,
-         this.allowTeleportToMarkers,
-         this.allowShowOnMapToggle,
-         this.allowCompassTrackingToggle,
-         this.allowCreatingMapMarkers,
-         this.allowRemovingOtherPlayersMarkers,
-         this.defaultScale,
-         this.minScale,
-         this.maxScale
-      );
-   }
-}
+}

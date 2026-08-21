@@ -1,301 +1,188 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class UpdateTriggerVolumeDisplay implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 470;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public TriggerVolumeDisplayEntry[] volumes;
+    public static final int PACKET_ID = 470;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 470;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateTriggerVolumeDisplay() {
-   }
+    @Nullable public TriggerVolumeDisplayEntry[] volumes;
 
-   public UpdateTriggerVolumeDisplay(@Nullable TriggerVolumeDisplayEntry[] volumes) {
-      this.volumes = volumes;
-   }
+    public UpdateTriggerVolumeDisplay() {
+    }
 
-   public UpdateTriggerVolumeDisplay(@Nonnull UpdateTriggerVolumeDisplay other) {
-      this.volumes = other.volumes;
-   }
+    public UpdateTriggerVolumeDisplay(@Nullable TriggerVolumeDisplayEntry[] volumes) {
+        this.volumes = volumes;
+    }
 
-   @Nonnull
-   public static UpdateTriggerVolumeDisplay deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("UpdateTriggerVolumeDisplay", 1, buf.readableBytes() - offset);
-      }
+    public UpdateTriggerVolumeDisplay(@Nonnull UpdateTriggerVolumeDisplay other) {
+        this.volumes = other.volumes;
+    }
 
-      UpdateTriggerVolumeDisplay obj = new UpdateTriggerVolumeDisplay();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int volumesCount = VarInt.peek(buf, pos);
-         if (volumesCount < 0) {
-            throw ProtocolException.invalidVarInt("Volumes");
-         }
-
-         int volumesVarLen = VarInt.size(volumesCount);
-         if (volumesCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Volumes", volumesCount, 4096000);
-         }
-
-         if (pos + volumesVarLen + volumesCount * 59L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Volumes", pos + volumesVarLen + volumesCount * 59, buf.readableBytes());
-         }
-
-         pos += volumesVarLen;
-         obj.volumes = new TriggerVolumeDisplayEntry[volumesCount];
-
-         for (int i = 0; i < volumesCount; i++) {
-            obj.volumes[i] = TriggerVolumeDisplayEntry.deserialize(buf, pos);
-            pos += TriggerVolumeDisplayEntry.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen);
-
-         for (int i = 0; i < arrLen; i++) {
-            pos += TriggerVolumeDisplayEntry.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static TriggerVolumeDisplayEntry[] getVolumes(MemorySegment mem) {
-      return getVolumes(mem, 0);
-   }
-
-   @Nullable
-   public static TriggerVolumeDisplayEntry[] getVolumes(MemorySegment mem, int offset) {
-      if (!hasVolumes(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Volumes", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Volumes", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Volumes", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      TriggerVolumeDisplayEntry[] data = new TriggerVolumeDisplayEntry[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = TriggerVolumeDisplayEntry.toObject(mem, off);
-         off += data[i].computeSize();
-      }
-
-      return data;
-   }
-
-   public static boolean hasVolumes(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateTriggerVolumeDisplay toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateTriggerVolumeDisplay toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateTriggerVolumeDisplay", offset + 1, (int)mem.byteSize());
-      }
-
-      TriggerVolumeDisplayEntry[] volumes = null;
-      if (hasVolumes(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Volumes", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Volumes", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Volumes", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         volumes = new TriggerVolumeDisplayEntry[len];
-
-         for (int i = 0; i < len; i++) {
-            volumes[i] = TriggerVolumeDisplayEntry.toObject(mem, off);
-            off += volumes[i].computeSize();
-         }
-      }
-
-      return new UpdateTriggerVolumeDisplay(volumes);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.volumes != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.volumes != null) {
-         if (this.volumes.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Volumes", this.volumes.length, 4096000);
-         }
-
-         VarInt.write(buf, this.volumes.length);
-
-         for (TriggerVolumeDisplayEntry item : this.volumes) {
-            item.serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.volumes != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.volumes != null) {
-         if (this.volumes.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Volumes", this.volumes.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.volumes.length);
-         int volumesValueOffset = 0;
-
-         for (int i = 0; i < this.volumes.length; i++) {
-            volumesValueOffset += this.volumes[i].serialize(mem, varOffset + volumesValueOffset);
-         }
-
-         varOffset += volumesValueOffset;
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.volumes != null) {
-         int volumesSize = 0;
-
-         for (TriggerVolumeDisplayEntry elem : this.volumes) {
-            volumesSize += elem.computeSize();
-         }
-
-         size += VarInt.size(this.volumes.length) + volumesSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int volumesCount = VarInt.peek(buffer, pos);
-         if (volumesCount < 0) {
-            return ValidationResult.error("Invalid array count for Volumes");
-         }
-
-         if (volumesCount > 4096000) {
-            return ValidationResult.error("Volumes exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(volumesCount);
-
-         for (int i = 0; i < volumesCount; i++) {
-            ValidationResult structResult = TriggerVolumeDisplayEntry.validateStructure(buffer, pos);
-            if (!structResult.isValid()) {
-               return ValidationResult.error("Invalid TriggerVolumeDisplayEntry in Volumes[" + i + "]: " + structResult.error());
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateTriggerVolumeDisplay", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateTriggerVolumeDisplay", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static TriggerVolumeDisplayEntry[] getVolumes(MemorySegment mem) {
+        return getVolumes(mem, 0);
+    }
+    
+    @Nullable
+    public static TriggerVolumeDisplayEntry[] getVolumes(MemorySegment mem, int offset) {
+        if (!hasVolumes(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Volumes");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Volumes", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 86 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Volumes", (int) java.lang.Math.min(off + lenOffset + (long) len * 86, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new TriggerVolumeDisplayEntry[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = TriggerVolumeDisplayEntry.toObject(mem, off, walkCursor);
+            off = walkCursor.position;
+        }
+        return data;
+    }
+    
+    public static boolean hasVolumes(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateTriggerVolumeDisplay toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateTriggerVolumeDisplay toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateTriggerVolumeDisplay and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateTriggerVolumeDisplay toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        TriggerVolumeDisplayEntry[] v0 = null;
+        if (hasVolumes(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Volumes");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Volumes", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 86 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Volumes", (int) java.lang.Math.min(off + lenOffset + (long) len * 86, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new TriggerVolumeDisplayEntry[len];
+            for (var i = 0; i < len; i++) {
+                v0[i] = TriggerVolumeDisplayEntry.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
             }
+            varPos = off - varBase;
+        }
+        var result = new UpdateTriggerVolumeDisplay(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.volumes != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.volumes != null) {
+            
+            if (volumes.length > 4096000) throw ProtocolException.arrayTooLong("Volumes", volumes.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.volumes.length);
+            
+            var volumesValueOffset = 0;
+            for (var i = 0; i < this.volumes.length; i++) {
+                volumesValueOffset += this.volumes[i].serialize(mem, varOffset + volumesValueOffset);
+            }
+            varOffset += volumesValueOffset;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (volumes != null) {
+        int volumesSize = 0;
+for (var elem : volumes) volumesSize += elem.computeSize();
+size += VarInt.size(volumes.length) + volumesSize;
+    }
 
-            pos += TriggerVolumeDisplayEntry.computeBytesConsumed(buffer, pos);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateTriggerVolumeDisplay clone() {
+        UpdateTriggerVolumeDisplay copy = new UpdateTriggerVolumeDisplay();
+        copy.volumes = this.volumes != null ? java.util.Arrays.stream(this.volumes).map(e -> e.clone()).toArray(TriggerVolumeDisplayEntry[]::new) : null;
+        return copy;
+    }
 
-   public UpdateTriggerVolumeDisplay clone() {
-      UpdateTriggerVolumeDisplay copy = new UpdateTriggerVolumeDisplay();
-      copy.volumes = this.volumes != null ? Arrays.stream(this.volumes).map(e -> e.clone()).toArray(TriggerVolumeDisplayEntry[]::new) : null;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof UpdateTriggerVolumeDisplay other ? Arrays.equals(this.volumes, other.volumes) : false;
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateTriggerVolumeDisplay other)) return false;
+        return java.util.Arrays.equals(this.volumes, other.volumes);
+    }
 
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.volumes);
-   }
-}
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(volumes);
+        return result;
+    }
+
+}

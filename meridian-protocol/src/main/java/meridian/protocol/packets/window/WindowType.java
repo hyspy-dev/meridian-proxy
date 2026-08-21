@@ -1,32 +1,33 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.window;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum WindowType {
-   Container(0),
-   PocketCrafting(1),
-   BasicCrafting(2),
-   DiagramCrafting(3),
-   StructuralCrafting(4),
-   Processing(5),
-   Memories(6);
+    Container(0),
+    PocketCrafting(1),
+    BasicCrafting(2),
+    DiagramCrafting(3),
+    StructuralCrafting(4),
+    Processing(5),
+    Memories(6);
 
-   public static final WindowType[] VALUES = values();
-   private final int value;
+    public static final WindowType[] VALUES = values();
 
-   WindowType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    WindowType(int value) {
+        this.value = value;
+    }
 
-   public static WindowType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("WindowType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static WindowType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("WindowType", value);
+    }
+}

@@ -1,29 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum MouseInputTargetType {
-   Any(0),
-   Block(1),
-   Entity(2),
-   None(3);
+    Any(0),
+    Block(1),
+    Entity(2),
+    None(3);
 
-   public static final MouseInputTargetType[] VALUES = values();
-   private final int value;
+    public static final MouseInputTargetType[] VALUES = values();
 
-   MouseInputTargetType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    MouseInputTargetType(int value) {
+        this.value = value;
+    }
 
-   public static MouseInputTargetType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("MouseInputTargetType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static MouseInputTargetType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("MouseInputTargetType", value);
+    }
+}

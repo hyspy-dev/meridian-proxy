@@ -1,204 +1,167 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.camera;
 
-import meridian.protocol.ClientCameraView;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
-import meridian.protocol.ServerCameraSettings;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.ClientCameraView;
+import meridian.protocol.ServerCameraSettings;
 
 public class SetServerCamera implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 280;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 157;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 157;
-   public static final int MAX_SIZE = 157;
-   @Nonnull
-   public ClientCameraView clientCameraView = ClientCameraView.FirstPerson;
-   public boolean isLocked;
-   @Nullable
-   public ServerCameraSettings cameraSettings;
+    public static final int PACKET_ID = 280;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 182;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 182;
+    public static final int MAX_SIZE = 182;
 
-   @Override
-   public int getId() {
-      return 280;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public SetServerCamera() {
-   }
+    @Nonnull public ClientCameraView clientCameraView = ClientCameraView.FirstPerson;
+    public boolean isLocked;
+    @Nullable public ServerCameraSettings cameraSettings;
 
-   public SetServerCamera(@Nonnull ClientCameraView clientCameraView, boolean isLocked, @Nullable ServerCameraSettings cameraSettings) {
-      this.clientCameraView = clientCameraView;
-      this.isLocked = isLocked;
-      this.cameraSettings = cameraSettings;
-   }
+    public SetServerCamera() {
+    }
 
-   public SetServerCamera(@Nonnull SetServerCamera other) {
-      this.clientCameraView = other.clientCameraView;
-      this.isLocked = other.isLocked;
-      this.cameraSettings = other.cameraSettings;
-   }
+    public SetServerCamera(@Nonnull ClientCameraView clientCameraView, boolean isLocked, @Nullable ServerCameraSettings cameraSettings) {
+        this.clientCameraView = clientCameraView;
+        this.isLocked = isLocked;
+        this.cameraSettings = cameraSettings;
+    }
 
-   @Nonnull
-   public static SetServerCamera deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 157) {
-         throw ProtocolException.bufferTooSmall("SetServerCamera", 157, buf.readableBytes() - offset);
-      }
+    public SetServerCamera(@Nonnull SetServerCamera other) {
+        this.clientCameraView = other.clientCameraView;
+        this.isLocked = other.isLocked;
+        this.cameraSettings = other.cameraSettings;
+    }
 
-      SetServerCamera obj = new SetServerCamera();
-      byte nullBits = buf.getByte(offset);
-      obj.clientCameraView = ClientCameraView.fromValue(buf.getByte(offset + 1));
-      obj.isLocked = buf.getByte(offset + 2) != 0;
-      if ((nullBits & 1) != 0) {
-         obj.cameraSettings = ServerCameraSettings.deserialize(buf, offset + 3);
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 157;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 157L;
-   }
-
-   public static ClientCameraView getClientCameraView(MemorySegment mem) {
-      return getClientCameraView(mem, 0);
-   }
-
-   public static ClientCameraView getClientCameraView(MemorySegment mem, int offset) {
-      return ClientCameraView.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static boolean getIsLocked(MemorySegment mem) {
-      return getIsLocked(mem, 0);
-   }
-
-   public static boolean getIsLocked(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 2);
-   }
-
-   @Nullable
-   public static ServerCameraSettings getCameraSettings(MemorySegment mem) {
-      return getCameraSettings(mem, 0);
-   }
-
-   @Nullable
-   public static ServerCameraSettings getCameraSettings(MemorySegment mem, int offset) {
-      return hasCameraSettings(mem, offset) ? ServerCameraSettings.toObject(mem, offset + 3) : null;
-   }
-
-   public static boolean hasCameraSettings(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static SetServerCamera toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static SetServerCamera toObject(MemorySegment mem, int offset) {
-      if (offset + 157 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("SetServerCamera", offset + 157, (int)mem.byteSize());
-      } else {
-         return new SetServerCamera(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("SetServerCamera", offset, (int) mem.byteSize());
+        long needed = (long) offset + 182;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("SetServerCamera", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static ClientCameraView getClientCameraView(MemorySegment mem) {
+        return getClientCameraView(mem, 0);
+    }
+    
+    public static ClientCameraView getClientCameraView(MemorySegment mem, int offset) {
+        return ClientCameraView.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static boolean getIsLocked(MemorySegment mem) {
+        return getIsLocked(mem, 0);
+    }
+    
+    public static boolean getIsLocked(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BOOL, offset + 2);
+    }
+    
+    @Nullable
+    public static ServerCameraSettings getCameraSettings(MemorySegment mem) {
+        return getCameraSettings(mem, 0);
+    }
+    
+    @Nullable
+    public static ServerCameraSettings getCameraSettings(MemorySegment mem, int offset) {
+        return hasCameraSettings(mem, offset) ? ServerCameraSettings.toObject(mem, offset + 3): null;
+    }
+    
+    public static boolean hasCameraSettings(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static SetServerCamera toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static SetServerCamera toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one SetServerCamera and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static SetServerCamera toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new SetServerCamera(
             ClientCameraView.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
             mem.get(PacketIO.PROTO_BOOL, offset + 2),
             hasCameraSettings(mem, offset) ? ServerCameraSettings.toObject(mem, offset + 3) : null
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = offset + 182;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.cameraSettings != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.clientCameraView.getValue());
+        mem.set(PacketIO.PROTO_BOOL, offset + 2, this.isLocked);
+        if (this.cameraSettings != null) {
+            this.cameraSettings.serialize(mem, offset + 3);
+        } else {
+            mem.asSlice(offset + 3, 179).fill((byte) 0); 
+        }
+        
+        
+    
+       return 182;
+    }
+    public int computeSize() {
+        return 182;
+    }
 
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.cameraSettings != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+    public SetServerCamera clone() {
+        SetServerCamera copy = new SetServerCamera();
+        copy.clientCameraView = this.clientCameraView;
+        copy.isLocked = this.isLocked;
+        copy.cameraSettings = this.cameraSettings != null ? this.cameraSettings.clone() : null;
+        return copy;
+    }
 
-      buf.writeByte(nullBits);
-      buf.writeByte(this.clientCameraView.getValue());
-      buf.writeByte(this.isLocked ? 1 : 0);
-      if (this.cameraSettings != null) {
-         this.cameraSettings.serialize(buf);
-      } else {
-         buf.writeZero(154);
-      }
-   }
 
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.cameraSettings != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof SetServerCamera other)) return false;
+        return java.util.Objects.equals(this.clientCameraView, other.clientCameraView) && this.isLocked == other.isLocked && java.util.Objects.equals(this.cameraSettings, other.cameraSettings);
+    }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.clientCameraView.getValue());
-      mem.set(PacketIO.PROTO_BOOL, offset + 2, this.isLocked);
-      if (this.cameraSettings != null) {
-         this.cameraSettings.serialize(mem, offset + 3);
-      } else {
-         mem.asSlice(offset + 3, 154L).fill((byte)0);
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(clientCameraView, isLocked, cameraSettings);
+    }
 
-      return 157;
-   }
-
-   @Override
-   public int computeSize() {
-      return 157;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 157) {
-         return ValidationResult.error("Buffer too small: expected at least 157 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      return v >= 3 ? ValidationResult.error("Invalid ClientCameraView value for ClientCameraView") : ValidationResult.OK;
-   }
-
-   public SetServerCamera clone() {
-      SetServerCamera copy = new SetServerCamera();
-      copy.clientCameraView = this.clientCameraView;
-      copy.isLocked = this.isLocked;
-      copy.cameraSettings = this.cameraSettings != null ? this.cameraSettings.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof SetServerCamera other)
-            ? false
-            : Objects.equals(this.clientCameraView, other.clientCameraView)
-               && this.isLocked == other.isLocked
-               && Objects.equals(this.cameraSettings, other.cameraSettings);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.clientCameraView, this.isLocked, this.cameraSettings);
-   }
-}
+}

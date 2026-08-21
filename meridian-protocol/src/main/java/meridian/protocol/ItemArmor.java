@@ -1,1665 +1,706 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import java.util.HashMap;
 
 public class ItemArmor {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 10;
-   public static final int VARIABLE_FIELD_COUNT = 5;
-   public static final int VARIABLE_BLOCK_START = 30;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public ItemArmorSlot armorSlot = ItemArmorSlot.Head;
-   @Nullable
-   public Cosmetic[] cosmeticsToHide;
-   @Nullable
-   public Map<Integer, Modifier[]> statModifiers;
-   public double baseDamageResistance;
-   @Nullable
-   public Map<String, ResistanceModifier[]> damageResistance;
-   @Nullable
-   public Map<String, Modifier[]> damageEnhancement;
-   @Nullable
-   public Map<String, Modifier[]> damageClassEnhancement;
-
-   public ItemArmor() {
-   }
-
-   public ItemArmor(
-      @Nonnull ItemArmorSlot armorSlot,
-      @Nullable Cosmetic[] cosmeticsToHide,
-      @Nullable Map<Integer, Modifier[]> statModifiers,
-      double baseDamageResistance,
-      @Nullable Map<String, ResistanceModifier[]> damageResistance,
-      @Nullable Map<String, Modifier[]> damageEnhancement,
-      @Nullable Map<String, Modifier[]> damageClassEnhancement
-   ) {
-      this.armorSlot = armorSlot;
-      this.cosmeticsToHide = cosmeticsToHide;
-      this.statModifiers = statModifiers;
-      this.baseDamageResistance = baseDamageResistance;
-      this.damageResistance = damageResistance;
-      this.damageEnhancement = damageEnhancement;
-      this.damageClassEnhancement = damageClassEnhancement;
-   }
-
-   public ItemArmor(@Nonnull ItemArmor other) {
-      this.armorSlot = other.armorSlot;
-      this.cosmeticsToHide = other.cosmeticsToHide;
-      this.statModifiers = other.statModifiers;
-      this.baseDamageResistance = other.baseDamageResistance;
-      this.damageResistance = other.damageResistance;
-      this.damageEnhancement = other.damageEnhancement;
-      this.damageClassEnhancement = other.damageClassEnhancement;
-   }
-
-   @Nonnull
-   public static ItemArmor deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 30) {
-         throw ProtocolException.bufferTooSmall("ItemArmor", 30, buf.readableBytes() - offset);
-      }
-
-      ItemArmor obj = new ItemArmor();
-      byte nullBits = buf.getByte(offset);
-      obj.armorSlot = ItemArmorSlot.fromValue(buf.getByte(offset + 1));
-      obj.baseDamageResistance = buf.getDoubleLE(offset + 2);
-      if ((nullBits & 1) != 0) {
-         int varPosBase0 = buf.getIntLE(offset + 10);
-         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("CosmeticsToHide", varPosBase0, buf.readableBytes());
-         }
-
-         int varPos0 = offset + 30 + varPosBase0;
-         int cosmeticsToHideCount = VarInt.peek(buf, varPos0);
-         if (cosmeticsToHideCount < 0) {
-            throw ProtocolException.invalidVarInt("CosmeticsToHide");
-         }
-
-         int varIntLen = VarInt.size(cosmeticsToHideCount);
-         if (cosmeticsToHideCount > 4096000) {
-            throw ProtocolException.arrayTooLong("CosmeticsToHide", cosmeticsToHideCount, 4096000);
-         }
-
-         if (varPos0 + varIntLen + cosmeticsToHideCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("CosmeticsToHide", varPos0 + varIntLen + cosmeticsToHideCount * 1, buf.readableBytes());
-         }
-
-         obj.cosmeticsToHide = new Cosmetic[cosmeticsToHideCount];
-         int elemPos = varPos0 + varIntLen;
-
-         for (int i = 0; i < cosmeticsToHideCount; i++) {
-            obj.cosmeticsToHide[i] = Cosmetic.fromValue(buf.getByte(elemPos));
-            elemPos++;
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int varPosBase1 = buf.getIntLE(offset + 14);
-         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("StatModifiers", varPosBase1, buf.readableBytes());
-         }
-
-         int varPos1 = offset + 30 + varPosBase1;
-         int statModifiersCount = VarInt.peek(buf, varPos1);
-         if (statModifiersCount < 0) {
-            throw ProtocolException.invalidVarInt("StatModifiers");
-         }
-
-         int varIntLen = VarInt.size(statModifiersCount);
-         if (statModifiersCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("StatModifiers", statModifiersCount, 4096000);
-         }
-
-         obj.statModifiers = new HashMap<>(statModifiersCount);
-         int dictPos = varPos1 + varIntLen;
-
-         for (int i = 0; i < statModifiersCount; i++) {
-            int key = buf.getIntLE(dictPos);
-            dictPos += 4;
-            int valLen = VarInt.peek(buf, dictPos);
-            if (valLen < 0) {
-               throw ProtocolException.invalidVarInt("val");
-            }
-
-            int valVarLen = VarInt.size(valLen);
-            if (valLen > 64) {
-               throw ProtocolException.arrayTooLong("val", valLen, 64);
-            }
-
-            if (dictPos + valVarLen + valLen * 6L > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("val", dictPos + valVarLen + valLen * 6, buf.readableBytes());
-            }
-
-            dictPos += valVarLen;
-            Modifier[] val = new Modifier[valLen];
-
-            for (int valIdx = 0; valIdx < valLen; valIdx++) {
-               val[valIdx] = Modifier.deserialize(buf, dictPos);
-               dictPos += Modifier.computeBytesConsumed(buf, dictPos);
-            }
-
-            if (obj.statModifiers.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("statModifiers", key);
-            }
-         }
-      }
-
-      if ((nullBits & 4) != 0) {
-         int varPosBase2 = buf.getIntLE(offset + 18);
-         if (varPosBase2 < 0 || varPosBase2 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("DamageResistance", varPosBase2, buf.readableBytes());
-         }
-
-         int varPos2 = offset + 30 + varPosBase2;
-         int damageResistanceCount = VarInt.peek(buf, varPos2);
-         if (damageResistanceCount < 0) {
-            throw ProtocolException.invalidVarInt("DamageResistance");
-         }
-
-         int varIntLen = VarInt.size(damageResistanceCount);
-         if (damageResistanceCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageResistance", damageResistanceCount, 4096000);
-         }
-
-         obj.damageResistance = new HashMap<>(damageResistanceCount);
-         int dictPos = varPos2 + varIntLen;
-
-         for (int i = 0; i < damageResistanceCount; i++) {
-            int keyLen = VarInt.peek(buf, dictPos);
-            if (keyLen < 0) {
-               throw ProtocolException.invalidVarInt("key");
-            }
-
-            int keyVarLen = VarInt.size(keyLen);
-            if (keyLen > 4096000) {
-               throw ProtocolException.stringTooLong("key", keyLen, 4096000);
-            }
-
-            if (dictPos + keyVarLen + keyLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("key", dictPos + keyVarLen + keyLen, buf.readableBytes());
-            }
-
-            String key = PacketIO.readVarString(buf, dictPos);
-            dictPos += keyVarLen + keyLen;
-            int valLen = VarInt.peek(buf, dictPos);
-            if (valLen < 0) {
-               throw ProtocolException.invalidVarInt("val");
-            }
-
-            int valVarLen = VarInt.size(valLen);
-            if (valLen > 64) {
-               throw ProtocolException.arrayTooLong("val", valLen, 64);
-            }
-
-            if (dictPos + valVarLen + valLen * 5L > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("val", dictPos + valVarLen + valLen * 5, buf.readableBytes());
-            }
-
-            dictPos += valVarLen;
-            ResistanceModifier[] val = new ResistanceModifier[valLen];
-
-            for (int valIdx = 0; valIdx < valLen; valIdx++) {
-               val[valIdx] = ResistanceModifier.deserialize(buf, dictPos);
-               dictPos += ResistanceModifier.computeBytesConsumed(buf, dictPos);
-            }
-
-            if (obj.damageResistance.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("damageResistance", key);
-            }
-         }
-      }
-
-      if ((nullBits & 8) != 0) {
-         int varPosBase3 = buf.getIntLE(offset + 22);
-         if (varPosBase3 < 0 || varPosBase3 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("DamageEnhancement", varPosBase3, buf.readableBytes());
-         }
-
-         int varPos3 = offset + 30 + varPosBase3;
-         int damageEnhancementCount = VarInt.peek(buf, varPos3);
-         if (damageEnhancementCount < 0) {
-            throw ProtocolException.invalidVarInt("DamageEnhancement");
-         }
-
-         int varIntLen = VarInt.size(damageEnhancementCount);
-         if (damageEnhancementCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageEnhancement", damageEnhancementCount, 4096000);
-         }
-
-         obj.damageEnhancement = new HashMap<>(damageEnhancementCount);
-         int dictPos = varPos3 + varIntLen;
-
-         for (int i = 0; i < damageEnhancementCount; i++) {
-            int keyLen = VarInt.peek(buf, dictPos);
-            if (keyLen < 0) {
-               throw ProtocolException.invalidVarInt("key");
-            }
-
-            int keyVarLen = VarInt.size(keyLen);
-            if (keyLen > 4096000) {
-               throw ProtocolException.stringTooLong("key", keyLen, 4096000);
-            }
-
-            if (dictPos + keyVarLen + keyLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("key", dictPos + keyVarLen + keyLen, buf.readableBytes());
-            }
-
-            String key = PacketIO.readVarString(buf, dictPos);
-            dictPos += keyVarLen + keyLen;
-            int valLen = VarInt.peek(buf, dictPos);
-            if (valLen < 0) {
-               throw ProtocolException.invalidVarInt("val");
-            }
-
-            int valVarLen = VarInt.size(valLen);
-            if (valLen > 64) {
-               throw ProtocolException.arrayTooLong("val", valLen, 64);
-            }
-
-            if (dictPos + valVarLen + valLen * 6L > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("val", dictPos + valVarLen + valLen * 6, buf.readableBytes());
-            }
-
-            dictPos += valVarLen;
-            Modifier[] val = new Modifier[valLen];
-
-            for (int valIdx = 0; valIdx < valLen; valIdx++) {
-               val[valIdx] = Modifier.deserialize(buf, dictPos);
-               dictPos += Modifier.computeBytesConsumed(buf, dictPos);
-            }
-
-            if (obj.damageEnhancement.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("damageEnhancement", key);
-            }
-         }
-      }
-
-      if ((nullBits & 16) != 0) {
-         int varPosBase4 = buf.getIntLE(offset + 26);
-         if (varPosBase4 < 0 || varPosBase4 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("DamageClassEnhancement", varPosBase4, buf.readableBytes());
-         }
-
-         int varPos4 = offset + 30 + varPosBase4;
-         int damageClassEnhancementCount = VarInt.peek(buf, varPos4);
-         if (damageClassEnhancementCount < 0) {
-            throw ProtocolException.invalidVarInt("DamageClassEnhancement");
-         }
-
-         int varIntLen = VarInt.size(damageClassEnhancementCount);
-         if (damageClassEnhancementCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", damageClassEnhancementCount, 4096000);
-         }
-
-         obj.damageClassEnhancement = new HashMap<>(damageClassEnhancementCount);
-         int dictPos = varPos4 + varIntLen;
-
-         for (int i = 0; i < damageClassEnhancementCount; i++) {
-            int keyLen = VarInt.peek(buf, dictPos);
-            if (keyLen < 0) {
-               throw ProtocolException.invalidVarInt("key");
-            }
-
-            int keyVarLen = VarInt.size(keyLen);
-            if (keyLen > 4096000) {
-               throw ProtocolException.stringTooLong("key", keyLen, 4096000);
-            }
-
-            if (dictPos + keyVarLen + keyLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("key", dictPos + keyVarLen + keyLen, buf.readableBytes());
-            }
-
-            String key = PacketIO.readVarString(buf, dictPos);
-            dictPos += keyVarLen + keyLen;
-            int valLen = VarInt.peek(buf, dictPos);
-            if (valLen < 0) {
-               throw ProtocolException.invalidVarInt("val");
-            }
-
-            int valVarLen = VarInt.size(valLen);
-            if (valLen > 64) {
-               throw ProtocolException.arrayTooLong("val", valLen, 64);
-            }
-
-            if (dictPos + valVarLen + valLen * 6L > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("val", dictPos + valVarLen + valLen * 6, buf.readableBytes());
-            }
-
-            dictPos += valVarLen;
-            Modifier[] val = new Modifier[valLen];
-
-            for (int valIdx = 0; valIdx < valLen; valIdx++) {
-               val[valIdx] = Modifier.deserialize(buf, dictPos);
-               dictPos += Modifier.computeBytesConsumed(buf, dictPos);
-            }
-
-            if (obj.damageClassEnhancement.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("damageClassEnhancement", key);
-            }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int maxEnd = 30;
-      if ((nullBits & 1) != 0) {
-         int fieldOffset0 = buf.getIntLE(offset + 10);
-         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("CosmeticsToHide", fieldOffset0, maxEnd);
-         }
-
-         int pos0 = offset + 30 + fieldOffset0;
-         int arrLen = VarInt.peek(buf, pos0);
-         pos0 += VarInt.size(arrLen) + arrLen * 1;
-         if (pos0 - offset > maxEnd) {
-            maxEnd = pos0 - offset;
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int fieldOffset1 = buf.getIntLE(offset + 14);
-         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("StatModifiers", fieldOffset1, maxEnd);
-         }
-
-         int pos1 = offset + 30 + fieldOffset1;
-         int dictLen = VarInt.peek(buf, pos1);
-         pos1 += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos1 += 4;
-            int al = VarInt.peek(buf, pos1);
-            pos1 += VarInt.size(al);
-
-            for (int j = 0; j < al; j++) {
-               pos1 += Modifier.computeBytesConsumed(buf, pos1);
-            }
-         }
-
-         if (pos1 - offset > maxEnd) {
-            maxEnd = pos1 - offset;
-         }
-      }
-
-      if ((nullBits & 4) != 0) {
-         int fieldOffset2 = buf.getIntLE(offset + 18);
-         if (fieldOffset2 < 0 || fieldOffset2 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("DamageResistance", fieldOffset2, maxEnd);
-         }
-
-         int pos2 = offset + 30 + fieldOffset2;
-         int dictLen = VarInt.peek(buf, pos2);
-         pos2 += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            int sl = VarInt.peek(buf, pos2);
-            pos2 += VarInt.size(sl) + sl;
-            sl = VarInt.peek(buf, pos2);
-            pos2 += VarInt.size(sl);
-
-            for (int j = 0; j < sl; j++) {
-               pos2 += ResistanceModifier.computeBytesConsumed(buf, pos2);
-            }
-         }
-
-         if (pos2 - offset > maxEnd) {
-            maxEnd = pos2 - offset;
-         }
-      }
-
-      if ((nullBits & 8) != 0) {
-         int fieldOffset3 = buf.getIntLE(offset + 22);
-         if (fieldOffset3 < 0 || fieldOffset3 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("DamageEnhancement", fieldOffset3, maxEnd);
-         }
-
-         int pos3 = offset + 30 + fieldOffset3;
-         int dictLen = VarInt.peek(buf, pos3);
-         pos3 += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            int sl = VarInt.peek(buf, pos3);
-            pos3 += VarInt.size(sl) + sl;
-            sl = VarInt.peek(buf, pos3);
-            pos3 += VarInt.size(sl);
-
-            for (int j = 0; j < sl; j++) {
-               pos3 += Modifier.computeBytesConsumed(buf, pos3);
-            }
-         }
-
-         if (pos3 - offset > maxEnd) {
-            maxEnd = pos3 - offset;
-         }
-      }
-
-      if ((nullBits & 16) != 0) {
-         int fieldOffset4 = buf.getIntLE(offset + 26);
-         if (fieldOffset4 < 0 || fieldOffset4 > buf.writerIndex() - offset - 30) {
-            throw ProtocolException.invalidOffset("DamageClassEnhancement", fieldOffset4, maxEnd);
-         }
-
-         int pos4 = offset + 30 + fieldOffset4;
-         int dictLen = VarInt.peek(buf, pos4);
-         pos4 += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            int sl = VarInt.peek(buf, pos4);
-            pos4 += VarInt.size(sl) + sl;
-            sl = VarInt.peek(buf, pos4);
-            pos4 += VarInt.size(sl);
-
-            for (int j = 0; j < sl; j++) {
-               pos4 += Modifier.computeBytesConsumed(buf, pos4);
-            }
-         }
-
-         if (pos4 - offset > maxEnd) {
-            maxEnd = pos4 - offset;
-         }
-      }
-
-      return maxEnd;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 30L;
-   }
-
-   public static ItemArmorSlot getArmorSlot(MemorySegment mem) {
-      return getArmorSlot(mem, 0);
-   }
-
-   public static ItemArmorSlot getArmorSlot(MemorySegment mem, int offset) {
-      return ItemArmorSlot.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   @Nullable
-   public static Cosmetic[] getCosmeticsToHide(MemorySegment mem) {
-      return getCosmeticsToHide(mem, 0);
-   }
-
-   @Nullable
-   public static Cosmetic[] getCosmeticsToHide(MemorySegment mem, int offset) {
-      if (!hasCosmeticsToHide(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 10, 30, "CosmeticsToHide");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("CosmeticsToHide", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("CosmeticsToHide", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 1L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("CosmeticsToHide", off + lenOffset + len * 1, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      Cosmetic[] data = new Cosmetic[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = Cosmetic.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
-      }
-
-      return data;
-   }
-
-   @Nullable
-   public static Map<Integer, Modifier[]> getStatModifiers(MemorySegment mem) {
-      return getStatModifiers(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, Modifier[]> getStatModifiers(MemorySegment mem, int offset) {
-      if (!hasStatModifiers(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 14, 30, "StatModifiers");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("StatModifiers", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("StatModifiers", len, 4096000);
-      }
-
-      Map<Integer, Modifier[]> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         long valuePacked = VarInt.getWithLength(mem, off);
-         int valueLen = (int)valuePacked;
-         int valueVarLen = (int)(valuePacked >>> 32);
-         if (valueLen < 0) {
-            throw ProtocolException.negativeLength("value", valueLen);
-         }
-
-         if (valueLen > 64) {
-            throw ProtocolException.arrayTooLong("value", valueLen, 64);
-         }
-
-         if (off + valueVarLen + valueLen * 6L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int)mem.byteSize());
-         }
-
-         off += valueVarLen;
-         Modifier[] value = new Modifier[valueLen];
-
-         for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-            value[valueIdx] = Modifier.toObject(mem, off);
-            off += value[valueIdx].computeSize();
-         }
-
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("StatModifiers", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static double getBaseDamageResistance(MemorySegment mem) {
-      return getBaseDamageResistance(mem, 0);
-   }
-
-   public static double getBaseDamageResistance(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_DOUBLE, offset + 2);
-   }
-
-   @Nullable
-   public static Map<String, ResistanceModifier[]> getDamageResistance(MemorySegment mem) {
-      return getDamageResistance(mem, 0);
-   }
-
-   @Nullable
-   public static Map<String, ResistanceModifier[]> getDamageResistance(MemorySegment mem, int offset) {
-      if (!hasDamageResistance(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 18, 30, "DamageResistance");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("DamageResistance", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("DamageResistance", len, 4096000);
-      }
-
-      Map<String, ResistanceModifier[]> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         long keyPacked = VarInt.getWithLength(mem, off);
-         int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-         String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-         off += nkey;
-         long valuePacked = VarInt.getWithLength(mem, off);
-         int valueLen = (int)valuePacked;
-         int valueVarLen = (int)(valuePacked >>> 32);
-         if (valueLen < 0) {
-            throw ProtocolException.negativeLength("value", valueLen);
-         }
-
-         if (valueLen > 64) {
-            throw ProtocolException.arrayTooLong("value", valueLen, 64);
-         }
-
-         if (off + valueVarLen + valueLen * 5L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 5, (int)mem.byteSize());
-         }
-
-         off += valueVarLen;
-         ResistanceModifier[] value = new ResistanceModifier[valueLen];
-
-         for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-            value[valueIdx] = ResistanceModifier.toObject(mem, off);
-            off += value[valueIdx].computeSize();
-         }
-
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("DamageResistance", key);
-         }
-      }
-
-      return data;
-   }
-
-   @Nullable
-   public static Map<String, Modifier[]> getDamageEnhancement(MemorySegment mem) {
-      return getDamageEnhancement(mem, 0);
-   }
-
-   @Nullable
-   public static Map<String, Modifier[]> getDamageEnhancement(MemorySegment mem, int offset) {
-      if (!hasDamageEnhancement(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 22, 30, "DamageEnhancement");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("DamageEnhancement", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("DamageEnhancement", len, 4096000);
-      }
-
-      Map<String, Modifier[]> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         long keyPacked = VarInt.getWithLength(mem, off);
-         int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-         String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-         off += nkey;
-         long valuePacked = VarInt.getWithLength(mem, off);
-         int valueLen = (int)valuePacked;
-         int valueVarLen = (int)(valuePacked >>> 32);
-         if (valueLen < 0) {
-            throw ProtocolException.negativeLength("value", valueLen);
-         }
-
-         if (valueLen > 64) {
-            throw ProtocolException.arrayTooLong("value", valueLen, 64);
-         }
-
-         if (off + valueVarLen + valueLen * 6L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int)mem.byteSize());
-         }
-
-         off += valueVarLen;
-         Modifier[] value = new Modifier[valueLen];
-
-         for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-            value[valueIdx] = Modifier.toObject(mem, off);
-            off += value[valueIdx].computeSize();
-         }
-
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("DamageEnhancement", key);
-         }
-      }
-
-      return data;
-   }
-
-   @Nullable
-   public static Map<String, Modifier[]> getDamageClassEnhancement(MemorySegment mem) {
-      return getDamageClassEnhancement(mem, 0);
-   }
-
-   @Nullable
-   public static Map<String, Modifier[]> getDamageClassEnhancement(MemorySegment mem, int offset) {
-      if (!hasDamageClassEnhancement(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 26, 30, "DamageClassEnhancement");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("DamageClassEnhancement", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", len, 4096000);
-      }
-
-      Map<String, Modifier[]> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         long keyPacked = VarInt.getWithLength(mem, off);
-         int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-         String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-         off += nkey;
-         long valuePacked = VarInt.getWithLength(mem, off);
-         int valueLen = (int)valuePacked;
-         int valueVarLen = (int)(valuePacked >>> 32);
-         if (valueLen < 0) {
-            throw ProtocolException.negativeLength("value", valueLen);
-         }
-
-         if (valueLen > 64) {
-            throw ProtocolException.arrayTooLong("value", valueLen, 64);
-         }
-
-         if (off + valueVarLen + valueLen * 6L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int)mem.byteSize());
-         }
-
-         off += valueVarLen;
-         Modifier[] value = new Modifier[valueLen];
-
-         for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-            value[valueIdx] = Modifier.toObject(mem, off);
-            off += value[valueIdx].computeSize();
-         }
-
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("DamageClassEnhancement", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasCosmeticsToHide(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasStatModifiers(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static boolean hasDamageResistance(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 4) != 0;
-   }
-
-   public static boolean hasDamageEnhancement(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 8) != 0;
-   }
-
-   public static boolean hasDamageClassEnhancement(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 16) != 0;
-   }
-
-   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
-      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
-      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
-         return varBlockStart + offset;
-      } else {
-         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
-      }
-   }
-
-   public static ItemArmor toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ItemArmor toObject(MemorySegment mem, int offset) {
-      if (offset + 30 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ItemArmor", offset + 30, (int)mem.byteSize());
-      }
-
-      Cosmetic[] cosmeticsToHide = null;
-      if (hasCosmeticsToHide(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 10, 30, "CosmeticsToHide");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("CosmeticsToHide", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("CosmeticsToHide", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 1L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("CosmeticsToHide", off + lenOffset + len * 1, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         cosmeticsToHide = new Cosmetic[len];
-
-         for (int i = 0; i < len; i++) {
-            cosmeticsToHide[i] = Cosmetic.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
-         }
-      }
-
-      Map<Integer, Modifier[]> statModifiers = null;
-      if (hasStatModifiers(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 14, 30, "StatModifiers");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("StatModifiers", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("StatModifiers", len, 4096000);
-         }
-
-         statModifiers = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            long valuePacked = VarInt.getWithLength(mem, off);
-            int valueLen = (int)valuePacked;
-            int valueVarLen = (int)(valuePacked >>> 32);
-            if (valueLen < 0) {
-               throw ProtocolException.negativeLength("value", valueLen);
-            }
-
-            if (valueLen > 64) {
-               throw ProtocolException.arrayTooLong("value", valueLen, 64);
-            }
-
-            if (off + valueVarLen + valueLen * 6L > mem.byteSize()) {
-               throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int)mem.byteSize());
-            }
-
-            off += valueVarLen;
-            Modifier[] value = new Modifier[valueLen];
-
-            for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-               value[valueIdx] = Modifier.toObject(mem, off);
-               off += value[valueIdx].computeSize();
-            }
-
-            if (statModifiers.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("StatModifiers", key);
-            }
-         }
-      }
-
-      Map<String, ResistanceModifier[]> damageResistance = null;
-      if (hasDamageResistance(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 18, 30, "DamageResistance");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("DamageResistance", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageResistance", len, 4096000);
-         }
-
-         damageResistance = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            long keyPacked = VarInt.getWithLength(mem, off);
-            int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-            String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-            off += nkey;
-            long valuePacked = VarInt.getWithLength(mem, off);
-            int valueLen = (int)valuePacked;
-            int valueVarLen = (int)(valuePacked >>> 32);
-            if (valueLen < 0) {
-               throw ProtocolException.negativeLength("value", valueLen);
-            }
-
-            if (valueLen > 64) {
-               throw ProtocolException.arrayTooLong("value", valueLen, 64);
-            }
-
-            if (off + valueVarLen + valueLen * 5L > mem.byteSize()) {
-               throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 5, (int)mem.byteSize());
-            }
-
-            off += valueVarLen;
-            ResistanceModifier[] value = new ResistanceModifier[valueLen];
-
-            for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-               value[valueIdx] = ResistanceModifier.toObject(mem, off);
-               off += value[valueIdx].computeSize();
-            }
-
-            if (damageResistance.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("DamageResistance", key);
-            }
-         }
-      }
-
-      Map<String, Modifier[]> damageEnhancement = null;
-      if (hasDamageEnhancement(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 22, 30, "DamageEnhancement");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("DamageEnhancement", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageEnhancement", len, 4096000);
-         }
-
-         damageEnhancement = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            long keyPacked = VarInt.getWithLength(mem, off);
-            int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-            String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-            off += nkey;
-            long valuePacked = VarInt.getWithLength(mem, off);
-            int valueLen = (int)valuePacked;
-            int valueVarLen = (int)(valuePacked >>> 32);
-            if (valueLen < 0) {
-               throw ProtocolException.negativeLength("value", valueLen);
-            }
-
-            if (valueLen > 64) {
-               throw ProtocolException.arrayTooLong("value", valueLen, 64);
-            }
-
-            if (off + valueVarLen + valueLen * 6L > mem.byteSize()) {
-               throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int)mem.byteSize());
-            }
-
-            off += valueVarLen;
-            Modifier[] value = new Modifier[valueLen];
-
-            for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-               value[valueIdx] = Modifier.toObject(mem, off);
-               off += value[valueIdx].computeSize();
-            }
-
-            if (damageEnhancement.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("DamageEnhancement", key);
-            }
-         }
-      }
-
-      Map<String, Modifier[]> damageClassEnhancement = null;
-      if (hasDamageClassEnhancement(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 26, 30, "DamageClassEnhancement");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("DamageClassEnhancement", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", len, 4096000);
-         }
-
-         damageClassEnhancement = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            long keyPacked = VarInt.getWithLength(mem, off);
-            int nkey = (int)keyPacked + (int)(keyPacked >>> 32);
-            String key = PacketIO.readVarString("key", mem, off, 16384000, PacketIO.UTF8);
-            off += nkey;
-            long valuePacked = VarInt.getWithLength(mem, off);
-            int valueLen = (int)valuePacked;
-            int valueVarLen = (int)(valuePacked >>> 32);
-            if (valueLen < 0) {
-               throw ProtocolException.negativeLength("value", valueLen);
-            }
-
-            if (valueLen > 64) {
-               throw ProtocolException.arrayTooLong("value", valueLen, 64);
-            }
-
-            if (off + valueVarLen + valueLen * 6L > mem.byteSize()) {
-               throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int)mem.byteSize());
-            }
-
-            off += valueVarLen;
-            Modifier[] value = new Modifier[valueLen];
-
-            for (int valueIdx = 0; valueIdx < valueLen; valueIdx++) {
-               value[valueIdx] = Modifier.toObject(mem, off);
-               off += value[valueIdx].computeSize();
-            }
-
-            if (damageClassEnhancement.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("DamageClassEnhancement", key);
-            }
-         }
-      }
-
-      return new ItemArmor(
-         ItemArmorSlot.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
-         cosmeticsToHide,
-         statModifiers,
-         mem.get(PacketIO.PROTO_DOUBLE, offset + 2),
-         damageResistance,
-         damageEnhancement,
-         damageClassEnhancement
-      );
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      byte nullBits = 0;
-      if (this.cosmeticsToHide != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.statModifiers != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.damageResistance != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.damageEnhancement != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      if (this.damageClassEnhancement != null) {
-         nullBits = (byte)(nullBits | 16);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.armorSlot.getValue());
-      buf.writeDoubleLE(this.baseDamageResistance);
-      int cosmeticsToHideOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int statModifiersOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int damageResistanceOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int damageEnhancementOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int damageClassEnhancementOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int varBlockStart = buf.writerIndex();
-      if (this.cosmeticsToHide != null) {
-         buf.setIntLE(cosmeticsToHideOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.cosmeticsToHide.length > 4096000) {
-            throw ProtocolException.arrayTooLong("CosmeticsToHide", this.cosmeticsToHide.length, 4096000);
-         }
-
-         VarInt.write(buf, this.cosmeticsToHide.length);
-
-         for (Cosmetic item : this.cosmeticsToHide) {
-            buf.writeByte(item.getValue());
-         }
-      } else {
-         buf.setIntLE(cosmeticsToHideOffsetSlot, -1);
-      }
-
-      if (this.statModifiers != null) {
-         buf.setIntLE(statModifiersOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.statModifiers.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("StatModifiers", this.statModifiers.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.statModifiers.size());
-
-         for (Entry<Integer, Modifier[]> e : this.statModifiers.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            VarInt.write(buf, e.getValue().length);
-
-            for (Modifier arrItem : e.getValue()) {
-               arrItem.serialize(buf);
-            }
-         }
-      } else {
-         buf.setIntLE(statModifiersOffsetSlot, -1);
-      }
-
-      if (this.damageResistance != null) {
-         buf.setIntLE(damageResistanceOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.damageResistance.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageResistance", this.damageResistance.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.damageResistance.size());
-
-         for (Entry<String, ResistanceModifier[]> e : this.damageResistance.entrySet()) {
-            PacketIO.writeVarString(buf, e.getKey(), 4096000);
-            VarInt.write(buf, e.getValue().length);
-
-            for (ResistanceModifier arrItem : e.getValue()) {
-               arrItem.serialize(buf);
-            }
-         }
-      } else {
-         buf.setIntLE(damageResistanceOffsetSlot, -1);
-      }
-
-      if (this.damageEnhancement != null) {
-         buf.setIntLE(damageEnhancementOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.damageEnhancement.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageEnhancement", this.damageEnhancement.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.damageEnhancement.size());
-
-         for (Entry<String, Modifier[]> e : this.damageEnhancement.entrySet()) {
-            PacketIO.writeVarString(buf, e.getKey(), 4096000);
-            VarInt.write(buf, e.getValue().length);
-
-            for (Modifier arrItem : e.getValue()) {
-               arrItem.serialize(buf);
-            }
-         }
-      } else {
-         buf.setIntLE(damageEnhancementOffsetSlot, -1);
-      }
-
-      if (this.damageClassEnhancement != null) {
-         buf.setIntLE(damageClassEnhancementOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.damageClassEnhancement.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", this.damageClassEnhancement.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.damageClassEnhancement.size());
-
-         for (Entry<String, Modifier[]> e : this.damageClassEnhancement.entrySet()) {
-            PacketIO.writeVarString(buf, e.getKey(), 4096000);
-            VarInt.write(buf, e.getValue().length);
-
-            for (Modifier arrItem : e.getValue()) {
-               arrItem.serialize(buf);
-            }
-         }
-      } else {
-         buf.setIntLE(damageClassEnhancementOffsetSlot, -1);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.cosmeticsToHide != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.statModifiers != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.damageResistance != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.damageEnhancement != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      if (this.damageClassEnhancement != null) {
-         nullBits = (byte)(nullBits | 16);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.armorSlot.getValue());
-      mem.set(PacketIO.PROTO_DOUBLE, offset + 2, this.baseDamageResistance);
-      int varOffset = offset + 30;
-      if (this.cosmeticsToHide != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 10, varOffset - offset - 30);
-         if (this.cosmeticsToHide.length > 4096000) {
-            throw ProtocolException.arrayTooLong("CosmeticsToHide", this.cosmeticsToHide.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.cosmeticsToHide.length);
-
-         for (int i = 0; i < this.cosmeticsToHide.length; i++) {
-            mem.set(PacketIO.PROTO_BYTE, varOffset + i * 1, (byte)this.cosmeticsToHide[i].getValue());
-         }
-
-         varOffset += this.cosmeticsToHide.length * 1;
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 10, -1);
-      }
-
-      if (this.statModifiers != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 14, varOffset - offset - 30);
-         if (this.statModifiers.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("StatModifiers", this.statModifiers.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.statModifiers.size());
-
-         for (Entry<Integer, Modifier[]> e : this.statModifiers.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += VarInt.set(mem, varOffset, e.getValue().length);
-
-            for (Modifier arrItem : e.getValue()) {
-               varOffset += arrItem.serialize(mem, varOffset);
-            }
-         }
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 14, -1);
-      }
-
-      if (this.damageResistance != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 18, varOffset - offset - 30);
-         if (this.damageResistance.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageResistance", this.damageResistance.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.damageResistance.size());
-
-         for (Entry<String, ResistanceModifier[]> e : this.damageResistance.entrySet()) {
-            varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 16384000);
-            varOffset += VarInt.set(mem, varOffset, e.getValue().length);
-
-            for (ResistanceModifier arrItem : e.getValue()) {
-               varOffset += arrItem.serialize(mem, varOffset);
-            }
-         }
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 18, -1);
-      }
-
-      if (this.damageEnhancement != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 22, varOffset - offset - 30);
-         if (this.damageEnhancement.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageEnhancement", this.damageEnhancement.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.damageEnhancement.size());
-
-         for (Entry<String, Modifier[]> e : this.damageEnhancement.entrySet()) {
-            varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 16384000);
-            varOffset += VarInt.set(mem, varOffset, e.getValue().length);
-
-            for (Modifier arrItem : e.getValue()) {
-               varOffset += arrItem.serialize(mem, varOffset);
-            }
-         }
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 22, -1);
-      }
-
-      if (this.damageClassEnhancement != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 26, varOffset - offset - 30);
-         if (this.damageClassEnhancement.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", this.damageClassEnhancement.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.damageClassEnhancement.size());
-
-         for (Entry<String, Modifier[]> e : this.damageClassEnhancement.entrySet()) {
-            varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 16384000);
-            varOffset += VarInt.set(mem, varOffset, e.getValue().length);
-
-            for (Modifier arrItem : e.getValue()) {
-               varOffset += arrItem.serialize(mem, varOffset);
-            }
-         }
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 26, -1);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 30;
-      if (this.cosmeticsToHide != null) {
-         size += VarInt.size(this.cosmeticsToHide.length) + this.cosmeticsToHide.length * 1;
-      }
-
-      if (this.statModifiers != null) {
-         int statModifiersSize = 0;
-
-         for (Entry<Integer, Modifier[]> kvp : this.statModifiers.entrySet()) {
-            statModifiersSize += 4 + VarInt.size(kvp.getValue().length) + ((Modifier[])kvp.getValue()).length * 6;
-         }
-
-         size += VarInt.size(this.statModifiers.size()) + statModifiersSize;
-      }
-
-      if (this.damageResistance != null) {
-         int damageResistanceSize = 0;
-
-         for (Entry<String, ResistanceModifier[]> kvp : this.damageResistance.entrySet()) {
-            damageResistanceSize += PacketIO.stringSize(kvp.getKey()) + VarInt.size(kvp.getValue().length) + ((ResistanceModifier[])kvp.getValue()).length * 5;
-         }
-
-         size += VarInt.size(this.damageResistance.size()) + damageResistanceSize;
-      }
-
-      if (this.damageEnhancement != null) {
-         int damageEnhancementSize = 0;
-
-         for (Entry<String, Modifier[]> kvp : this.damageEnhancement.entrySet()) {
-            damageEnhancementSize += PacketIO.stringSize(kvp.getKey()) + VarInt.size(kvp.getValue().length) + ((Modifier[])kvp.getValue()).length * 6;
-         }
-
-         size += VarInt.size(this.damageEnhancement.size()) + damageEnhancementSize;
-      }
-
-      if (this.damageClassEnhancement != null) {
-         int damageClassEnhancementSize = 0;
-
-         for (Entry<String, Modifier[]> kvp : this.damageClassEnhancement.entrySet()) {
-            damageClassEnhancementSize += PacketIO.stringSize(kvp.getKey()) + VarInt.size(kvp.getValue().length) + ((Modifier[])kvp.getValue()).length * 6;
-         }
-
-         size += VarInt.size(this.damageClassEnhancement.size()) + damageClassEnhancementSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 30) {
-         return ValidationResult.error("Buffer too small: expected at least 30 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 4) {
-         return ValidationResult.error("Invalid ItemArmorSlot value for ArmorSlot");
-      }
-
-      if ((nullBits & 1) != 0) {
-         v = buffer.getIntLE(offset + 10);
-         if (v < 0 || v > buffer.writerIndex() - offset - 30) {
-            return ValidationResult.error("Invalid offset for CosmeticsToHide");
-         }
-
-         int pos = offset + 30 + v;
-         int cosmeticsToHideCount = VarInt.peek(buffer, pos);
-         if (cosmeticsToHideCount < 0) {
-            return ValidationResult.error("Invalid array count for CosmeticsToHide");
-         }
-
-         if (cosmeticsToHideCount > 4096000) {
-            return ValidationResult.error("CosmeticsToHide exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(cosmeticsToHideCount);
-         if (pos + cosmeticsToHideCount * 1L > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading CosmeticsToHide");
-         }
-
-         for (int i = 0; i < cosmeticsToHideCount; i++) {
-            int vx = buffer.getByte(pos) & 255;
-            if (vx >= 13) {
-               return ValidationResult.error("Invalid Cosmetic value for CosmeticsToHide[i]");
-            }
-
-            pos++;
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         v = buffer.getIntLE(offset + 14);
-         if (v < 0 || v > buffer.writerIndex() - offset - 30) {
-            return ValidationResult.error("Invalid offset for StatModifiers");
-         }
-
-         int pos = offset + 30 + v;
-         int statModifiersCount = VarInt.peek(buffer, pos);
-         if (statModifiersCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for StatModifiers");
-         }
-
-         if (statModifiersCount > 4096000) {
-            return ValidationResult.error("StatModifiers exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(statModifiersCount);
-
-         for (int i = 0; i < statModifiersCount; i++) {
-            pos += 4;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
-            }
-
-            int valueArrCount = VarInt.peek(buffer, pos);
-            if (valueArrCount < 0) {
-               return ValidationResult.error("Invalid array count for value");
-            }
-
-            pos += VarInt.size(valueArrCount);
-
-            for (int valueArrIdx = 0; valueArrIdx < valueArrCount; valueArrIdx++) {
-               pos += 6;
-            }
-         }
-      }
-
-      if ((nullBits & 4) != 0) {
-         v = buffer.getIntLE(offset + 18);
-         if (v < 0 || v > buffer.writerIndex() - offset - 30) {
-            return ValidationResult.error("Invalid offset for DamageResistance");
-         }
-
-         int pos = offset + 30 + v;
-         int damageResistanceCount = VarInt.peek(buffer, pos);
-         if (damageResistanceCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for DamageResistance");
-         }
-
-         if (damageResistanceCount > 4096000) {
-            return ValidationResult.error("DamageResistance exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(damageResistanceCount);
-
-         for (int i = 0; i < damageResistanceCount; i++) {
-            int keyLen = VarInt.peek(buffer, pos);
-            if (keyLen < 0) {
-               return ValidationResult.error("Invalid string length for key");
-            }
-
-            if (keyLen > 4096000) {
-               return ValidationResult.error("key exceeds max length 4096000");
-            }
-
-            pos += VarInt.size(keyLen);
-            pos += keyLen;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
-            }
-
-            int valueArrCount = VarInt.peek(buffer, pos);
-            if (valueArrCount < 0) {
-               return ValidationResult.error("Invalid array count for value");
-            }
-
-            pos += VarInt.size(valueArrCount);
-
-            for (int valueArrIdx = 0; valueArrIdx < valueArrCount; valueArrIdx++) {
-               pos += 5;
-            }
-         }
-      }
-
-      if ((nullBits & 8) != 0) {
-         v = buffer.getIntLE(offset + 22);
-         if (v < 0 || v > buffer.writerIndex() - offset - 30) {
-            return ValidationResult.error("Invalid offset for DamageEnhancement");
-         }
-
-         int pos = offset + 30 + v;
-         int damageEnhancementCount = VarInt.peek(buffer, pos);
-         if (damageEnhancementCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for DamageEnhancement");
-         }
-
-         if (damageEnhancementCount > 4096000) {
-            return ValidationResult.error("DamageEnhancement exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(damageEnhancementCount);
-
-         for (int i = 0; i < damageEnhancementCount; i++) {
-            int keyLen = VarInt.peek(buffer, pos);
-            if (keyLen < 0) {
-               return ValidationResult.error("Invalid string length for key");
-            }
-
-            if (keyLen > 4096000) {
-               return ValidationResult.error("key exceeds max length 4096000");
-            }
-
-            pos += VarInt.size(keyLen);
-            pos += keyLen;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
-            }
-
-            int valueArrCount = VarInt.peek(buffer, pos);
-            if (valueArrCount < 0) {
-               return ValidationResult.error("Invalid array count for value");
-            }
-
-            pos += VarInt.size(valueArrCount);
-
-            for (int valueArrIdx = 0; valueArrIdx < valueArrCount; valueArrIdx++) {
-               pos += 6;
-            }
-         }
-      }
-
-      if ((nullBits & 16) != 0) {
-         v = buffer.getIntLE(offset + 26);
-         if (v < 0 || v > buffer.writerIndex() - offset - 30) {
-            return ValidationResult.error("Invalid offset for DamageClassEnhancement");
-         }
-
-         int pos = offset + 30 + v;
-         int damageClassEnhancementCount = VarInt.peek(buffer, pos);
-         if (damageClassEnhancementCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for DamageClassEnhancement");
-         }
-
-         if (damageClassEnhancementCount > 4096000) {
-            return ValidationResult.error("DamageClassEnhancement exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(damageClassEnhancementCount);
-
-         for (int i = 0; i < damageClassEnhancementCount; i++) {
-            int keyLen = VarInt.peek(buffer, pos);
-            if (keyLen < 0) {
-               return ValidationResult.error("Invalid string length for key");
-            }
-
-            if (keyLen > 4096000) {
-               return ValidationResult.error("key exceeds max length 4096000");
-            }
-
-            pos += VarInt.size(keyLen);
-            pos += keyLen;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
-            }
-
-            int valueArrCount = VarInt.peek(buffer, pos);
-            if (valueArrCount < 0) {
-               return ValidationResult.error("Invalid array count for value");
-            }
-
-            pos += VarInt.size(valueArrCount);
-
-            for (int valueArrIdx = 0; valueArrIdx < valueArrCount; valueArrIdx++) {
-               pos += 6;
-            }
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ItemArmor clone() {
-      ItemArmor copy = new ItemArmor();
-      copy.armorSlot = this.armorSlot;
-      copy.cosmeticsToHide = this.cosmeticsToHide != null ? Arrays.copyOf(this.cosmeticsToHide, this.cosmeticsToHide.length) : null;
-      if (this.statModifiers != null) {
-         Map<Integer, Modifier[]> m = new HashMap<>();
-
-         for (Entry<Integer, Modifier[]> e : this.statModifiers.entrySet()) {
-            m.put(e.getKey(), Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(Modifier[]::new));
-         }
-
-         copy.statModifiers = m;
-      }
-
-      copy.baseDamageResistance = this.baseDamageResistance;
-      if (this.damageResistance != null) {
-         Map<String, ResistanceModifier[]> m = new HashMap<>();
-
-         for (Entry<String, ResistanceModifier[]> e : this.damageResistance.entrySet()) {
-            m.put(e.getKey(), Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(ResistanceModifier[]::new));
-         }
-
-         copy.damageResistance = m;
-      }
-
-      if (this.damageEnhancement != null) {
-         Map<String, Modifier[]> m = new HashMap<>();
-
-         for (Entry<String, Modifier[]> e : this.damageEnhancement.entrySet()) {
-            m.put(e.getKey(), Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(Modifier[]::new));
-         }
-
-         copy.damageEnhancement = m;
-      }
-
-      if (this.damageClassEnhancement != null) {
-         Map<String, Modifier[]> m = new HashMap<>();
-
-         for (Entry<String, Modifier[]> e : this.damageClassEnhancement.entrySet()) {
-            m.put(e.getKey(), Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(Modifier[]::new));
-         }
-
-         copy.damageClassEnhancement = m;
-      }
-
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ItemArmor other)
-            ? false
-            : Objects.equals(this.armorSlot, other.armorSlot)
-               && Arrays.equals(this.cosmeticsToHide, other.cosmeticsToHide)
-               && Objects.equals(this.statModifiers, other.statModifiers)
-               && this.baseDamageResistance == other.baseDamageResistance
-               && Objects.equals(this.damageResistance, other.damageResistance)
-               && Objects.equals(this.damageEnhancement, other.damageEnhancement)
-               && Objects.equals(this.damageClassEnhancement, other.damageClassEnhancement);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Objects.hashCode(this.armorSlot);
-      result = 31 * result + Arrays.hashCode(this.cosmeticsToHide);
-      result = 31 * result + Objects.hashCode(this.statModifiers);
-      result = 31 * result + Double.hashCode(this.baseDamageResistance);
-      result = 31 * result + Objects.hashCode(this.damageResistance);
-      result = 31 * result + Objects.hashCode(this.damageEnhancement);
-      return 31 * result + Objects.hashCode(this.damageClassEnhancement);
-   }
-}
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 10;
+    public static final int VARIABLE_FIELD_COUNT = 6;
+    public static final int VARIABLE_BLOCK_START = 34;
+    public static final int MAX_SIZE = 1677721600;
+
+    @Nonnull public ItemArmorSlot armorSlot = ItemArmorSlot.Head;
+    @Nullable public Cosmetic[] cosmeticsToHide;
+    @Nullable public java.util.Map<Integer, Modifier[]> statModifiers;
+    public double baseDamageResistance;
+    @Nullable public java.util.Map<String, ResistanceModifier[]> damageResistance;
+    @Nullable public java.util.Map<String, Modifier[]> damageEnhancement;
+    @Nullable public java.util.Map<String, Modifier[]> damageClassEnhancement;
+    @Nullable public ItemMovementSettings movementSettings;
+
+    public ItemArmor() {
+    }
+
+    public ItemArmor(@Nonnull ItemArmorSlot armorSlot, @Nullable Cosmetic[] cosmeticsToHide, @Nullable java.util.Map<Integer, Modifier[]> statModifiers, double baseDamageResistance, @Nullable java.util.Map<String, ResistanceModifier[]> damageResistance, @Nullable java.util.Map<String, Modifier[]> damageEnhancement, @Nullable java.util.Map<String, Modifier[]> damageClassEnhancement, @Nullable ItemMovementSettings movementSettings) {
+        this.armorSlot = armorSlot;
+        this.cosmeticsToHide = cosmeticsToHide;
+        this.statModifiers = statModifiers;
+        this.baseDamageResistance = baseDamageResistance;
+        this.damageResistance = damageResistance;
+        this.damageEnhancement = damageEnhancement;
+        this.damageClassEnhancement = damageClassEnhancement;
+        this.movementSettings = movementSettings;
+    }
+
+    public ItemArmor(@Nonnull ItemArmor other) {
+        this.armorSlot = other.armorSlot;
+        this.cosmeticsToHide = other.cosmeticsToHide;
+        this.statModifiers = other.statModifiers;
+        this.baseDamageResistance = other.baseDamageResistance;
+        this.damageResistance = other.damageResistance;
+        this.damageEnhancement = other.damageEnhancement;
+        this.damageClassEnhancement = other.damageClassEnhancement;
+        this.movementSettings = other.movementSettings;
+    }
+
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ItemArmor", offset, (int) mem.byteSize());
+        long needed = (long) offset + 34;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ItemArmor", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static ItemArmorSlot getArmorSlot(MemorySegment mem) {
+        return getArmorSlot(mem, 0);
+    }
+    
+    public static ItemArmorSlot getArmorSlot(MemorySegment mem, int offset) {
+        return ItemArmorSlot.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    @Nullable
+    public static Cosmetic[] getCosmeticsToHide(MemorySegment mem) {
+        return getCosmeticsToHide(mem, 0);
+    }
+    
+    @Nullable
+    public static Cosmetic[] getCosmeticsToHide(MemorySegment mem, int offset) {
+        if (!hasCosmeticsToHide(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 10, 34, "CosmeticsToHide");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("CosmeticsToHide");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("CosmeticsToHide", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("CosmeticsToHide", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new Cosmetic[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = Cosmetic.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, Modifier[]> getStatModifiers(MemorySegment mem) {
+        return getStatModifiers(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, Modifier[]> getStatModifiers(MemorySegment mem, int offset) {
+        if (!hasStatModifiers(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 14, 34, "StatModifiers");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("StatModifiers");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("StatModifiers", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("StatModifiers", (int) java.lang.Math.min(off + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, Modifier[]> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var valuePacked = VarInt.getWithLength(mem, off);
+                if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                var valueLen = (int) valuePacked;
+                var valueVarLen = (int) (valuePacked >>> 32);
+                if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                if (off + valueVarLen + (long) valueLen * 6 > mem.byteSize())
+                    throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int) mem.byteSize());
+                off += valueVarLen;
+                var value = new Modifier[valueLen];
+                for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                    value[valueIdx] = Modifier.toObject(mem, off);
+                    off += 6;
+                }
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("StatModifiers", key);
+            }
+        }
+        return data;
+    }
+    
+    public static double getBaseDamageResistance(MemorySegment mem) {
+        return getBaseDamageResistance(mem, 0);
+    }
+    
+    public static double getBaseDamageResistance(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_DOUBLE, offset + 2), "BaseDamageResistance");
+    }
+    
+    @Nullable
+    public static java.util.Map<String, ResistanceModifier[]> getDamageResistance(MemorySegment mem) {
+        return getDamageResistance(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<String, ResistanceModifier[]> getDamageResistance(MemorySegment mem, int offset) {
+        if (!hasDamageResistance(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 18, 34, "DamageResistance");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("DamageResistance");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("DamageResistance", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageResistance", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<String, ResistanceModifier[]> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var keyPacked = VarInt.getWithLength(mem, off);
+                var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                off += (int) keyPacked + (int) (keyPacked >>> 32);
+            var valuePacked = VarInt.getWithLength(mem, off);
+                if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                var valueLen = (int) valuePacked;
+                var valueVarLen = (int) (valuePacked >>> 32);
+                if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                if (off + valueVarLen + (long) valueLen * 5 > mem.byteSize())
+                    throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 5, (int) mem.byteSize());
+                off += valueVarLen;
+                var value = new ResistanceModifier[valueLen];
+                for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                    value[valueIdx] = ResistanceModifier.toObject(mem, off);
+                    off += 5;
+                }
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("DamageResistance", key);
+            }
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static java.util.Map<String, Modifier[]> getDamageEnhancement(MemorySegment mem) {
+        return getDamageEnhancement(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<String, Modifier[]> getDamageEnhancement(MemorySegment mem, int offset) {
+        if (!hasDamageEnhancement(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 22, 34, "DamageEnhancement");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("DamageEnhancement");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("DamageEnhancement", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageEnhancement", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<String, Modifier[]> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var keyPacked = VarInt.getWithLength(mem, off);
+                var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                off += (int) keyPacked + (int) (keyPacked >>> 32);
+            var valuePacked = VarInt.getWithLength(mem, off);
+                if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                var valueLen = (int) valuePacked;
+                var valueVarLen = (int) (valuePacked >>> 32);
+                if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                if (off + valueVarLen + (long) valueLen * 6 > mem.byteSize())
+                    throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int) mem.byteSize());
+                off += valueVarLen;
+                var value = new Modifier[valueLen];
+                for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                    value[valueIdx] = Modifier.toObject(mem, off);
+                    off += 6;
+                }
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("DamageEnhancement", key);
+            }
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static java.util.Map<String, Modifier[]> getDamageClassEnhancement(MemorySegment mem) {
+        return getDamageClassEnhancement(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<String, Modifier[]> getDamageClassEnhancement(MemorySegment mem, int offset) {
+        if (!hasDamageClassEnhancement(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 26, 34, "DamageClassEnhancement");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("DamageClassEnhancement");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageClassEnhancement", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<String, Modifier[]> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var keyPacked = VarInt.getWithLength(mem, off);
+                var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                off += (int) keyPacked + (int) (keyPacked >>> 32);
+            var valuePacked = VarInt.getWithLength(mem, off);
+                if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                var valueLen = (int) valuePacked;
+                var valueVarLen = (int) (valuePacked >>> 32);
+                if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                if (off + valueVarLen + (long) valueLen * 6 > mem.byteSize())
+                    throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int) mem.byteSize());
+                off += valueVarLen;
+                var value = new Modifier[valueLen];
+                for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                    value[valueIdx] = Modifier.toObject(mem, off);
+                    off += 6;
+                }
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("DamageClassEnhancement", key);
+            }
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static ItemMovementSettings getMovementSettings(MemorySegment mem) {
+        return getMovementSettings(mem, 0);
+    }
+    
+    @Nullable
+    public static ItemMovementSettings getMovementSettings(MemorySegment mem, int offset) {
+        return hasMovementSettings(mem, offset) ? ItemMovementSettings.toObject(mem, offset + getValidatedOffset(mem, offset, 30, 34, "MovementSettings")): null;
+    }
+    
+    public static boolean hasCosmeticsToHide(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasStatModifiers(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    public static boolean hasDamageResistance(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x04) != 0;
+    }
+    
+    public static boolean hasDamageEnhancement(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x08) != 0;
+    }
+    
+    public static boolean hasDamageClassEnhancement(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x10) != 0;
+    }
+    
+    public static boolean hasMovementSettings(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x20) != 0;
+    }
+    
+    private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+        int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+        if (offset < 0 || offset > buffer.byteSize() - base - varBlockStart)
+            throw ProtocolException.invalidOffset(fieldName, offset, (int) buffer.byteSize());
+        return varBlockStart + offset;
+    }
+    
+    /**
+     * Rejects an offset slot that does not name the position the field-order walk reached. A
+     * present field must sit where the previous field ended, and an absent field carries -1, so
+     * the slot a random-access getter resolves and the walk describe the same bytes.
+     */
+    private static void requireSlot(MemorySegment mem, int slotPosition, int expected, String fieldName) {
+        int slot = mem.get(PacketIO.PROTO_INT, slotPosition);
+        if (slot != expected) throw ProtocolException.nonCanonicalLayout(fieldName, slot, expected);
+    }
+    
+    public static ItemArmor toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ItemArmor toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ItemArmor and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ItemArmor toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 34;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        Cosmetic[] v1 = null;
+        if (hasCosmeticsToHide(mem, offset)) {
+            requireSlot(mem, offset + 10, varPos, "CosmeticsToHide");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("CosmeticsToHide");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("CosmeticsToHide", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("CosmeticsToHide", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v1 = new Cosmetic[len];
+            for (var i = 0; i < len; i++) {
+                v1[i] = Cosmetic.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
+            }
+            varPos = off + len - varBase;
+        } else {
+            requireSlot(mem, offset + 10, -1, "CosmeticsToHide");
+        }
+        
+        java.util.Map<Integer, Modifier[]> v2 = null;
+        if (hasStatModifiers(mem, offset)) {
+            requireSlot(mem, offset + 14, varPos, "StatModifiers");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("StatModifiers");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("StatModifiers", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("StatModifiers", (int) java.lang.Math.min(off + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var valuePacked = VarInt.getWithLength(mem, off);
+                    if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                    var valueLen = (int) valuePacked;
+                    var valueVarLen = (int) (valuePacked >>> 32);
+                    if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                    if (off + valueVarLen + (long) valueLen * 6 > mem.byteSize())
+                        throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int) mem.byteSize());
+                    off += valueVarLen;
+                    var value = new Modifier[valueLen];
+                    for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                        value[valueIdx] = Modifier.toObject(mem, off);
+                        off += 6;
+                    }
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("StatModifiers", key);
+                }
+            }
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 14, -1, "StatModifiers");
+        }
+        
+        java.util.Map<String, ResistanceModifier[]> v4 = null;
+        if (hasDamageResistance(mem, offset)) {
+            requireSlot(mem, offset + 18, varPos, "DamageResistance");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("DamageResistance");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("DamageResistance", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageResistance", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+            v4 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var keyPacked = VarInt.getWithLength(mem, off);
+                    var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                    off += (int) keyPacked + (int) (keyPacked >>> 32);
+                var valuePacked = VarInt.getWithLength(mem, off);
+                    if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                    var valueLen = (int) valuePacked;
+                    var valueVarLen = (int) (valuePacked >>> 32);
+                    if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                    if (off + valueVarLen + (long) valueLen * 5 > mem.byteSize())
+                        throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 5, (int) mem.byteSize());
+                    off += valueVarLen;
+                    var value = new ResistanceModifier[valueLen];
+                    for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                        value[valueIdx] = ResistanceModifier.toObject(mem, off);
+                        off += 5;
+                    }
+                if (v4.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("DamageResistance", key);
+                }
+            }
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 18, -1, "DamageResistance");
+        }
+        
+        java.util.Map<String, Modifier[]> v5 = null;
+        if (hasDamageEnhancement(mem, offset)) {
+            requireSlot(mem, offset + 22, varPos, "DamageEnhancement");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("DamageEnhancement");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("DamageEnhancement", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageEnhancement", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+            v5 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var keyPacked = VarInt.getWithLength(mem, off);
+                    var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                    off += (int) keyPacked + (int) (keyPacked >>> 32);
+                var valuePacked = VarInt.getWithLength(mem, off);
+                    if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                    var valueLen = (int) valuePacked;
+                    var valueVarLen = (int) (valuePacked >>> 32);
+                    if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                    if (off + valueVarLen + (long) valueLen * 6 > mem.byteSize())
+                        throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int) mem.byteSize());
+                    off += valueVarLen;
+                    var value = new Modifier[valueLen];
+                    for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                        value[valueIdx] = Modifier.toObject(mem, off);
+                        off += 6;
+                    }
+                if (v5.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("DamageEnhancement", key);
+                }
+            }
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 22, -1, "DamageEnhancement");
+        }
+        
+        java.util.Map<String, Modifier[]> v6 = null;
+        if (hasDamageClassEnhancement(mem, offset)) {
+            requireSlot(mem, offset + 26, varPos, "DamageClassEnhancement");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("DamageClassEnhancement");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageClassEnhancement", (int) java.lang.Math.min(off + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+            v6 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var keyPacked = VarInt.getWithLength(mem, off);
+                    var key = PacketIO.readVarString("key", mem, off, 0, 4096000, keyPacked);
+                    off += (int) keyPacked + (int) (keyPacked >>> 32);
+                var valuePacked = VarInt.getWithLength(mem, off);
+                    if (valuePacked == -1L) throw ProtocolException.invalidVarInt("value");
+                    var valueLen = (int) valuePacked;
+                    var valueVarLen = (int) (valuePacked >>> 32);
+                    if (valueLen > 4096000) throw ProtocolException.arrayTooLong("value", valueLen, 4096000);
+                    if (off + valueVarLen + (long) valueLen * 6 > mem.byteSize())
+                        throw ProtocolException.bufferTooSmall("value", off + valueVarLen + valueLen * 6, (int) mem.byteSize());
+                    off += valueVarLen;
+                    var value = new Modifier[valueLen];
+                    for (var valueIdx = 0; valueIdx < valueLen; valueIdx++) {
+                        value[valueIdx] = Modifier.toObject(mem, off);
+                        off += 6;
+                    }
+                if (v6.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("DamageClassEnhancement", key);
+                }
+            }
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 26, -1, "DamageClassEnhancement");
+        }
+        
+        ItemMovementSettings v7 = null;
+        if (hasMovementSettings(mem, offset)) {
+            requireSlot(mem, offset + 30, varPos, "MovementSettings");
+            v7 = ItemMovementSettings.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        } else {
+            requireSlot(mem, offset + 30, -1, "MovementSettings");
+        }
+        var result = new ItemArmor(
+            ItemArmorSlot.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            v1,
+            v2,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_DOUBLE, offset + 2), "BaseDamageResistance"),
+            v4,
+            v5,
+            v6,
+            v7
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.cosmeticsToHide != null) nullBits |= 0x01;
+        if (this.statModifiers != null) nullBits |= 0x02;
+        if (this.damageResistance != null) nullBits |= 0x04;
+        if (this.damageEnhancement != null) nullBits |= 0x08;
+        if (this.damageClassEnhancement != null) nullBits |= 0x10;
+        if (this.movementSettings != null) nullBits |= 0x20;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.armorSlot.getValue());
+        PacketIO.requireFinite(this.baseDamageResistance, "BaseDamageResistance"); mem.set(PacketIO.PROTO_DOUBLE, offset + 2, this.baseDamageResistance);
+        var varOffset = offset + 34;
+        if (this.cosmeticsToHide != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 10, varOffset - offset - 34);
+            if (cosmeticsToHide.length > 4096000) throw ProtocolException.arrayTooLong("CosmeticsToHide", cosmeticsToHide.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.cosmeticsToHide.length);
+            
+            for (var i = 0; i < this.cosmeticsToHide.length; i++) {
+                mem.set(PacketIO.PROTO_BYTE, varOffset + i * 1, (byte) this.cosmeticsToHide[i].getValue());
+            }
+            varOffset += this.cosmeticsToHide.length * 1;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 10, -1);
+        }
+        if (this.statModifiers != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 14, varOffset - offset - 34);
+            if (this.statModifiers.size() > 4096000) throw ProtocolException.dictionaryTooLarge("StatModifiers", statModifiers.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.statModifiers.size());
+            for (var e : this.statModifiers.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += VarInt.set(mem, varOffset, e.getValue().length);
+                for (var arrItem : e.getValue()) {
+                    varOffset += arrItem.serialize(mem, varOffset);
+                }
+            }
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 14, -1);
+        }
+        if (this.damageResistance != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 18, varOffset - offset - 34);
+            if (this.damageResistance.size() > 4096000) throw ProtocolException.dictionaryTooLarge("DamageResistance", damageResistance.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.damageResistance.size());
+            for (var e : this.damageResistance.entrySet()) {
+                varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 4096000);
+                varOffset += VarInt.set(mem, varOffset, e.getValue().length);
+                for (var arrItem : e.getValue()) {
+                    varOffset += arrItem.serialize(mem, varOffset);
+                }
+            }
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 18, -1);
+        }
+        if (this.damageEnhancement != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 22, varOffset - offset - 34);
+            if (this.damageEnhancement.size() > 4096000) throw ProtocolException.dictionaryTooLarge("DamageEnhancement", damageEnhancement.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.damageEnhancement.size());
+            for (var e : this.damageEnhancement.entrySet()) {
+                varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 4096000);
+                varOffset += VarInt.set(mem, varOffset, e.getValue().length);
+                for (var arrItem : e.getValue()) {
+                    varOffset += arrItem.serialize(mem, varOffset);
+                }
+            }
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 22, -1);
+        }
+        if (this.damageClassEnhancement != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 26, varOffset - offset - 34);
+            if (this.damageClassEnhancement.size() > 4096000) throw ProtocolException.dictionaryTooLarge("DamageClassEnhancement", damageClassEnhancement.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.damageClassEnhancement.size());
+            for (var e : this.damageClassEnhancement.entrySet()) {
+                varOffset += PacketIO.writeVarString(mem, varOffset, e.getKey(), 4096000);
+                varOffset += VarInt.set(mem, varOffset, e.getValue().length);
+                for (var arrItem : e.getValue()) {
+                    varOffset += arrItem.serialize(mem, varOffset);
+                }
+            }
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 26, -1);
+        }
+        if (this.movementSettings != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 30, varOffset - offset - 34);
+            varOffset += this.movementSettings.serialize(mem, varOffset);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 30, -1);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 34;
+        if (cosmeticsToHide != null) size += VarInt.size(cosmeticsToHide.length) + cosmeticsToHide.length * 1;
+    if (statModifiers != null) {
+        int statModifiersSize = 0;
+for (var kvp : statModifiers.entrySet()) statModifiersSize += 4 + VarInt.size(kvp.getValue().length) + kvp.getValue().length * 6;
+size += VarInt.size(statModifiers.size()) + statModifiersSize;
+    }
+    if (damageResistance != null) {
+        int damageResistanceSize = 0;
+for (var kvp : damageResistance.entrySet()) damageResistanceSize += PacketIO.stringSize(kvp.getKey()) + VarInt.size(kvp.getValue().length) + kvp.getValue().length * 5;
+size += VarInt.size(damageResistance.size()) + damageResistanceSize;
+    }
+    if (damageEnhancement != null) {
+        int damageEnhancementSize = 0;
+for (var kvp : damageEnhancement.entrySet()) damageEnhancementSize += PacketIO.stringSize(kvp.getKey()) + VarInt.size(kvp.getValue().length) + kvp.getValue().length * 6;
+size += VarInt.size(damageEnhancement.size()) + damageEnhancementSize;
+    }
+    if (damageClassEnhancement != null) {
+        int damageClassEnhancementSize = 0;
+for (var kvp : damageClassEnhancement.entrySet()) damageClassEnhancementSize += PacketIO.stringSize(kvp.getKey()) + VarInt.size(kvp.getValue().length) + kvp.getValue().length * 6;
+size += VarInt.size(damageClassEnhancement.size()) + damageClassEnhancementSize;
+    }
+    if (movementSettings != null) size += movementSettings.computeSize();
+
+        return size;
+    }
+
+    public ItemArmor clone() {
+        ItemArmor copy = new ItemArmor();
+        copy.armorSlot = this.armorSlot;
+        copy.cosmeticsToHide = this.cosmeticsToHide != null ? java.util.Arrays.copyOf(this.cosmeticsToHide, this.cosmeticsToHide.length) : null;
+        if (this.statModifiers != null) {
+            java.util.Map<Integer, Modifier[]> m = new java.util.HashMap<>();
+            for (var e : this.statModifiers.entrySet()) { m.put(e.getKey(), java.util.Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(Modifier[]::new)); }
+            copy.statModifiers = m;
+        }
+        copy.baseDamageResistance = this.baseDamageResistance;
+        if (this.damageResistance != null) {
+            java.util.Map<String, ResistanceModifier[]> m = new java.util.HashMap<>();
+            for (var e : this.damageResistance.entrySet()) { m.put(e.getKey(), java.util.Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(ResistanceModifier[]::new)); }
+            copy.damageResistance = m;
+        }
+        if (this.damageEnhancement != null) {
+            java.util.Map<String, Modifier[]> m = new java.util.HashMap<>();
+            for (var e : this.damageEnhancement.entrySet()) { m.put(e.getKey(), java.util.Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(Modifier[]::new)); }
+            copy.damageEnhancement = m;
+        }
+        if (this.damageClassEnhancement != null) {
+            java.util.Map<String, Modifier[]> m = new java.util.HashMap<>();
+            for (var e : this.damageClassEnhancement.entrySet()) { m.put(e.getKey(), java.util.Arrays.stream(e.getValue()).map(x -> x.clone()).toArray(Modifier[]::new)); }
+            copy.damageClassEnhancement = m;
+        }
+        copy.movementSettings = this.movementSettings != null ? this.movementSettings.clone() : null;
+        return copy;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ItemArmor other)) return false;
+        return java.util.Objects.equals(this.armorSlot, other.armorSlot) && java.util.Arrays.equals(this.cosmeticsToHide, other.cosmeticsToHide) && java.util.Objects.equals(this.statModifiers, other.statModifiers) && this.baseDamageResistance == other.baseDamageResistance && java.util.Objects.equals(this.damageResistance, other.damageResistance) && java.util.Objects.equals(this.damageEnhancement, other.damageEnhancement) && java.util.Objects.equals(this.damageClassEnhancement, other.damageClassEnhancement) && java.util.Objects.equals(this.movementSettings, other.movementSettings);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Objects.hashCode(armorSlot);
+        result = 31 * result + java.util.Arrays.hashCode(cosmeticsToHide);
+        result = 31 * result + java.util.Objects.hashCode(statModifiers);
+        result = 31 * result + Double.hashCode(baseDamageResistance);
+        result = 31 * result + java.util.Objects.hashCode(damageResistance);
+        result = 31 * result + java.util.Objects.hashCode(damageEnhancement);
+        result = 31 * result + java.util.Objects.hashCode(damageClassEnhancement);
+        result = 31 * result + java.util.Objects.hashCode(movementSettings);
+        return result;
+    }
+
+}

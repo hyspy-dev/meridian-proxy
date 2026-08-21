@@ -1,212 +1,197 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.buildertools;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class BuilderToolRandomizeClipboard implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 428;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 15;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 15;
-   public static final int MAX_SIZE = 15;
-   public int deltaX;
-   public int deltaY;
-   public int deltaZ;
-   public boolean flipX;
-   public boolean flipY;
-   public boolean flipZ;
+    public static final int PACKET_ID = 428;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 13;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 13;
+    public static final int MAX_SIZE = 13;
 
-   @Override
-   public int getId() {
-      return 428;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public BuilderToolRandomizeClipboard() {
-   }
+    public int deltaX;
+    public int deltaY;
+    public int deltaZ;
+    public boolean flipX;
+    public boolean flipY;
+    public boolean flipZ;
 
-   public BuilderToolRandomizeClipboard(int deltaX, int deltaY, int deltaZ, boolean flipX, boolean flipY, boolean flipZ) {
-      this.deltaX = deltaX;
-      this.deltaY = deltaY;
-      this.deltaZ = deltaZ;
-      this.flipX = flipX;
-      this.flipY = flipY;
-      this.flipZ = flipZ;
-   }
+    public BuilderToolRandomizeClipboard() {
+    }
 
-   public BuilderToolRandomizeClipboard(@Nonnull BuilderToolRandomizeClipboard other) {
-      this.deltaX = other.deltaX;
-      this.deltaY = other.deltaY;
-      this.deltaZ = other.deltaZ;
-      this.flipX = other.flipX;
-      this.flipY = other.flipY;
-      this.flipZ = other.flipZ;
-   }
+    public BuilderToolRandomizeClipboard(int deltaX, int deltaY, int deltaZ, boolean flipX, boolean flipY, boolean flipZ) {
+        this.deltaX = deltaX;
+        this.deltaY = deltaY;
+        this.deltaZ = deltaZ;
+        this.flipX = flipX;
+        this.flipY = flipY;
+        this.flipZ = flipZ;
+    }
 
-   @Nonnull
-   public static BuilderToolRandomizeClipboard deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 15) {
-         throw ProtocolException.bufferTooSmall("BuilderToolRandomizeClipboard", 15, buf.readableBytes() - offset);
-      }
+    public BuilderToolRandomizeClipboard(@Nonnull BuilderToolRandomizeClipboard other) {
+        this.deltaX = other.deltaX;
+        this.deltaY = other.deltaY;
+        this.deltaZ = other.deltaZ;
+        this.flipX = other.flipX;
+        this.flipY = other.flipY;
+        this.flipZ = other.flipZ;
+    }
 
-      BuilderToolRandomizeClipboard obj = new BuilderToolRandomizeClipboard();
-      obj.deltaX = buf.getIntLE(offset + 0);
-      obj.deltaY = buf.getIntLE(offset + 4);
-      obj.deltaZ = buf.getIntLE(offset + 8);
-      obj.flipX = buf.getByte(offset + 12) != 0;
-      obj.flipY = buf.getByte(offset + 13) != 0;
-      obj.flipZ = buf.getByte(offset + 14) != 0;
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 15;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 15L;
-   }
-
-   public static int getDeltaX(MemorySegment mem) {
-      return getDeltaX(mem, 0);
-   }
-
-   public static int getDeltaX(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 0);
-   }
-
-   public static int getDeltaY(MemorySegment mem) {
-      return getDeltaY(mem, 0);
-   }
-
-   public static int getDeltaY(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 4);
-   }
-
-   public static int getDeltaZ(MemorySegment mem) {
-      return getDeltaZ(mem, 0);
-   }
-
-   public static int getDeltaZ(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 8);
-   }
-
-   public static boolean getFlipX(MemorySegment mem) {
-      return getFlipX(mem, 0);
-   }
-
-   public static boolean getFlipX(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 12);
-   }
-
-   public static boolean getFlipY(MemorySegment mem) {
-      return getFlipY(mem, 0);
-   }
-
-   public static boolean getFlipY(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 13);
-   }
-
-   public static boolean getFlipZ(MemorySegment mem) {
-      return getFlipZ(mem, 0);
-   }
-
-   public static boolean getFlipZ(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 14);
-   }
-
-   public static BuilderToolRandomizeClipboard toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static BuilderToolRandomizeClipboard toObject(MemorySegment mem, int offset) {
-      if (offset + 15 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("BuilderToolRandomizeClipboard", offset + 15, (int)mem.byteSize());
-      } else {
-         return new BuilderToolRandomizeClipboard(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("BuilderToolRandomizeClipboard", offset, (int) mem.byteSize());
+        long needed = (long) offset + 13;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("BuilderToolRandomizeClipboard", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getDeltaX(MemorySegment mem) {
+        return getDeltaX(mem, 0);
+    }
+    
+    public static int getDeltaX(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    public static int getDeltaY(MemorySegment mem) {
+        return getDeltaY(mem, 0);
+    }
+    
+    public static int getDeltaY(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 4);
+    }
+    
+    public static int getDeltaZ(MemorySegment mem) {
+        return getDeltaZ(mem, 0);
+    }
+    
+    public static int getDeltaZ(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 8);
+    }
+    
+    public static boolean getFlipX(MemorySegment mem) {
+        return getFlipX(mem, 0);
+    }
+    
+    public static boolean getFlipX(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 12) & 0x01) != 0;
+    }
+    
+    public static boolean getFlipY(MemorySegment mem) {
+        return getFlipY(mem, 0);
+    }
+    
+    public static boolean getFlipY(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 12) & 0x02) != 0;
+    }
+    
+    public static boolean getFlipZ(MemorySegment mem) {
+        return getFlipZ(mem, 0);
+    }
+    
+    public static boolean getFlipZ(MemorySegment mem, int offset) {
+        return (mem.get(PacketIO.PROTO_BYTE, offset + 12) & 0x04) != 0;
+    }
+    
+    
+    
+    
+    
+    public static BuilderToolRandomizeClipboard toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static BuilderToolRandomizeClipboard toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one BuilderToolRandomizeClipboard and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static BuilderToolRandomizeClipboard toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new BuilderToolRandomizeClipboard(
             mem.get(PacketIO.PROTO_INT, offset + 0),
             mem.get(PacketIO.PROTO_INT, offset + 4),
             mem.get(PacketIO.PROTO_INT, offset + 8),
-            mem.get(PacketIO.PROTO_BOOL, offset + 12),
-            mem.get(PacketIO.PROTO_BOOL, offset + 13),
-            mem.get(PacketIO.PROTO_BOOL, offset + 14)
-         );
-      }
-   }
+            (mem.get(PacketIO.PROTO_BYTE, offset + 12) & 0x01) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 12) & 0x02) != 0,
+            (mem.get(PacketIO.PROTO_BYTE, offset + 12) & 0x04) != 0
+        );
+        if (cursor != null) cursor.position = offset + 13;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.deltaX);
+        mem.set(PacketIO.PROTO_INT, offset + 4, this.deltaY);
+        mem.set(PacketIO.PROTO_INT, offset + 8, this.deltaZ);
+        byte boolBits0_0 = 0;
+        if (this.flipX) boolBits0_0 |= 0x01;
+        if (this.flipY) boolBits0_0 |= 0x02;
+        if (this.flipZ) boolBits0_0 |= 0x04;
+        mem.set(PacketIO.PROTO_BYTE, offset + 12 + 0, boolBits0_0);
+        
+        
+    
+       return 13;
+    }
+    public int computeSize() {
+        return 13;
+    }
 
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeIntLE(this.deltaX);
-      buf.writeIntLE(this.deltaY);
-      buf.writeIntLE(this.deltaZ);
-      buf.writeByte(this.flipX ? 1 : 0);
-      buf.writeByte(this.flipY ? 1 : 0);
-      buf.writeByte(this.flipZ ? 1 : 0);
-   }
+    public BuilderToolRandomizeClipboard clone() {
+        BuilderToolRandomizeClipboard copy = new BuilderToolRandomizeClipboard();
+        copy.deltaX = this.deltaX;
+        copy.deltaY = this.deltaY;
+        copy.deltaZ = this.deltaZ;
+        copy.flipX = this.flipX;
+        copy.flipY = this.flipY;
+        copy.flipZ = this.flipZ;
+        return copy;
+    }
 
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_INT, offset + 0, this.deltaX);
-      mem.set(PacketIO.PROTO_INT, offset + 4, this.deltaY);
-      mem.set(PacketIO.PROTO_INT, offset + 8, this.deltaZ);
-      mem.set(PacketIO.PROTO_BOOL, offset + 12, this.flipX);
-      mem.set(PacketIO.PROTO_BOOL, offset + 13, this.flipY);
-      mem.set(PacketIO.PROTO_BOOL, offset + 14, this.flipZ);
-      return 15;
-   }
 
-   @Override
-   public int computeSize() {
-      return 15;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BuilderToolRandomizeClipboard other)) return false;
+        return this.deltaX == other.deltaX && this.deltaY == other.deltaY && this.deltaZ == other.deltaZ && this.flipX == other.flipX && this.flipY == other.flipY && this.flipZ == other.flipZ;
+    }
 
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      return buffer.readableBytes() - offset < 15 ? ValidationResult.error("Buffer too small: expected at least 15 bytes") : ValidationResult.OK;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(deltaX, deltaY, deltaZ, flipX, flipY, flipZ);
+    }
 
-   public BuilderToolRandomizeClipboard clone() {
-      BuilderToolRandomizeClipboard copy = new BuilderToolRandomizeClipboard();
-      copy.deltaX = this.deltaX;
-      copy.deltaY = this.deltaY;
-      copy.deltaZ = this.deltaZ;
-      copy.flipX = this.flipX;
-      copy.flipY = this.flipY;
-      copy.flipZ = this.flipZ;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof BuilderToolRandomizeClipboard other)
-            ? false
-            : this.deltaX == other.deltaX
-               && this.deltaY == other.deltaY
-               && this.deltaZ == other.deltaZ
-               && this.flipX == other.flipX
-               && this.flipY == other.flipY
-               && this.flipZ == other.flipZ;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.deltaX, this.deltaY, this.deltaZ, this.flipX, this.flipY, this.flipZ);
-   }
-}
+}

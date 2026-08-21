@@ -1,354 +1,228 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.SoundSet;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.SoundSet;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateSoundSets implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 79;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   public int maxId;
-   @Nullable
-   public Map<Integer, SoundSet> soundSets;
+    public static final int PACKET_ID = 79;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 79;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateSoundSets() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    public int maxId;
+    @Nullable public java.util.Map<Integer, SoundSet> soundSets;
 
-   public UpdateSoundSets(@Nonnull UpdateType type, int maxId, @Nullable Map<Integer, SoundSet> soundSets) {
-      this.type = type;
-      this.maxId = maxId;
-      this.soundSets = soundSets;
-   }
+    public UpdateSoundSets() {
+    }
 
-   public UpdateSoundSets(@Nonnull UpdateSoundSets other) {
-      this.type = other.type;
-      this.maxId = other.maxId;
-      this.soundSets = other.soundSets;
-   }
+    public UpdateSoundSets(@Nonnull UpdateType type, int maxId, @Nullable java.util.Map<Integer, SoundSet> soundSets) {
+        this.type = type;
+        this.maxId = maxId;
+        this.soundSets = soundSets;
+    }
 
-   @Nonnull
-   public static UpdateSoundSets deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("UpdateSoundSets", 6, buf.readableBytes() - offset);
-      }
+    public UpdateSoundSets(@Nonnull UpdateSoundSets other) {
+        this.type = other.type;
+        this.maxId = other.maxId;
+        this.soundSets = other.soundSets;
+    }
 
-      UpdateSoundSets obj = new UpdateSoundSets();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      obj.maxId = buf.getIntLE(offset + 2);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int soundSetsCount = VarInt.peek(buf, pos);
-         if (soundSetsCount < 0) {
-            throw ProtocolException.invalidVarInt("SoundSets");
-         }
-
-         int soundSetsVarLen = VarInt.size(soundSetsCount);
-         if (soundSetsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("SoundSets", soundSetsCount, 4096000);
-         }
-
-         pos += soundSetsVarLen;
-         obj.soundSets = new HashMap<>(soundSetsCount);
-
-         for (int i = 0; i < soundSetsCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            SoundSet val = SoundSet.deserialize(buf, pos);
-            pos += SoundSet.computeBytesConsumed(buf, pos);
-            if (obj.soundSets.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("soundSets", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateSoundSets", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateSoundSets", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static int getMaxId(MemorySegment mem) {
+        return getMaxId(mem, 0);
+    }
+    
+    public static int getMaxId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 2);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, SoundSet> getSoundSets(MemorySegment mem) {
+        return getSoundSets(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, SoundSet> getSoundSets(MemorySegment mem, int offset) {
+        if (!hasSoundSets(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 6;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("SoundSets");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("SoundSets", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 14 > mem.byteSize()) throw ProtocolException.bufferTooSmall("SoundSets", (int) java.lang.Math.min(off + (long) len * 14, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, SoundSet> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = SoundSet.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("SoundSets", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += SoundSet.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static int getMaxId(MemorySegment mem) {
-      return getMaxId(mem, 0);
-   }
-
-   public static int getMaxId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 2);
-   }
-
-   @Nullable
-   public static Map<Integer, SoundSet> getSoundSets(MemorySegment mem) {
-      return getSoundSets(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, SoundSet> getSoundSets(MemorySegment mem, int offset) {
-      if (!hasSoundSets(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 6;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("SoundSets", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("SoundSets", len, 4096000);
-      }
-
-      Map<Integer, SoundSet> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         SoundSet value = SoundSet.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("SoundSets", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasSoundSets(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateSoundSets toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateSoundSets toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateSoundSets", offset + 6, (int)mem.byteSize());
-      }
-
-      Map<Integer, SoundSet> soundSets = null;
-      if (hasSoundSets(mem, offset)) {
-         int off = offset + 6;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("SoundSets", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("SoundSets", len, 4096000);
-         }
-
-         soundSets = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            SoundSet value = SoundSet.toObject(mem, off);
-            off += value.computeSize();
-            if (soundSets.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("SoundSets", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasSoundSets(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateSoundSets toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateSoundSets toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateSoundSets and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateSoundSets toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<Integer, SoundSet> v2 = null;
+        if (hasSoundSets(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("SoundSets");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("SoundSets", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 14 > mem.byteSize()) throw ProtocolException.bufferTooSmall("SoundSets", (int) java.lang.Math.min(off + (long) len * 14, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = SoundSet.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("SoundSets", key);
+                }
             }
-         }
-      }
-
-      return new UpdateSoundSets(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), mem.get(PacketIO.PROTO_INT, offset + 2), soundSets);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.soundSets != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      buf.writeIntLE(this.maxId);
-      if (this.soundSets != null) {
-         if (this.soundSets.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("SoundSets", this.soundSets.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.soundSets.size());
-
-         for (Entry<Integer, SoundSet> e : this.soundSets.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.soundSets != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
-      int varOffset = offset + 6;
-      if (this.soundSets != null) {
-         if (this.soundSets.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("SoundSets", this.soundSets.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.soundSets.size());
-
-         for (Entry<Integer, SoundSet> e : this.soundSets.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.soundSets != null) {
-         int soundSetsSize = 0;
-
-         for (Entry<Integer, SoundSet> kvp : this.soundSets.entrySet()) {
-            soundSetsSize += 4 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.soundSets.size()) + soundSetsSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int soundSetsCount = VarInt.peek(buffer, v);
-         if (soundSetsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for SoundSets");
-         }
-
-         if (soundSetsCount > 4096000) {
-            return ValidationResult.error("SoundSets exceeds max length 4096000");
-         }
-
-         v += VarInt.size(soundSetsCount);
-
-         for (int i = 0; i < soundSetsCount; i++) {
-            v += 4;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new UpdateSoundSets(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_INT, offset + 2),
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.soundSets != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
+        var varOffset = offset + 6;
+        if (this.soundSets != null) {
+            
+            if (this.soundSets.size() > 4096000) throw ProtocolException.dictionaryTooLarge("SoundSets", soundSets.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.soundSets.size());
+            for (var e : this.soundSets.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (soundSets != null) {
+        int soundSetsSize = 0;
+for (var kvp : soundSets.entrySet()) soundSetsSize += 4 + kvp.getValue().computeSize();
+size += VarInt.size(soundSets.size()) + soundSetsSize;
+    }
 
-            v += SoundSet.computeBytesConsumed(buffer, v);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateSoundSets clone() {
+        UpdateSoundSets copy = new UpdateSoundSets();
+        copy.type = this.type;
+        copy.maxId = this.maxId;
+        if (this.soundSets != null) {
+            java.util.Map<Integer, SoundSet> m = new java.util.HashMap<>();
+            for (var e : this.soundSets.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.soundSets = m;
+        }
+        return copy;
+    }
 
-   public UpdateSoundSets clone() {
-      UpdateSoundSets copy = new UpdateSoundSets();
-      copy.type = this.type;
-      copy.maxId = this.maxId;
-      if (this.soundSets != null) {
-         Map<Integer, SoundSet> m = new HashMap<>();
 
-         for (Entry<Integer, SoundSet> e : this.soundSets.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateSoundSets other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && this.maxId == other.maxId && java.util.Objects.equals(this.soundSets, other.soundSets);
+    }
 
-         copy.soundSets = m;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, maxId, soundSets);
+    }
 
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateSoundSets other)
-            ? false
-            : Objects.equals(this.type, other.type) && this.maxId == other.maxId && Objects.equals(this.soundSets, other.soundSets);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.maxId, this.soundSets);
-   }
-}
+}

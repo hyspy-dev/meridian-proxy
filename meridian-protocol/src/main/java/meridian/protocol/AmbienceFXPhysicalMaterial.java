@@ -1,161 +1,136 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class AmbienceFXPhysicalMaterial {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 13;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 13;
-   public static final int MAX_SIZE = 13;
-   public int physicalMaterialIndex;
-   @Nullable
-   public Rangef percent;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 13;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 13;
+    public static final int MAX_SIZE = 13;
 
-   public AmbienceFXPhysicalMaterial() {
-   }
+    public int physicalMaterialIndex;
+    @Nullable public Rangef percent;
 
-   public AmbienceFXPhysicalMaterial(int physicalMaterialIndex, @Nullable Rangef percent) {
-      this.physicalMaterialIndex = physicalMaterialIndex;
-      this.percent = percent;
-   }
+    public AmbienceFXPhysicalMaterial() {
+    }
 
-   public AmbienceFXPhysicalMaterial(@Nonnull AmbienceFXPhysicalMaterial other) {
-      this.physicalMaterialIndex = other.physicalMaterialIndex;
-      this.percent = other.percent;
-   }
+    public AmbienceFXPhysicalMaterial(int physicalMaterialIndex, @Nullable Rangef percent) {
+        this.physicalMaterialIndex = physicalMaterialIndex;
+        this.percent = percent;
+    }
 
-   @Nonnull
-   public static AmbienceFXPhysicalMaterial deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 13) {
-         throw ProtocolException.bufferTooSmall("AmbienceFXPhysicalMaterial", 13, buf.readableBytes() - offset);
-      }
+    public AmbienceFXPhysicalMaterial(@Nonnull AmbienceFXPhysicalMaterial other) {
+        this.physicalMaterialIndex = other.physicalMaterialIndex;
+        this.percent = other.percent;
+    }
 
-      AmbienceFXPhysicalMaterial obj = new AmbienceFXPhysicalMaterial();
-      byte nullBits = buf.getByte(offset);
-      obj.physicalMaterialIndex = buf.getIntLE(offset + 1);
-      if ((nullBits & 1) != 0) {
-         obj.percent = Rangef.deserialize(buf, offset + 5);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("AmbienceFXPhysicalMaterial", offset, (int) mem.byteSize());
+        long needed = (long) offset + 13;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("AmbienceFXPhysicalMaterial", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getPhysicalMaterialIndex(MemorySegment mem) {
+        return getPhysicalMaterialIndex(mem, 0);
+    }
+    
+    public static int getPhysicalMaterialIndex(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 1);
+    }
+    
+    @Nullable
+    public static Rangef getPercent(MemorySegment mem) {
+        return getPercent(mem, 0);
+    }
+    
+    @Nullable
+    public static Rangef getPercent(MemorySegment mem, int offset) {
+        return hasPercent(mem, offset) ? Rangef.toObject(mem, offset + 5): null;
+    }
+    
+    public static boolean hasPercent(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static AmbienceFXPhysicalMaterial toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static AmbienceFXPhysicalMaterial toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one AmbienceFXPhysicalMaterial and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static AmbienceFXPhysicalMaterial toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new AmbienceFXPhysicalMaterial(
+            mem.get(PacketIO.PROTO_INT, offset + 1),
+            hasPercent(mem, offset) ? Rangef.toObject(mem, offset + 5) : null
+        );
+        if (cursor != null) cursor.position = offset + 13;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.percent != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_INT, offset + 1, this.physicalMaterialIndex);
+        if (this.percent != null) {
+            this.percent.serialize(mem, offset + 5);
+        } else {
+            mem.asSlice(offset + 5, 8).fill((byte) 0); 
+        }
+        
+        
+    
+       return 13;
+    }
+    public int computeSize() {
+        return 13;
+    }
 
-      return obj;
-   }
+    public AmbienceFXPhysicalMaterial clone() {
+        AmbienceFXPhysicalMaterial copy = new AmbienceFXPhysicalMaterial();
+        copy.physicalMaterialIndex = this.physicalMaterialIndex;
+        copy.percent = this.percent != null ? this.percent.clone() : null;
+        return copy;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 13;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 13L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof AmbienceFXPhysicalMaterial other)) return false;
+        return this.physicalMaterialIndex == other.physicalMaterialIndex && java.util.Objects.equals(this.percent, other.percent);
+    }
 
-   public static int getPhysicalMaterialIndex(MemorySegment mem) {
-      return getPhysicalMaterialIndex(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(physicalMaterialIndex, percent);
+    }
 
-   public static int getPhysicalMaterialIndex(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   @Nullable
-   public static Rangef getPercent(MemorySegment mem) {
-      return getPercent(mem, 0);
-   }
-
-   @Nullable
-   public static Rangef getPercent(MemorySegment mem, int offset) {
-      return hasPercent(mem, offset) ? Rangef.toObject(mem, offset + 5) : null;
-   }
-
-   public static boolean hasPercent(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static AmbienceFXPhysicalMaterial toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static AmbienceFXPhysicalMaterial toObject(MemorySegment mem, int offset) {
-      if (offset + 13 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("AmbienceFXPhysicalMaterial", offset + 13, (int)mem.byteSize());
-      } else {
-         return new AmbienceFXPhysicalMaterial(mem.get(PacketIO.PROTO_INT, offset + 1), hasPercent(mem, offset) ? Rangef.toObject(mem, offset + 5) : null);
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.percent != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.physicalMaterialIndex);
-      if (this.percent != null) {
-         this.percent.serialize(buf);
-      } else {
-         buf.writeZero(8);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.percent != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.physicalMaterialIndex);
-      if (this.percent != null) {
-         this.percent.serialize(mem, offset + 5);
-      } else {
-         mem.asSlice(offset + 5, 8L).fill((byte)0);
-      }
-
-      return 13;
-   }
-
-   public int computeSize() {
-      return 13;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 13) {
-         return ValidationResult.error("Buffer too small: expected at least 13 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      return ValidationResult.OK;
-   }
-
-   public AmbienceFXPhysicalMaterial clone() {
-      AmbienceFXPhysicalMaterial copy = new AmbienceFXPhysicalMaterial();
-      copy.physicalMaterialIndex = this.physicalMaterialIndex;
-      copy.percent = this.percent != null ? this.percent.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof AmbienceFXPhysicalMaterial other)
-            ? false
-            : this.physicalMaterialIndex == other.physicalMaterialIndex && Objects.equals(this.percent, other.percent);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.physicalMaterialIndex, this.percent);
-   }
-}
+}

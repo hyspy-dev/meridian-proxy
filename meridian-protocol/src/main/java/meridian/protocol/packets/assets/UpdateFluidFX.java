@@ -1,354 +1,228 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.FluidFX;
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.FluidFX;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateFluidFX implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 63;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   public int maxId;
-   @Nullable
-   public Map<Integer, FluidFX> fluidFX;
+    public static final int PACKET_ID = 63;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 63;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateFluidFX() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    public int maxId;
+    @Nullable public java.util.Map<Integer, FluidFX> fluidFX;
 
-   public UpdateFluidFX(@Nonnull UpdateType type, int maxId, @Nullable Map<Integer, FluidFX> fluidFX) {
-      this.type = type;
-      this.maxId = maxId;
-      this.fluidFX = fluidFX;
-   }
+    public UpdateFluidFX() {
+    }
 
-   public UpdateFluidFX(@Nonnull UpdateFluidFX other) {
-      this.type = other.type;
-      this.maxId = other.maxId;
-      this.fluidFX = other.fluidFX;
-   }
+    public UpdateFluidFX(@Nonnull UpdateType type, int maxId, @Nullable java.util.Map<Integer, FluidFX> fluidFX) {
+        this.type = type;
+        this.maxId = maxId;
+        this.fluidFX = fluidFX;
+    }
 
-   @Nonnull
-   public static UpdateFluidFX deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("UpdateFluidFX", 6, buf.readableBytes() - offset);
-      }
+    public UpdateFluidFX(@Nonnull UpdateFluidFX other) {
+        this.type = other.type;
+        this.maxId = other.maxId;
+        this.fluidFX = other.fluidFX;
+    }
 
-      UpdateFluidFX obj = new UpdateFluidFX();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      obj.maxId = buf.getIntLE(offset + 2);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int fluidFXCount = VarInt.peek(buf, pos);
-         if (fluidFXCount < 0) {
-            throw ProtocolException.invalidVarInt("FluidFX");
-         }
-
-         int fluidFXVarLen = VarInt.size(fluidFXCount);
-         if (fluidFXCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("FluidFX", fluidFXCount, 4096000);
-         }
-
-         pos += fluidFXVarLen;
-         obj.fluidFX = new HashMap<>(fluidFXCount);
-
-         for (int i = 0; i < fluidFXCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            FluidFX val = FluidFX.deserialize(buf, pos);
-            pos += FluidFX.computeBytesConsumed(buf, pos);
-            if (obj.fluidFX.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("fluidFX", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateFluidFX", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateFluidFX", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static int getMaxId(MemorySegment mem) {
+        return getMaxId(mem, 0);
+    }
+    
+    public static int getMaxId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 2);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, FluidFX> getFluidFX(MemorySegment mem) {
+        return getFluidFX(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, FluidFX> getFluidFX(MemorySegment mem, int offset) {
+        if (!hasFluidFX(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 6;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("FluidFX");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("FluidFX", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 73 > mem.byteSize()) throw ProtocolException.bufferTooSmall("FluidFX", (int) java.lang.Math.min(off + (long) len * 73, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, FluidFX> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = FluidFX.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("FluidFX", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += FluidFX.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static int getMaxId(MemorySegment mem) {
-      return getMaxId(mem, 0);
-   }
-
-   public static int getMaxId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 2);
-   }
-
-   @Nullable
-   public static Map<Integer, FluidFX> getFluidFX(MemorySegment mem) {
-      return getFluidFX(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, FluidFX> getFluidFX(MemorySegment mem, int offset) {
-      if (!hasFluidFX(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 6;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("FluidFX", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("FluidFX", len, 4096000);
-      }
-
-      Map<Integer, FluidFX> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         FluidFX value = FluidFX.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("FluidFX", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasFluidFX(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateFluidFX toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateFluidFX toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateFluidFX", offset + 6, (int)mem.byteSize());
-      }
-
-      Map<Integer, FluidFX> fluidFX = null;
-      if (hasFluidFX(mem, offset)) {
-         int off = offset + 6;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("FluidFX", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("FluidFX", len, 4096000);
-         }
-
-         fluidFX = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            FluidFX value = FluidFX.toObject(mem, off);
-            off += value.computeSize();
-            if (fluidFX.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("FluidFX", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasFluidFX(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateFluidFX toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateFluidFX toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateFluidFX and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateFluidFX toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<Integer, FluidFX> v2 = null;
+        if (hasFluidFX(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("FluidFX");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("FluidFX", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 73 > mem.byteSize()) throw ProtocolException.bufferTooSmall("FluidFX", (int) java.lang.Math.min(off + (long) len * 73, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = FluidFX.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("FluidFX", key);
+                }
             }
-         }
-      }
-
-      return new UpdateFluidFX(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), mem.get(PacketIO.PROTO_INT, offset + 2), fluidFX);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.fluidFX != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      buf.writeIntLE(this.maxId);
-      if (this.fluidFX != null) {
-         if (this.fluidFX.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("FluidFX", this.fluidFX.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.fluidFX.size());
-
-         for (Entry<Integer, FluidFX> e : this.fluidFX.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.fluidFX != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
-      int varOffset = offset + 6;
-      if (this.fluidFX != null) {
-         if (this.fluidFX.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("FluidFX", this.fluidFX.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.fluidFX.size());
-
-         for (Entry<Integer, FluidFX> e : this.fluidFX.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.fluidFX != null) {
-         int fluidFXSize = 0;
-
-         for (Entry<Integer, FluidFX> kvp : this.fluidFX.entrySet()) {
-            fluidFXSize += 4 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.fluidFX.size()) + fluidFXSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int fluidFXCount = VarInt.peek(buffer, v);
-         if (fluidFXCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for FluidFX");
-         }
-
-         if (fluidFXCount > 4096000) {
-            return ValidationResult.error("FluidFX exceeds max length 4096000");
-         }
-
-         v += VarInt.size(fluidFXCount);
-
-         for (int i = 0; i < fluidFXCount; i++) {
-            v += 4;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new UpdateFluidFX(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_INT, offset + 2),
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.fluidFX != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
+        var varOffset = offset + 6;
+        if (this.fluidFX != null) {
+            
+            if (this.fluidFX.size() > 4096000) throw ProtocolException.dictionaryTooLarge("FluidFX", fluidFX.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.fluidFX.size());
+            for (var e : this.fluidFX.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (fluidFX != null) {
+        int fluidFXSize = 0;
+for (var kvp : fluidFX.entrySet()) fluidFXSize += 4 + kvp.getValue().computeSize();
+size += VarInt.size(fluidFX.size()) + fluidFXSize;
+    }
 
-            v += FluidFX.computeBytesConsumed(buffer, v);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateFluidFX clone() {
+        UpdateFluidFX copy = new UpdateFluidFX();
+        copy.type = this.type;
+        copy.maxId = this.maxId;
+        if (this.fluidFX != null) {
+            java.util.Map<Integer, FluidFX> m = new java.util.HashMap<>();
+            for (var e : this.fluidFX.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.fluidFX = m;
+        }
+        return copy;
+    }
 
-   public UpdateFluidFX clone() {
-      UpdateFluidFX copy = new UpdateFluidFX();
-      copy.type = this.type;
-      copy.maxId = this.maxId;
-      if (this.fluidFX != null) {
-         Map<Integer, FluidFX> m = new HashMap<>();
 
-         for (Entry<Integer, FluidFX> e : this.fluidFX.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateFluidFX other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && this.maxId == other.maxId && java.util.Objects.equals(this.fluidFX, other.fluidFX);
+    }
 
-         copy.fluidFX = m;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, maxId, fluidFX);
+    }
 
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateFluidFX other)
-            ? false
-            : Objects.equals(this.type, other.type) && this.maxId == other.maxId && Objects.equals(this.fluidFX, other.fluidFX);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.maxId, this.fluidFX);
-   }
-}
+}

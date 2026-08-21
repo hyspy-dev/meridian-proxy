@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum AudioStateAuthority {
-   Server(0),
-   Client(1);
+    Server(0),
+    Client(1);
 
-   public static final AudioStateAuthority[] VALUES = values();
-   private final int value;
+    public static final AudioStateAuthority[] VALUES = values();
 
-   AudioStateAuthority(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    AudioStateAuthority(int value) {
+        this.value = value;
+    }
 
-   public static AudioStateAuthority fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("AudioStateAuthority", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static AudioStateAuthority fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("AudioStateAuthority", value);
+    }
+}

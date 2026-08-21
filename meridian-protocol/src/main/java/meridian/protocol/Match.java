@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum Match {
-   All(0),
-   None(1);
+    All(0),
+    None(1);
 
-   public static final Match[] VALUES = values();
-   private final int value;
+    public static final Match[] VALUES = values();
 
-   Match(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    Match(int value) {
+        this.value = value;
+    }
 
-   public static Match fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("Match", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static Match fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("Match", value);
+    }
+}

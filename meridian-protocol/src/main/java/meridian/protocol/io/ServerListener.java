@@ -4,7 +4,7 @@ import java.net.SocketAddress;
 import java.util.concurrent.Future;
 
 public interface ServerListener {
-   Future<Void> close();
+    Future<Void> close();
 
-   SocketAddress localAddress();
+    SocketAddress localAddress();
 }

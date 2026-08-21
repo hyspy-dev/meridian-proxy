@@ -1,230 +1,162 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.serveraccess;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class SetServerAccess implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 252;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 2;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 2;
-   public static final int MAX_SIZE = 16384007;
-   @Nonnull
-   public Access access = Access.Private;
-   @Nullable
-   public String password;
+    public static final int PACKET_ID = 252;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 2;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 2;
+    public static final int MAX_SIZE = 16384007;
 
-   @Override
-   public int getId() {
-      return 252;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public SetServerAccess() {
-   }
+    @Nonnull public Access access = Access.Private;
+    @Nullable public String password;
 
-   public SetServerAccess(@Nonnull Access access, @Nullable String password) {
-      this.access = access;
-      this.password = password;
-   }
+    public SetServerAccess() {
+    }
 
-   public SetServerAccess(@Nonnull SetServerAccess other) {
-      this.access = other.access;
-      this.password = other.password;
-   }
+    public SetServerAccess(@Nonnull Access access, @Nullable String password) {
+        this.access = access;
+        this.password = password;
+    }
 
-   @Nonnull
-   public static SetServerAccess deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 2) {
-         throw ProtocolException.bufferTooSmall("SetServerAccess", 2, buf.readableBytes() - offset);
-      }
+    public SetServerAccess(@Nonnull SetServerAccess other) {
+        this.access = other.access;
+        this.password = other.password;
+    }
 
-      SetServerAccess obj = new SetServerAccess();
-      byte nullBits = buf.getByte(offset);
-      obj.access = Access.fromValue(buf.getByte(offset + 1));
-      int pos = offset + 2;
-      if ((nullBits & 1) != 0) {
-         int passwordLen = VarInt.peek(buf, pos);
-         if (passwordLen < 0) {
-            throw ProtocolException.invalidVarInt("Password");
-         }
-
-         int passwordVarLen = VarInt.size(passwordLen);
-         if (passwordLen > 4096000) {
-            throw ProtocolException.stringTooLong("Password", passwordLen, 4096000);
-         }
-
-         if (pos + passwordVarLen + passwordLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Password", pos + passwordVarLen + passwordLen, buf.readableBytes());
-         }
-
-         obj.password = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-         pos += passwordVarLen + passwordLen;
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 2;
-      if ((nullBits & 1) != 0) {
-         int sl = VarInt.peek(buf, pos);
-         pos += VarInt.size(sl) + sl;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 2L;
-   }
-
-   public static Access getAccess(MemorySegment mem) {
-      return getAccess(mem, 0);
-   }
-
-   public static Access getAccess(MemorySegment mem, int offset) {
-      return Access.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   @Nullable
-   public static String getPassword(MemorySegment mem) {
-      return getPassword(mem, 0);
-   }
-
-   @Nullable
-   public static String getPassword(MemorySegment mem, int offset) {
-      return hasPassword(mem, offset) ? PacketIO.readVarString("Password", mem, offset + 2, 4096000, PacketIO.UTF8) : null;
-   }
-
-   public static boolean hasPassword(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static SetServerAccess toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static SetServerAccess toObject(MemorySegment mem, int offset) {
-      if (offset + 2 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("SetServerAccess", offset + 2, (int)mem.byteSize());
-      } else {
-         return new SetServerAccess(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("SetServerAccess", offset, (int) mem.byteSize());
+        long needed = (long) offset + 2;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("SetServerAccess", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static Access getAccess(MemorySegment mem) {
+        return getAccess(mem, 0);
+    }
+    
+    public static Access getAccess(MemorySegment mem, int offset) {
+        return Access.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    @Nullable
+    public static String getPassword(MemorySegment mem) {
+        return getPassword(mem, 0);
+    }
+    
+    @Nullable
+    public static String getPassword(MemorySegment mem, int offset) {
+        return hasPassword(mem, offset) ? PacketIO.readVarString("Password", mem, offset + 2, 4096000): null;
+    }
+    
+    public static boolean hasPassword(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static SetServerAccess toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static SetServerAccess toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one SetServerAccess and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static SetServerAccess toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 2;
+        var varPos = 0;
+        String v1 = null;
+        if (hasPassword(mem, offset)) {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v1 = PacketIO.readVarString("Password", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new SetServerAccess(
             Access.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
-            hasPassword(mem, offset) ? PacketIO.readVarString("Password", mem, offset + 2, 4096000, PacketIO.UTF8) : null
-         );
-      }
-   }
+            v1
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.password != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.access.getValue());
+        var varOffset = offset + 2;
+        if (this.password != null) {
+            
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.password, 4096000);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 2;
+        if (password != null) size += PacketIO.stringSize(password);
 
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.password != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+        return size;
+    }
 
-      buf.writeByte(nullBits);
-      buf.writeByte(this.access.getValue());
-      if (this.password != null) {
-         PacketIO.writeVarString(buf, this.password, 4096000);
-      }
-   }
+    public SetServerAccess clone() {
+        SetServerAccess copy = new SetServerAccess();
+        copy.access = this.access;
+        copy.password = this.password;
+        return copy;
+    }
 
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.password != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.access.getValue());
-      int varOffset = offset + 2;
-      if (this.password != null) {
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.password, 4096000);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof SetServerAccess other)) return false;
+        return java.util.Objects.equals(this.access, other.access) && java.util.Objects.equals(this.password, other.password);
+    }
 
-      return varOffset - offset;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(access, password);
+    }
 
-   @Override
-   public int computeSize() {
-      int size = 2;
-      if (this.password != null) {
-         size += PacketIO.stringSize(this.password);
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 2) {
-         return ValidationResult.error("Buffer too small: expected at least 2 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 4) {
-         return ValidationResult.error("Invalid Access value for Access");
-      }
-
-      v = offset + 2;
-      if ((nullBits & 1) != 0) {
-         int passwordLen = VarInt.peek(buffer, v);
-         if (passwordLen < 0) {
-            return ValidationResult.error("Invalid string length for Password");
-         }
-
-         if (passwordLen > 4096000) {
-            return ValidationResult.error("Password exceeds max length 4096000");
-         }
-
-         v += VarInt.size(passwordLen);
-         v += passwordLen;
-         if (v > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Password");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public SetServerAccess clone() {
-      SetServerAccess copy = new SetServerAccess();
-      copy.access = this.access;
-      copy.password = this.password;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof SetServerAccess other) ? false : Objects.equals(this.access, other.access) && Objects.equals(this.password, other.password);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.access, this.password);
-   }
-}
+}

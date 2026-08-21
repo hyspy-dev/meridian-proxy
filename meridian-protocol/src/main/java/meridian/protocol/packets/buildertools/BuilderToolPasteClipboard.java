@@ -1,155 +1,153 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.buildertools;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class BuilderToolPasteClipboard implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 407;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 12;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 12;
-   public static final int MAX_SIZE = 12;
-   public int x;
-   public int y;
-   public int z;
+    public static final int PACKET_ID = 407;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 12;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 12;
+    public static final int MAX_SIZE = 12;
 
-   @Override
-   public int getId() {
-      return 407;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public BuilderToolPasteClipboard() {
-   }
+    public int x;
+    public int y;
+    public int z;
 
-   public BuilderToolPasteClipboard(int x, int y, int z) {
-      this.x = x;
-      this.y = y;
-      this.z = z;
-   }
+    public BuilderToolPasteClipboard() {
+    }
 
-   public BuilderToolPasteClipboard(@Nonnull BuilderToolPasteClipboard other) {
-      this.x = other.x;
-      this.y = other.y;
-      this.z = other.z;
-   }
+    public BuilderToolPasteClipboard(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
 
-   @Nonnull
-   public static BuilderToolPasteClipboard deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 12) {
-         throw ProtocolException.bufferTooSmall("BuilderToolPasteClipboard", 12, buf.readableBytes() - offset);
-      }
+    public BuilderToolPasteClipboard(@Nonnull BuilderToolPasteClipboard other) {
+        this.x = other.x;
+        this.y = other.y;
+        this.z = other.z;
+    }
 
-      BuilderToolPasteClipboard obj = new BuilderToolPasteClipboard();
-      obj.x = buf.getIntLE(offset + 0);
-      obj.y = buf.getIntLE(offset + 4);
-      obj.z = buf.getIntLE(offset + 8);
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("BuilderToolPasteClipboard", offset, (int) mem.byteSize());
+        long needed = (long) offset + 12;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("BuilderToolPasteClipboard", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getX(MemorySegment mem) {
+        return getX(mem, 0);
+    }
+    
+    public static int getX(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    public static int getY(MemorySegment mem) {
+        return getY(mem, 0);
+    }
+    
+    public static int getY(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 4);
+    }
+    
+    public static int getZ(MemorySegment mem) {
+        return getZ(mem, 0);
+    }
+    
+    public static int getZ(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 8);
+    }
+    
+    
+    
+    
+    
+    public static BuilderToolPasteClipboard toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static BuilderToolPasteClipboard toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one BuilderToolPasteClipboard and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static BuilderToolPasteClipboard toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new BuilderToolPasteClipboard(
+            mem.get(PacketIO.PROTO_INT, offset + 0),
+            mem.get(PacketIO.PROTO_INT, offset + 4),
+            mem.get(PacketIO.PROTO_INT, offset + 8)
+        );
+        if (cursor != null) cursor.position = offset + 12;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.x);
+        mem.set(PacketIO.PROTO_INT, offset + 4, this.y);
+        mem.set(PacketIO.PROTO_INT, offset + 8, this.z);
+        
+        
+    
+       return 12;
+    }
+    public int computeSize() {
+        return 12;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 12;
-   }
+    public BuilderToolPasteClipboard clone() {
+        BuilderToolPasteClipboard copy = new BuilderToolPasteClipboard();
+        copy.x = this.x;
+        copy.y = this.y;
+        copy.z = this.z;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 12L;
-   }
 
-   public static int getX(MemorySegment mem) {
-      return getX(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BuilderToolPasteClipboard other)) return false;
+        return this.x == other.x && this.y == other.y && this.z == other.z;
+    }
 
-   public static int getX(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(x, y, z);
+    }
 
-   public static int getY(MemorySegment mem) {
-      return getY(mem, 0);
-   }
-
-   public static int getY(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 4);
-   }
-
-   public static int getZ(MemorySegment mem) {
-      return getZ(mem, 0);
-   }
-
-   public static int getZ(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 8);
-   }
-
-   public static BuilderToolPasteClipboard toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static BuilderToolPasteClipboard toObject(MemorySegment mem, int offset) {
-      if (offset + 12 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("BuilderToolPasteClipboard", offset + 12, (int)mem.byteSize());
-      } else {
-         return new BuilderToolPasteClipboard(
-            mem.get(PacketIO.PROTO_INT, offset + 0), mem.get(PacketIO.PROTO_INT, offset + 4), mem.get(PacketIO.PROTO_INT, offset + 8)
-         );
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeIntLE(this.x);
-      buf.writeIntLE(this.y);
-      buf.writeIntLE(this.z);
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_INT, offset + 0, this.x);
-      mem.set(PacketIO.PROTO_INT, offset + 4, this.y);
-      mem.set(PacketIO.PROTO_INT, offset + 8, this.z);
-      return 12;
-   }
-
-   @Override
-   public int computeSize() {
-      return 12;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      return buffer.readableBytes() - offset < 12 ? ValidationResult.error("Buffer too small: expected at least 12 bytes") : ValidationResult.OK;
-   }
-
-   public BuilderToolPasteClipboard clone() {
-      BuilderToolPasteClipboard copy = new BuilderToolPasteClipboard();
-      copy.x = this.x;
-      copy.y = this.y;
-      copy.z = this.z;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof BuilderToolPasteClipboard other) ? false : this.x == other.x && this.y == other.y && this.z == other.z;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.x, this.y, this.z);
-   }
-}
+}

@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.connection;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum DisconnectType {
-   Disconnect(0),
-   Crash(1);
+    Disconnect(0),
+    Crash(1);
 
-   public static final DisconnectType[] VALUES = values();
-   private final int value;
+    public static final DisconnectType[] VALUES = values();
 
-   DisconnectType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    DisconnectType(int value) {
+        this.value = value;
+    }
 
-   public static DisconnectType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("DisconnectType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static DisconnectType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("DisconnectType", value);
+    }
+}

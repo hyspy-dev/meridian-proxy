@@ -1,206 +1,149 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class ChatMessage implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 211;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1026;
-   @Nullable
-   public String message;
+    public static final int PACKET_ID = 211;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1026;
 
-   @Override
-   public int getId() {
-      return 211;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public ChatMessage() {
-   }
+    @Nullable public String message;
 
-   public ChatMessage(@Nullable String message) {
-      this.message = message;
-   }
+    public ChatMessage() {
+    }
 
-   public ChatMessage(@Nonnull ChatMessage other) {
-      this.message = other.message;
-   }
+    public ChatMessage(@Nullable String message) {
+        this.message = message;
+    }
 
-   @Nonnull
-   public static ChatMessage deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("ChatMessage", 1, buf.readableBytes() - offset);
-      }
+    public ChatMessage(@Nonnull ChatMessage other) {
+        this.message = other.message;
+    }
 
-      ChatMessage obj = new ChatMessage();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int messageLen = VarInt.peek(buf, pos);
-         if (messageLen < 0) {
-            throw ProtocolException.invalidVarInt("Message");
-         }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ChatMessage", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ChatMessage", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String getMessage(MemorySegment mem) {
+        return getMessage(mem, 0);
+    }
+    
+    @Nullable
+    public static String getMessage(MemorySegment mem, int offset) {
+        return hasMessage(mem, offset) ? PacketIO.readVarString("Message", mem, offset + 1, 255): null;
+    }
+    
+    public static boolean hasMessage(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static ChatMessage toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ChatMessage toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ChatMessage and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ChatMessage toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        String v0 = null;
+        if (hasMessage(mem, offset)) {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("Message", mem, off, 0, 255, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new ChatMessage(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.message != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.message != null) {
+            
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.message, 255);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (message != null) size += PacketIO.stringSize(message);
 
-         int messageVarLen = VarInt.size(messageLen);
-         if (messageLen > 255) {
-            throw ProtocolException.stringTooLong("Message", messageLen, 255);
-         }
+        return size;
+    }
 
-         if (pos + messageVarLen + messageLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Message", pos + messageVarLen + messageLen, buf.readableBytes());
-         }
+    public ChatMessage clone() {
+        ChatMessage copy = new ChatMessage();
+        copy.message = this.message;
+        return copy;
+    }
 
-         obj.message = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-         pos += messageVarLen + messageLen;
-      }
 
-      return obj;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ChatMessage other)) return false;
+        return java.util.Objects.equals(this.message, other.message);
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int sl = VarInt.peek(buf, pos);
-         pos += VarInt.size(sl) + sl;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(message);
+    }
 
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static String getMessage(MemorySegment mem) {
-      return getMessage(mem, 0);
-   }
-
-   @Nullable
-   public static String getMessage(MemorySegment mem, int offset) {
-      return hasMessage(mem, offset) ? PacketIO.readVarString("Message", mem, offset + 1, 255, PacketIO.UTF8) : null;
-   }
-
-   public static boolean hasMessage(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ChatMessage toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ChatMessage toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ChatMessage", offset + 1, (int)mem.byteSize());
-      } else {
-         return new ChatMessage(hasMessage(mem, offset) ? PacketIO.readVarString("Message", mem, offset + 1, 255, PacketIO.UTF8) : null);
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.message != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.message != null) {
-         PacketIO.writeVarString(buf, this.message, 255);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.message != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.message != null) {
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.message, 255);
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.message != null) {
-         size += PacketIO.stringSize(this.message);
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int messageLen = VarInt.peek(buffer, pos);
-         if (messageLen < 0) {
-            return ValidationResult.error("Invalid string length for Message");
-         }
-
-         if (messageLen > 255) {
-            return ValidationResult.error("Message exceeds max length 255");
-         }
-
-         pos += VarInt.size(messageLen);
-         pos += messageLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Message");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ChatMessage clone() {
-      ChatMessage copy = new ChatMessage();
-      copy.message = this.message;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof ChatMessage other ? Objects.equals(this.message, other.message) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.message);
-   }
-}
+}

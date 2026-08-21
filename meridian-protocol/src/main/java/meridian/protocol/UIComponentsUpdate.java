@@ -1,205 +1,146 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
+
 
 public class UIComponentsUpdate extends ComponentUpdate {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 0;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 0;
-   public static final int MAX_SIZE = 16384005;
-   @Nonnull
-   public int[] components = new int[0];
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 0;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 0;
+    public static final int MAX_SIZE = 16384005;
 
-   public UIComponentsUpdate() {
-   }
+    @Nonnull public int[] components = new int[0];
 
-   public UIComponentsUpdate(@Nonnull int[] components) {
-      this.components = components;
-   }
+    public UIComponentsUpdate() {
+    }
 
-   public UIComponentsUpdate(@Nonnull UIComponentsUpdate other) {
-      this.components = other.components;
-   }
+    public UIComponentsUpdate(@Nonnull int[] components) {
+        this.components = components;
+    }
 
-   @Nonnull
-   public static UIComponentsUpdate deserialize(@Nonnull ByteBuf buf, int offset) {
-      UIComponentsUpdate obj = new UIComponentsUpdate();
-      int pos = offset + 0;
-      int componentsCount = VarInt.peek(buf, pos);
-      if (componentsCount < 0) {
-         throw ProtocolException.invalidVarInt("Components");
-      }
+    public UIComponentsUpdate(@Nonnull UIComponentsUpdate other) {
+        this.components = other.components;
+    }
 
-      int componentsVarLen = VarInt.size(componentsCount);
-      if (componentsCount > 4096000) {
-         throw ProtocolException.arrayTooLong("Components", componentsCount, 4096000);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UIComponentsUpdate", offset, (int) mem.byteSize());
+        long needed = (long) offset + 0;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UIComponentsUpdate", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int[] getComponents(MemorySegment mem) {
+        return getComponents(mem, 0);
+    }
+    
+    public static int[] getComponents(MemorySegment mem, int offset) {
+        var off = offset + 0;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Components");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Components", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Components", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new int[len];
+        MemorySegment.copy(mem, PacketIO.PROTO_INT, off, data, 0, len);
+        return data;
+    }
+    
+    
+    
+    
+    
+    public static UIComponentsUpdate toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UIComponentsUpdate toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UIComponentsUpdate and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UIComponentsUpdate toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 0;
+        var varPos = 0;
+        int[] v0;
+        {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Components");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Components", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 4 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Components", (int) java.lang.Math.min(off + lenOffset + (long) len * 4, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new int[len];
+            MemorySegment.copy(mem, PacketIO.PROTO_INT, off, v0, 0, len);
+            varPos = off + len * 4 - varBase;
+        }
+        var result = new UIComponentsUpdate(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        
+        var varOffset = offset + 0;
+        if (components.length > 4096000) throw ProtocolException.arrayTooLong("Components", components.length, 4096000);
+        varOffset += VarInt.set(mem, varOffset, this.components.length);
+        
+        MemorySegment.copy(this.components, 0, mem, PacketIO.PROTO_INT, varOffset, this.components.length);
+        varOffset += this.components.length * 4;
+    
+       return varOffset - offset;
+    }
+    @Override
+    public int computeSize() {
+        int size = 0;
+        size += VarInt.size(components.length) + components.length * 4;
 
-      if (pos + componentsVarLen + componentsCount * 4L > buf.readableBytes()) {
-         throw ProtocolException.bufferTooSmall("Components", pos + componentsVarLen + componentsCount * 4, buf.readableBytes());
-      }
+        return size;
+    }
 
-      pos += componentsVarLen;
-      obj.components = new int[componentsCount];
+    public UIComponentsUpdate clone() {
+        UIComponentsUpdate copy = new UIComponentsUpdate();
+        copy.components = java.util.Arrays.copyOf(this.components, this.components.length);
+        return copy;
+    }
 
-      for (int i = 0; i < componentsCount; i++) {
-         obj.components[i] = buf.getIntLE(pos + i * 4);
-      }
 
-      pos += componentsCount * 4;
-      return obj;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UIComponentsUpdate other)) return false;
+        return java.util.Arrays.equals(this.components, other.components);
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int pos = offset + 0;
-      int arrLen = VarInt.peek(buf, pos);
-      pos += VarInt.size(arrLen) + arrLen * 4;
-      return pos - offset;
-   }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(components);
+        return result;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 0L;
-   }
-
-   public static int[] getComponents(MemorySegment mem) {
-      return getComponents(mem, 0);
-   }
-
-   public static int[] getComponents(MemorySegment mem, int offset) {
-      int off = offset + 0;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Components", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Components", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 4L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Components", off + lenOffset + len * 4, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      int[] data = new int[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_INT, off, data, 0, len);
-      return data;
-   }
-
-   public static UIComponentsUpdate toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UIComponentsUpdate toObject(MemorySegment mem, int offset) {
-      if (offset + 0 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UIComponentsUpdate", offset + 0, (int)mem.byteSize());
-      }
-
-      int off = offset + 0;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Components", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Components", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 4L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Components", off + lenOffset + len * 4, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      int[] components = new int[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_INT, off, components, 0, len);
-      return new UIComponentsUpdate(components);
-   }
-
-   @Override
-   public int serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      if (this.components.length > 4096000) {
-         throw ProtocolException.arrayTooLong("Components", this.components.length, 4096000);
-      }
-
-      VarInt.write(buf, this.components.length);
-
-      for (int item : this.components) {
-         buf.writeIntLE(item);
-      }
-
-      return buf.writerIndex() - startPos;
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      int varOffset = offset + 0;
-      if (this.components.length > 4096000) {
-         throw ProtocolException.arrayTooLong("Components", this.components.length, 4096000);
-      }
-
-      varOffset += VarInt.set(mem, varOffset, this.components.length);
-      MemorySegment.copy(this.components, 0, mem, PacketIO.PROTO_INT, varOffset, this.components.length);
-      varOffset += this.components.length * 4;
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 0;
-      return size + VarInt.size(this.components.length) + this.components.length * 4;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 0) {
-         return ValidationResult.error("Buffer too small: expected at least 0 bytes");
-      }
-
-      int pos = offset + 0;
-      int componentsCount = VarInt.peek(buffer, pos);
-      if (componentsCount < 0) {
-         return ValidationResult.error("Invalid array count for Components");
-      }
-
-      if (componentsCount > 4096000) {
-         return ValidationResult.error("Components exceeds max length 4096000");
-      }
-
-      pos += VarInt.size(componentsCount);
-      pos += componentsCount * 4;
-      return pos > buffer.writerIndex() ? ValidationResult.error("Buffer overflow reading Components") : ValidationResult.OK;
-   }
-
-   public UIComponentsUpdate clone() {
-      UIComponentsUpdate copy = new UIComponentsUpdate();
-      copy.components = Arrays.copyOf(this.components, this.components.length);
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof UIComponentsUpdate other ? Arrays.equals(this.components, other.components) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.components);
-   }
-}
+}

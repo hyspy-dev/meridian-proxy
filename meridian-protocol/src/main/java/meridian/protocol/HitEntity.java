@@ -1,286 +1,165 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class HitEntity {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 5;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 5;
-   public static final int MAX_SIZE = 8192010;
-   public int next;
-   @Nullable
-   public EntityMatcher[] matchers;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 4;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 4;
+    public static final int MAX_SIZE = 8192009;
 
-   public HitEntity() {
-   }
+    public int next;
+    @Nonnull public EntityMatcher[] matchers = new EntityMatcher[0];
 
-   public HitEntity(int next, @Nullable EntityMatcher[] matchers) {
-      this.next = next;
-      this.matchers = matchers;
-   }
+    public HitEntity() {
+    }
 
-   public HitEntity(@Nonnull HitEntity other) {
-      this.next = other.next;
-      this.matchers = other.matchers;
-   }
+    public HitEntity(int next, @Nonnull EntityMatcher[] matchers) {
+        this.next = next;
+        this.matchers = matchers;
+    }
 
-   @Nonnull
-   public static HitEntity deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 5) {
-         throw ProtocolException.bufferTooSmall("HitEntity", 5, buf.readableBytes() - offset);
-      }
+    public HitEntity(@Nonnull HitEntity other) {
+        this.next = other.next;
+        this.matchers = other.matchers;
+    }
 
-      HitEntity obj = new HitEntity();
-      byte nullBits = buf.getByte(offset);
-      obj.next = buf.getIntLE(offset + 1);
-      int pos = offset + 5;
-      if ((nullBits & 1) != 0) {
-         int matchersCount = VarInt.peek(buf, pos);
-         if (matchersCount < 0) {
-            throw ProtocolException.invalidVarInt("Matchers");
-         }
-
-         int matchersVarLen = VarInt.size(matchersCount);
-         if (matchersCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Matchers", matchersCount, 4096000);
-         }
-
-         if (pos + matchersVarLen + matchersCount * 2L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Matchers", pos + matchersVarLen + matchersCount * 2, buf.readableBytes());
-         }
-
-         pos += matchersVarLen;
-         obj.matchers = new EntityMatcher[matchersCount];
-
-         for (int i = 0; i < matchersCount; i++) {
-            obj.matchers[i] = EntityMatcher.deserialize(buf, pos);
-            pos += EntityMatcher.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 5;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen);
-
-         for (int i = 0; i < arrLen; i++) {
-            pos += EntityMatcher.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 5L;
-   }
-
-   public static int getNext(MemorySegment mem) {
-      return getNext(mem, 0);
-   }
-
-   public static int getNext(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   @Nullable
-   public static EntityMatcher[] getMatchers(MemorySegment mem) {
-      return getMatchers(mem, 0);
-   }
-
-   @Nullable
-   public static EntityMatcher[] getMatchers(MemorySegment mem, int offset) {
-      if (!hasMatchers(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 5;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Matchers", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Matchers", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 2L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Matchers", off + lenOffset + len * 2, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      EntityMatcher[] data = new EntityMatcher[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = EntityMatcher.toObject(mem, off + i * 2);
-      }
-
-      return data;
-   }
-
-   public static boolean hasMatchers(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static HitEntity toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static HitEntity toObject(MemorySegment mem, int offset) {
-      if (offset + 5 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("HitEntity", offset + 5, (int)mem.byteSize());
-      }
-
-      EntityMatcher[] matchers = null;
-      if (hasMatchers(mem, offset)) {
-         int off = offset + 5;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Matchers", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Matchers", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 2L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Matchers", off + lenOffset + len * 2, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         matchers = new EntityMatcher[len];
-
-         for (int i = 0; i < len; i++) {
-            matchers[i] = EntityMatcher.toObject(mem, off + i * 2);
-         }
-      }
-
-      return new HitEntity(mem.get(PacketIO.PROTO_INT, offset + 1), matchers);
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.matchers != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.next);
-      if (this.matchers != null) {
-         if (this.matchers.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Matchers", this.matchers.length, 4096000);
-         }
-
-         VarInt.write(buf, this.matchers.length);
-
-         for (EntityMatcher item : this.matchers) {
-            item.serialize(buf);
-         }
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.matchers != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.next);
-      int varOffset = offset + 5;
-      if (this.matchers != null) {
-         if (this.matchers.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Matchers", this.matchers.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.matchers.length);
-         int matchersValueOffset = 0;
-
-         for (int i = 0; i < this.matchers.length; i++) {
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("HitEntity", offset, (int) mem.byteSize());
+        long needed = (long) offset + 4;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("HitEntity", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getNext(MemorySegment mem) {
+        return getNext(mem, 0);
+    }
+    
+    public static int getNext(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    public static EntityMatcher[] getMatchers(MemorySegment mem) {
+        return getMatchers(mem, 0);
+    }
+    
+    public static EntityMatcher[] getMatchers(MemorySegment mem, int offset) {
+        var off = offset + 4;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Matchers");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Matchers", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Matchers", (int) java.lang.Math.min(off + lenOffset + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new EntityMatcher[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = EntityMatcher.toObject(mem, off + i * 2);
+        }
+        return data;
+    }
+    
+    
+    
+    
+    
+    public static HitEntity toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static HitEntity toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one HitEntity and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static HitEntity toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 4;
+        var varPos = 0;
+        EntityMatcher[] v1;
+        {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Matchers");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Matchers", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + (long) len * 2 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Matchers", (int) java.lang.Math.min(off + lenOffset + (long) len * 2, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v1 = new EntityMatcher[len];
+            for (var i = 0; i < len; i++) {
+                v1[i] = EntityMatcher.toObject(mem, off + i * 2);
+            }
+            varPos = off + len * 2 - varBase;
+        }
+        var result = new HitEntity(
+            mem.get(PacketIO.PROTO_INT, offset + 0),
+            v1
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.next);
+        var varOffset = offset + 4;
+        if (matchers.length > 4096000) throw ProtocolException.arrayTooLong("Matchers", matchers.length, 4096000);
+        varOffset += VarInt.set(mem, varOffset, this.matchers.length);
+        
+        var matchersValueOffset = 0;
+        for (var i = 0; i < this.matchers.length; i++) {
             matchersValueOffset += this.matchers[i].serialize(mem, varOffset + matchersValueOffset);
-         }
+        }
+        varOffset += matchersValueOffset;
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 4;
+        size += VarInt.size(matchers.length) + matchers.length * 2;
 
-         varOffset += matchersValueOffset;
-      }
+        return size;
+    }
 
-      return varOffset - offset;
-   }
+    public HitEntity clone() {
+        HitEntity copy = new HitEntity();
+        copy.next = this.next;
+        copy.matchers = java.util.Arrays.stream(this.matchers).map(e -> e.clone()).toArray(EntityMatcher[]::new);
+        return copy;
+    }
 
-   public int computeSize() {
-      int size = 5;
-      if (this.matchers != null) {
-         size += VarInt.size(this.matchers.length) + this.matchers.length * 2;
-      }
 
-      return size;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof HitEntity other)) return false;
+        return this.next == other.next && java.util.Arrays.equals(this.matchers, other.matchers);
+    }
 
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 5) {
-         return ValidationResult.error("Buffer too small: expected at least 5 bytes");
-      }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + Integer.hashCode(next);
+        result = 31 * result + java.util.Arrays.hashCode(matchers);
+        return result;
+    }
 
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 5;
-      if ((nullBits & 1) != 0) {
-         int matchersCount = VarInt.peek(buffer, pos);
-         if (matchersCount < 0) {
-            return ValidationResult.error("Invalid array count for Matchers");
-         }
-
-         if (matchersCount > 4096000) {
-            return ValidationResult.error("Matchers exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(matchersCount);
-         pos += matchersCount * 2;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Matchers");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public HitEntity clone() {
-      HitEntity copy = new HitEntity();
-      copy.next = this.next;
-      copy.matchers = this.matchers != null ? Arrays.stream(this.matchers).map(e -> e.clone()).toArray(EntityMatcher[]::new) : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof HitEntity other) ? false : this.next == other.next && Arrays.equals(this.matchers, other.matchers);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Integer.hashCode(this.next);
-      return 31 * result + Arrays.hashCode(this.matchers);
-   }
-}
+}

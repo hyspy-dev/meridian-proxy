@@ -1,29 +1,31 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum SyncPoint {
-   Immediate(0),
-   NextBeat(1),
-   NextBar(2),
-   ExitMarker(3);
+    Immediate(0),
+    NextBeat(1),
+    NextBar(2),
+    ExitMarker(3),
+    NextMarker(4);
 
-   public static final SyncPoint[] VALUES = values();
-   private final int value;
+    public static final SyncPoint[] VALUES = values();
 
-   SyncPoint(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    SyncPoint(int value) {
+        this.value = value;
+    }
 
-   public static SyncPoint fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("SyncPoint", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static SyncPoint fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("SyncPoint", value);
+    }
+}

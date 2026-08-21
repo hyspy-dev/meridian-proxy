@@ -1,292 +1,200 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.joml.Vector3fc;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import org.joml.*;
 
 public class ItemPullbackConfiguration {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 49;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 49;
-   public static final int MAX_SIZE = 49;
-   @Nullable
-   public Vector3fc leftOffsetOverride;
-   @Nullable
-   public Vector3fc leftRotationOverride;
-   @Nullable
-   public Vector3fc rightOffsetOverride;
-   @Nullable
-   public Vector3fc rightRotationOverride;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 49;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 49;
+    public static final int MAX_SIZE = 49;
 
-   public ItemPullbackConfiguration() {
-   }
+    @Nullable public Vector3fc leftOffsetOverride;
+    @Nullable public Vector3fc leftRotationOverride;
+    @Nullable public Vector3fc rightOffsetOverride;
+    @Nullable public Vector3fc rightRotationOverride;
 
-   public ItemPullbackConfiguration(
-      @Nullable Vector3fc leftOffsetOverride,
-      @Nullable Vector3fc leftRotationOverride,
-      @Nullable Vector3fc rightOffsetOverride,
-      @Nullable Vector3fc rightRotationOverride
-   ) {
-      this.leftOffsetOverride = leftOffsetOverride;
-      this.leftRotationOverride = leftRotationOverride;
-      this.rightOffsetOverride = rightOffsetOverride;
-      this.rightRotationOverride = rightRotationOverride;
-   }
+    public ItemPullbackConfiguration() {
+    }
 
-   public ItemPullbackConfiguration(@Nonnull ItemPullbackConfiguration other) {
-      this.leftOffsetOverride = other.leftOffsetOverride;
-      this.leftRotationOverride = other.leftRotationOverride;
-      this.rightOffsetOverride = other.rightOffsetOverride;
-      this.rightRotationOverride = other.rightRotationOverride;
-   }
+    public ItemPullbackConfiguration(@Nullable Vector3fc leftOffsetOverride, @Nullable Vector3fc leftRotationOverride, @Nullable Vector3fc rightOffsetOverride, @Nullable Vector3fc rightRotationOverride) {
+        this.leftOffsetOverride = leftOffsetOverride;
+        this.leftRotationOverride = leftRotationOverride;
+        this.rightOffsetOverride = rightOffsetOverride;
+        this.rightRotationOverride = rightRotationOverride;
+    }
 
-   @Nonnull
-   public static ItemPullbackConfiguration deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 49) {
-         throw ProtocolException.bufferTooSmall("ItemPullbackConfiguration", 49, buf.readableBytes() - offset);
-      }
+    public ItemPullbackConfiguration(@Nonnull ItemPullbackConfiguration other) {
+        this.leftOffsetOverride = other.leftOffsetOverride;
+        this.leftRotationOverride = other.leftRotationOverride;
+        this.rightOffsetOverride = other.rightOffsetOverride;
+        this.rightRotationOverride = other.rightRotationOverride;
+    }
 
-      ItemPullbackConfiguration obj = new ItemPullbackConfiguration();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.leftOffsetOverride = PacketIO.readVector3f(buf, offset + 1);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ItemPullbackConfiguration", offset, (int) mem.byteSize());
+        long needed = (long) offset + 49;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ItemPullbackConfiguration", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static Vector3fc getLeftOffsetOverride(MemorySegment mem) {
+        return getLeftOffsetOverride(mem, 0);
+    }
+    
+    @Nullable
+    public static Vector3fc getLeftOffsetOverride(MemorySegment mem, int offset) {
+        return hasLeftOffsetOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 1), "LeftOffsetOverride"): null;
+    }
+    
+    @Nullable
+    public static Vector3fc getLeftRotationOverride(MemorySegment mem) {
+        return getLeftRotationOverride(mem, 0);
+    }
+    
+    @Nullable
+    public static Vector3fc getLeftRotationOverride(MemorySegment mem, int offset) {
+        return hasLeftRotationOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 13), "LeftRotationOverride"): null;
+    }
+    
+    @Nullable
+    public static Vector3fc getRightOffsetOverride(MemorySegment mem) {
+        return getRightOffsetOverride(mem, 0);
+    }
+    
+    @Nullable
+    public static Vector3fc getRightOffsetOverride(MemorySegment mem, int offset) {
+        return hasRightOffsetOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 25), "RightOffsetOverride"): null;
+    }
+    
+    @Nullable
+    public static Vector3fc getRightRotationOverride(MemorySegment mem) {
+        return getRightRotationOverride(mem, 0);
+    }
+    
+    @Nullable
+    public static Vector3fc getRightRotationOverride(MemorySegment mem, int offset) {
+        return hasRightRotationOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 37), "RightRotationOverride"): null;
+    }
+    
+    public static boolean hasLeftOffsetOverride(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasLeftRotationOverride(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    public static boolean hasRightOffsetOverride(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x04) != 0;
+    }
+    
+    public static boolean hasRightRotationOverride(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x08) != 0;
+    }
+    
+    
+    
+    public static ItemPullbackConfiguration toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ItemPullbackConfiguration toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ItemPullbackConfiguration and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ItemPullbackConfiguration toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new ItemPullbackConfiguration(
+            hasLeftOffsetOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 1), "LeftOffsetOverride") : null,
+            hasLeftRotationOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 13), "LeftRotationOverride") : null,
+            hasRightOffsetOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 25), "RightOffsetOverride") : null,
+            hasRightRotationOverride(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 37), "RightRotationOverride") : null
+        );
+        if (cursor != null) cursor.position = offset + 49;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.leftOffsetOverride != null) nullBits |= 0x01;
+        if (this.leftRotationOverride != null) nullBits |= 0x02;
+        if (this.rightOffsetOverride != null) nullBits |= 0x04;
+        if (this.rightRotationOverride != null) nullBits |= 0x08;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        if (this.leftOffsetOverride != null) {
+            PacketIO.requireFinite(this.leftOffsetOverride, "LeftOffsetOverride"); PacketIO.writeVector3f(mem, offset + 1, this.leftOffsetOverride);
+        } else {
+            mem.asSlice(offset + 1, 12).fill((byte) 0); 
+        }
+        if (this.leftRotationOverride != null) {
+            PacketIO.requireFinite(this.leftRotationOverride, "LeftRotationOverride"); PacketIO.writeVector3f(mem, offset + 13, this.leftRotationOverride);
+        } else {
+            mem.asSlice(offset + 13, 12).fill((byte) 0); 
+        }
+        if (this.rightOffsetOverride != null) {
+            PacketIO.requireFinite(this.rightOffsetOverride, "RightOffsetOverride"); PacketIO.writeVector3f(mem, offset + 25, this.rightOffsetOverride);
+        } else {
+            mem.asSlice(offset + 25, 12).fill((byte) 0); 
+        }
+        if (this.rightRotationOverride != null) {
+            PacketIO.requireFinite(this.rightRotationOverride, "RightRotationOverride"); PacketIO.writeVector3f(mem, offset + 37, this.rightRotationOverride);
+        } else {
+            mem.asSlice(offset + 37, 12).fill((byte) 0); 
+        }
+        
+        
+    
+       return 49;
+    }
+    public int computeSize() {
+        return 49;
+    }
 
-      if ((nullBits & 2) != 0) {
-         obj.leftRotationOverride = PacketIO.readVector3f(buf, offset + 13);
-      }
+    public ItemPullbackConfiguration clone() {
+        ItemPullbackConfiguration copy = new ItemPullbackConfiguration();
+        copy.leftOffsetOverride = this.leftOffsetOverride;
+        copy.leftRotationOverride = this.leftRotationOverride;
+        copy.rightOffsetOverride = this.rightOffsetOverride;
+        copy.rightRotationOverride = this.rightRotationOverride;
+        return copy;
+    }
 
-      if ((nullBits & 4) != 0) {
-         obj.rightOffsetOverride = PacketIO.readVector3f(buf, offset + 25);
-      }
 
-      if ((nullBits & 8) != 0) {
-         obj.rightRotationOverride = PacketIO.readVector3f(buf, offset + 37);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ItemPullbackConfiguration other)) return false;
+        return java.util.Objects.equals(this.leftOffsetOverride, other.leftOffsetOverride) && java.util.Objects.equals(this.leftRotationOverride, other.leftRotationOverride) && java.util.Objects.equals(this.rightOffsetOverride, other.rightOffsetOverride) && java.util.Objects.equals(this.rightRotationOverride, other.rightRotationOverride);
+    }
 
-      return obj;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(leftOffsetOverride, leftRotationOverride, rightOffsetOverride, rightRotationOverride);
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 49;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 49L;
-   }
-
-   @Nullable
-   public static Vector3fc getLeftOffsetOverride(MemorySegment mem) {
-      return getLeftOffsetOverride(mem, 0);
-   }
-
-   @Nullable
-   public static Vector3fc getLeftOffsetOverride(MemorySegment mem, int offset) {
-      return hasLeftOffsetOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 1) : null;
-   }
-
-   @Nullable
-   public static Vector3fc getLeftRotationOverride(MemorySegment mem) {
-      return getLeftRotationOverride(mem, 0);
-   }
-
-   @Nullable
-   public static Vector3fc getLeftRotationOverride(MemorySegment mem, int offset) {
-      return hasLeftRotationOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 13) : null;
-   }
-
-   @Nullable
-   public static Vector3fc getRightOffsetOverride(MemorySegment mem) {
-      return getRightOffsetOverride(mem, 0);
-   }
-
-   @Nullable
-   public static Vector3fc getRightOffsetOverride(MemorySegment mem, int offset) {
-      return hasRightOffsetOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 25) : null;
-   }
-
-   @Nullable
-   public static Vector3fc getRightRotationOverride(MemorySegment mem) {
-      return getRightRotationOverride(mem, 0);
-   }
-
-   @Nullable
-   public static Vector3fc getRightRotationOverride(MemorySegment mem, int offset) {
-      return hasRightRotationOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 37) : null;
-   }
-
-   public static boolean hasLeftOffsetOverride(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasLeftRotationOverride(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static boolean hasRightOffsetOverride(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 4) != 0;
-   }
-
-   public static boolean hasRightRotationOverride(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 8) != 0;
-   }
-
-   public static ItemPullbackConfiguration toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ItemPullbackConfiguration toObject(MemorySegment mem, int offset) {
-      if (offset + 49 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ItemPullbackConfiguration", offset + 49, (int)mem.byteSize());
-      } else {
-         return new ItemPullbackConfiguration(
-            hasLeftOffsetOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 1) : null,
-            hasLeftRotationOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 13) : null,
-            hasRightOffsetOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 25) : null,
-            hasRightRotationOverride(mem, offset) ? PacketIO.readVector3f(mem, offset + 37) : null
-         );
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.leftOffsetOverride != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.leftRotationOverride != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.rightOffsetOverride != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.rightRotationOverride != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.leftOffsetOverride != null) {
-         PacketIO.writeVector3f(buf, this.leftOffsetOverride);
-      } else {
-         buf.writeZero(12);
-      }
-
-      if (this.leftRotationOverride != null) {
-         PacketIO.writeVector3f(buf, this.leftRotationOverride);
-      } else {
-         buf.writeZero(12);
-      }
-
-      if (this.rightOffsetOverride != null) {
-         PacketIO.writeVector3f(buf, this.rightOffsetOverride);
-      } else {
-         buf.writeZero(12);
-      }
-
-      if (this.rightRotationOverride != null) {
-         PacketIO.writeVector3f(buf, this.rightRotationOverride);
-      } else {
-         buf.writeZero(12);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.leftOffsetOverride != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.leftRotationOverride != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.rightOffsetOverride != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.rightRotationOverride != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.leftOffsetOverride != null) {
-         PacketIO.writeVector3f(mem, offset + 1, this.leftOffsetOverride);
-      } else {
-         mem.asSlice(offset + 1, 12L).fill((byte)0);
-      }
-
-      if (this.leftRotationOverride != null) {
-         PacketIO.writeVector3f(mem, offset + 13, this.leftRotationOverride);
-      } else {
-         mem.asSlice(offset + 13, 12L).fill((byte)0);
-      }
-
-      if (this.rightOffsetOverride != null) {
-         PacketIO.writeVector3f(mem, offset + 25, this.rightOffsetOverride);
-      } else {
-         mem.asSlice(offset + 25, 12L).fill((byte)0);
-      }
-
-      if (this.rightRotationOverride != null) {
-         PacketIO.writeVector3f(mem, offset + 37, this.rightRotationOverride);
-      } else {
-         mem.asSlice(offset + 37, 12L).fill((byte)0);
-      }
-
-      return 49;
-   }
-
-   public int computeSize() {
-      return 49;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 49) {
-         return ValidationResult.error("Buffer too small: expected at least 49 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      return ValidationResult.OK;
-   }
-
-   public ItemPullbackConfiguration clone() {
-      ItemPullbackConfiguration copy = new ItemPullbackConfiguration();
-      copy.leftOffsetOverride = this.leftOffsetOverride;
-      copy.leftRotationOverride = this.leftRotationOverride;
-      copy.rightOffsetOverride = this.rightOffsetOverride;
-      copy.rightRotationOverride = this.rightRotationOverride;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ItemPullbackConfiguration other)
-            ? false
-            : Objects.equals(this.leftOffsetOverride, other.leftOffsetOverride)
-               && Objects.equals(this.leftRotationOverride, other.leftRotationOverride)
-               && Objects.equals(this.rightOffsetOverride, other.rightOffsetOverride)
-               && Objects.equals(this.rightRotationOverride, other.rightRotationOverride);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.leftOffsetOverride, this.leftRotationOverride, this.rightOffsetOverride, this.rightRotationOverride);
-   }
-}
+}

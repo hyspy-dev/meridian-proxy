@@ -138,12 +138,8 @@ public class PacketRouter extends ChannelInboundHandlerAdapter {
         try {
             ByteBuf payload = frame.payload();
             payload.markReaderIndex();
-            Packet packet;
-            if (info.compressed()) {
-                packet = PacketIO.readFramedPacketWithInfo(payload, payload.readableBytes(), payload.alloc(), info, PacketStatsRecorder.NOOP);
-            } else {
-                packet = info.deserialize().deserialize(payload, payload.readerIndex());
-            }
+            Packet packet = PacketIO.readFramedPacketWithInfo(
+                    payload, payload.readableBytes(), payload.alloc(), info, PacketStatsRecorder.NOOP);
             payload.resetReaderIndex();
             return packet;
         } catch (Exception e) {

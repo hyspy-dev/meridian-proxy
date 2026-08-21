@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ClientCameraView {
-   FirstPerson(0),
-   ThirdPerson(1),
-   Custom(2);
+    FirstPerson(0),
+    ThirdPerson(1),
+    Custom(2);
 
-   public static final ClientCameraView[] VALUES = values();
-   private final int value;
+    public static final ClientCameraView[] VALUES = values();
 
-   ClientCameraView(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ClientCameraView(int value) {
+        this.value = value;
+    }
 
-   public static ClientCameraView fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ClientCameraView", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ClientCameraView fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ClientCameraView", value);
+    }
+}

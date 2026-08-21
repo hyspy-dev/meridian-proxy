@@ -1,273 +1,163 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class AbilityEffects {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 4096006;
-   @Nullable
-   public InteractionType[] disabled;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 4096006;
 
-   public AbilityEffects() {
-   }
+    @Nullable public InteractionType[] disabled;
 
-   public AbilityEffects(@Nullable InteractionType[] disabled) {
-      this.disabled = disabled;
-   }
+    public AbilityEffects() {
+    }
 
-   public AbilityEffects(@Nonnull AbilityEffects other) {
-      this.disabled = other.disabled;
-   }
+    public AbilityEffects(@Nullable InteractionType[] disabled) {
+        this.disabled = disabled;
+    }
 
-   @Nonnull
-   public static AbilityEffects deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("AbilityEffects", 1, buf.readableBytes() - offset);
-      }
+    public AbilityEffects(@Nonnull AbilityEffects other) {
+        this.disabled = other.disabled;
+    }
 
-      AbilityEffects obj = new AbilityEffects();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int disabledCount = VarInt.peek(buf, pos);
-         if (disabledCount < 0) {
-            throw ProtocolException.invalidVarInt("Disabled");
-         }
-
-         int disabledVarLen = VarInt.size(disabledCount);
-         if (disabledCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Disabled", disabledCount, 4096000);
-         }
-
-         if (pos + disabledVarLen + disabledCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Disabled", pos + disabledVarLen + disabledCount * 1, buf.readableBytes());
-         }
-
-         pos += disabledVarLen;
-         obj.disabled = new InteractionType[disabledCount];
-
-         for (int i = 0; i < disabledCount; i++) {
-            obj.disabled[i] = InteractionType.fromValue(buf.getByte(pos));
-            pos++;
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen) + arrLen * 1;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static InteractionType[] getDisabled(MemorySegment mem) {
-      return getDisabled(mem, 0);
-   }
-
-   @Nullable
-   public static InteractionType[] getDisabled(MemorySegment mem, int offset) {
-      if (!hasDisabled(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Disabled", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Disabled", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 1L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Disabled", off + lenOffset + len * 1, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      InteractionType[] data = new InteractionType[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = InteractionType.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
-      }
-
-      return data;
-   }
-
-   public static boolean hasDisabled(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static AbilityEffects toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static AbilityEffects toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("AbilityEffects", offset + 1, (int)mem.byteSize());
-      }
-
-      InteractionType[] disabled = null;
-      if (hasDisabled(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Disabled", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Disabled", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 1L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Disabled", off + lenOffset + len * 1, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         disabled = new InteractionType[len];
-
-         for (int i = 0; i < len; i++) {
-            disabled[i] = InteractionType.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
-         }
-      }
-
-      return new AbilityEffects(disabled);
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.disabled != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.disabled != null) {
-         if (this.disabled.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Disabled", this.disabled.length, 4096000);
-         }
-
-         VarInt.write(buf, this.disabled.length);
-
-         for (InteractionType item : this.disabled) {
-            buf.writeByte(item.getValue());
-         }
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.disabled != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.disabled != null) {
-         if (this.disabled.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Disabled", this.disabled.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.disabled.length);
-
-         for (int i = 0; i < this.disabled.length; i++) {
-            mem.set(PacketIO.PROTO_BYTE, varOffset + i * 1, (byte)this.disabled[i].getValue());
-         }
-
-         varOffset += this.disabled.length * 1;
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 1;
-      if (this.disabled != null) {
-         size += VarInt.size(this.disabled.length) + this.disabled.length * 1;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int disabledCount = VarInt.peek(buffer, pos);
-         if (disabledCount < 0) {
-            return ValidationResult.error("Invalid array count for Disabled");
-         }
-
-         if (disabledCount > 4096000) {
-            return ValidationResult.error("Disabled exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(disabledCount);
-         if (pos + disabledCount * 1L > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Disabled");
-         }
-
-         for (int i = 0; i < disabledCount; i++) {
-            int v = buffer.getByte(pos) & 255;
-            if (v >= 25) {
-               return ValidationResult.error("Invalid InteractionType value for Disabled[i]");
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("AbilityEffects", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("AbilityEffects", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static InteractionType[] getDisabled(MemorySegment mem) {
+        return getDisabled(mem, 0);
+    }
+    
+    @Nullable
+    public static InteractionType[] getDisabled(MemorySegment mem, int offset) {
+        if (!hasDisabled(mem, offset)) return null;
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Disabled");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Disabled", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Disabled", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new InteractionType[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = InteractionType.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
+        }
+        return data;
+    }
+    
+    public static boolean hasDisabled(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static AbilityEffects toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static AbilityEffects toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one AbilityEffects and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static AbilityEffects toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        InteractionType[] v0 = null;
+        if (hasDisabled(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Disabled");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Disabled", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Disabled", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new InteractionType[len];
+            for (var i = 0; i < len; i++) {
+                v0[i] = InteractionType.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
             }
+            varPos = off + len - varBase;
+        }
+        var result = new AbilityEffects(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.disabled != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.disabled != null) {
+            
+            if (disabled.length > 4096000) throw ProtocolException.arrayTooLong("Disabled", disabled.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.disabled.length);
+            
+            for (var i = 0; i < this.disabled.length; i++) {
+                mem.set(PacketIO.PROTO_BYTE, varOffset + i * 1, (byte) this.disabled[i].getValue());
+            }
+            varOffset += this.disabled.length * 1;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (disabled != null) size += VarInt.size(disabled.length) + disabled.length * 1;
 
-            pos++;
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public AbilityEffects clone() {
+        AbilityEffects copy = new AbilityEffects();
+        copy.disabled = this.disabled != null ? java.util.Arrays.copyOf(this.disabled, this.disabled.length) : null;
+        return copy;
+    }
 
-   public AbilityEffects clone() {
-      AbilityEffects copy = new AbilityEffects();
-      copy.disabled = this.disabled != null ? Arrays.copyOf(this.disabled, this.disabled.length) : null;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof AbilityEffects other ? Arrays.equals(this.disabled, other.disabled) : false;
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof AbilityEffects other)) return false;
+        return java.util.Arrays.equals(this.disabled, other.disabled);
+    }
 
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.disabled);
-   }
-}
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(disabled);
+        return result;
+    }
+
+}

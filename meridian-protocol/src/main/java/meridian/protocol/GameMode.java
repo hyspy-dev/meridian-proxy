@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum GameMode {
-   Adventure(0),
-   Creative(1);
+    Adventure(0),
+    Creative(1);
 
-   public static final GameMode[] VALUES = values();
-   private final int value;
+    public static final GameMode[] VALUES = values();
 
-   GameMode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    GameMode(int value) {
+        this.value = value;
+    }
 
-   public static GameMode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("GameMode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static GameMode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("GameMode", value);
+    }
+}

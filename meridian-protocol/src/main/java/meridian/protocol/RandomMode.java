@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum RandomMode {
-   Shuffle(0),
-   Random(1);
+    Shuffle(0),
+    Random(1);
 
-   public static final RandomMode[] VALUES = values();
-   private final int value;
+    public static final RandomMode[] VALUES = values();
 
-   RandomMode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    RandomMode(int value) {
+        this.value = value;
+    }
 
-   public static RandomMode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("RandomMode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static RandomMode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("RandomMode", value);
+    }
+}

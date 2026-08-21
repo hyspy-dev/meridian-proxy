@@ -43,7 +43,7 @@ public class FrontAuthHandler implements PacketHandler {
                 ServerAuthToken pkt = new ServerAuthToken(serverAccessToken, auth.getLastServerPasswordChallenge());
                 log.info("[FRONT] Sending Pkt 13 ServerAuthToken to client");
 
-                impl.sendToClient(ServerAuthToken.PACKET_ID, pkt.computeSize(), pkt::serialize);
+                impl.sendToClient(pkt);
                 log.info("[FRONT] Signaling S2C to flush buffered packets");
                 impl.flushS2CBuffering();
             });

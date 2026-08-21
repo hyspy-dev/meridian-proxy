@@ -1,34 +1,35 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum Page {
-   None(0),
-   Bench(1),
-   Inventory(2),
-   ToolsSettings(3),
-   Map(4),
-   MachinimaEditor(5),
-   ContentCreation(6),
-   Custom(7),
-   Serverside(8);
+    None(0),
+    Bench(1),
+    Inventory(2),
+    ToolsSettings(3),
+    Map(4),
+    MachinimaEditor(5),
+    ContentCreation(6),
+    Custom(7),
+    Serverside(8);
 
-   public static final Page[] VALUES = values();
-   private final int value;
+    public static final Page[] VALUES = values();
 
-   Page(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    Page(int value) {
+        this.value = value;
+    }
 
-   public static Page fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("Page", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static Page fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("Page", value);
+    }
+}

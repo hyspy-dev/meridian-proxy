@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.connection;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum PongType {
-   Raw(0),
-   Direct(1),
-   Tick(2);
+    Raw(0),
+    Direct(1),
+    Tick(2);
 
-   public static final PongType[] VALUES = values();
-   private final int value;
+    public static final PongType[] VALUES = values();
 
-   PongType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    PongType(int value) {
+        this.value = value;
+    }
 
-   public static PongType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("PongType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static PongType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("PongType", value);
+    }
+}

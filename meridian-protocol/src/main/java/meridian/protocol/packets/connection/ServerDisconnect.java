@@ -1,206 +1,161 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.connection;
 
-import meridian.protocol.FormattedMessage;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.FormattedMessage;
 
 public class ServerDisconnect implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 2;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 2;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 2;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public FormattedMessage reason;
-   @Nonnull
-   public DisconnectType type = DisconnectType.Disconnect;
+    public static final int PACKET_ID = 2;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 2;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 2;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 2;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public ServerDisconnect() {
-   }
+    @Nullable public FormattedMessage reason;
+    @Nonnull public DisconnectType type = DisconnectType.Disconnect;
 
-   public ServerDisconnect(@Nullable FormattedMessage reason, @Nonnull DisconnectType type) {
-      this.reason = reason;
-      this.type = type;
-   }
+    public ServerDisconnect() {
+    }
 
-   public ServerDisconnect(@Nonnull ServerDisconnect other) {
-      this.reason = other.reason;
-      this.type = other.type;
-   }
+    public ServerDisconnect(@Nullable FormattedMessage reason, @Nonnull DisconnectType type) {
+        this.reason = reason;
+        this.type = type;
+    }
 
-   @Nonnull
-   public static ServerDisconnect deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 2) {
-         throw ProtocolException.bufferTooSmall("ServerDisconnect", 2, buf.readableBytes() - offset);
-      }
+    public ServerDisconnect(@Nonnull ServerDisconnect other) {
+        this.reason = other.reason;
+        this.type = other.type;
+    }
 
-      ServerDisconnect obj = new ServerDisconnect();
-      byte nullBits = buf.getByte(offset);
-      obj.type = DisconnectType.fromValue(buf.getByte(offset + 1));
-      int pos = offset + 2;
-      if ((nullBits & 1) != 0) {
-         obj.reason = FormattedMessage.deserialize(buf, pos);
-         pos += FormattedMessage.computeBytesConsumed(buf, pos);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ServerDisconnect", offset, (int) mem.byteSize());
+        long needed = (long) offset + 2;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ServerDisconnect", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static FormattedMessage getReason(MemorySegment mem) {
+        return getReason(mem, 0);
+    }
+    
+    @Nullable
+    public static FormattedMessage getReason(MemorySegment mem, int offset) {
+        return hasReason(mem, offset) ? FormattedMessage.toObject(mem, offset + 2): null;
+    }
+    
+    public static DisconnectType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static DisconnectType getType(MemorySegment mem, int offset) {
+        return DisconnectType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static boolean hasReason(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static ServerDisconnect toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ServerDisconnect toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ServerDisconnect and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ServerDisconnect toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 2;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        FormattedMessage v0 = null;
+        if (hasReason(mem, offset)) {
+            v0 = FormattedMessage.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new ServerDisconnect(
+            v0,
+            DisconnectType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1))
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.reason != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        var varOffset = offset + 2;
+        if (this.reason != null) {
+            
+            varOffset += this.reason.serialize(mem, varOffset);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 2;
+        if (reason != null) size += reason.computeSize();
 
-      return obj;
-   }
+        return size;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 2;
-      if ((nullBits & 1) != 0) {
-         pos += FormattedMessage.computeBytesConsumed(buf, pos);
-      }
+    public ServerDisconnect clone() {
+        ServerDisconnect copy = new ServerDisconnect();
+        copy.reason = this.reason != null ? this.reason.clone() : null;
+        copy.type = this.type;
+        return copy;
+    }
 
-      return pos - offset;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 2L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ServerDisconnect other)) return false;
+        return java.util.Objects.equals(this.reason, other.reason) && java.util.Objects.equals(this.type, other.type);
+    }
 
-   @Nullable
-   public static FormattedMessage getReason(MemorySegment mem) {
-      return getReason(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(reason, type);
+    }
 
-   @Nullable
-   public static FormattedMessage getReason(MemorySegment mem, int offset) {
-      return hasReason(mem, offset) ? FormattedMessage.toObject(mem, offset + 2) : null;
-   }
-
-   public static DisconnectType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static DisconnectType getType(MemorySegment mem, int offset) {
-      return DisconnectType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static boolean hasReason(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ServerDisconnect toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ServerDisconnect toObject(MemorySegment mem, int offset) {
-      if (offset + 2 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ServerDisconnect", offset + 2, (int)mem.byteSize());
-      } else {
-         return new ServerDisconnect(
-            hasReason(mem, offset) ? FormattedMessage.toObject(mem, offset + 2) : null, DisconnectType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1))
-         );
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.reason != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      if (this.reason != null) {
-         this.reason.serialize(buf);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.reason != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      int varOffset = offset + 2;
-      if (this.reason != null) {
-         varOffset += this.reason.serialize(mem, varOffset);
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 2;
-      if (this.reason != null) {
-         size += this.reason.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 2) {
-         return ValidationResult.error("Buffer too small: expected at least 2 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 2) {
-         return ValidationResult.error("Invalid DisconnectType value for Type");
-      }
-
-      v = offset + 2;
-      if ((nullBits & 1) != 0) {
-         ValidationResult reasonResult = FormattedMessage.validateStructure(buffer, v);
-         if (!reasonResult.isValid()) {
-            return ValidationResult.error("Invalid Reason: " + reasonResult.error());
-         }
-
-         v += FormattedMessage.computeBytesConsumed(buffer, v);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ServerDisconnect clone() {
-      ServerDisconnect copy = new ServerDisconnect();
-      copy.reason = this.reason != null ? this.reason.clone() : null;
-      copy.type = this.type;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ServerDisconnect other) ? false : Objects.equals(this.reason, other.reason) && Objects.equals(this.type, other.type);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.reason, this.type);
-   }
-}
+}

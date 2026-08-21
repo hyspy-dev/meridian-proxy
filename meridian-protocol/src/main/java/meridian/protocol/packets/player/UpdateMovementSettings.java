@@ -1,163 +1,125 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
-import meridian.protocol.MovementSettings;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.MovementSettings;
 
 public class UpdateMovementSettings implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 110;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 252;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 252;
-   public static final int MAX_SIZE = 252;
-   @Nullable
-   public MovementSettings movementSettings;
+    public static final int PACKET_ID = 110;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 259;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 259;
+    public static final int MAX_SIZE = 259;
 
-   @Override
-   public int getId() {
-      return 110;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateMovementSettings() {
-   }
+    @Nonnull public MovementSettings movementSettings = new MovementSettings();
 
-   public UpdateMovementSettings(@Nullable MovementSettings movementSettings) {
-      this.movementSettings = movementSettings;
-   }
+    public UpdateMovementSettings() {
+    }
 
-   public UpdateMovementSettings(@Nonnull UpdateMovementSettings other) {
-      this.movementSettings = other.movementSettings;
-   }
+    public UpdateMovementSettings(@Nonnull MovementSettings movementSettings) {
+        this.movementSettings = movementSettings;
+    }
 
-   @Nonnull
-   public static UpdateMovementSettings deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 252) {
-         throw ProtocolException.bufferTooSmall("UpdateMovementSettings", 252, buf.readableBytes() - offset);
-      }
+    public UpdateMovementSettings(@Nonnull UpdateMovementSettings other) {
+        this.movementSettings = other.movementSettings;
+    }
 
-      UpdateMovementSettings obj = new UpdateMovementSettings();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.movementSettings = MovementSettings.deserialize(buf, offset + 1);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateMovementSettings", offset, (int) mem.byteSize());
+        long needed = (long) offset + 259;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateMovementSettings", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static MovementSettings getMovementSettings(MemorySegment mem) {
+        return getMovementSettings(mem, 0);
+    }
+    
+    public static MovementSettings getMovementSettings(MemorySegment mem, int offset) {
+        return MovementSettings.toObject(mem, offset + 0);
+    }
+    
+    
+    
+    
+    
+    public static UpdateMovementSettings toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateMovementSettings toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateMovementSettings and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateMovementSettings toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new UpdateMovementSettings(
+            MovementSettings.toObject(mem, offset + 0)
+        );
+        if (cursor != null) cursor.position = offset + 259;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        this.movementSettings.serialize(mem, offset + 0);
+        
+        
+    
+       return 259;
+    }
+    public int computeSize() {
+        return 259;
+    }
 
-      return obj;
-   }
+    public UpdateMovementSettings clone() {
+        UpdateMovementSettings copy = new UpdateMovementSettings();
+        copy.movementSettings = this.movementSettings.clone();
+        return copy;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 252;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 252L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateMovementSettings other)) return false;
+        return java.util.Objects.equals(this.movementSettings, other.movementSettings);
+    }
 
-   @Nullable
-   public static MovementSettings getMovementSettings(MemorySegment mem) {
-      return getMovementSettings(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(movementSettings);
+    }
 
-   @Nullable
-   public static MovementSettings getMovementSettings(MemorySegment mem, int offset) {
-      return hasMovementSettings(mem, offset) ? MovementSettings.toObject(mem, offset + 1) : null;
-   }
-
-   public static boolean hasMovementSettings(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateMovementSettings toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateMovementSettings toObject(MemorySegment mem, int offset) {
-      if (offset + 252 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateMovementSettings", offset + 252, (int)mem.byteSize());
-      } else {
-         return new UpdateMovementSettings(hasMovementSettings(mem, offset) ? MovementSettings.toObject(mem, offset + 1) : null);
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.movementSettings != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.movementSettings != null) {
-         this.movementSettings.serialize(buf);
-      } else {
-         buf.writeZero(251);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.movementSettings != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.movementSettings != null) {
-         this.movementSettings.serialize(mem, offset + 1);
-      } else {
-         mem.asSlice(offset + 1, 251L).fill((byte)0);
-      }
-
-      return 252;
-   }
-
-   @Override
-   public int computeSize() {
-      return 252;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 252) {
-         return ValidationResult.error("Buffer too small: expected at least 252 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      return ValidationResult.OK;
-   }
-
-   public UpdateMovementSettings clone() {
-      UpdateMovementSettings copy = new UpdateMovementSettings();
-      copy.movementSettings = this.movementSettings != null ? this.movementSettings.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof UpdateMovementSettings other ? Objects.equals(this.movementSettings, other.movementSettings) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.movementSettings);
-   }
-}
+}

@@ -1,27 +1,28 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum TriggerVolumeConditionTiming {
-   BeforeVolumeDelay(0),
-   AfterVolumeDelay(1);
+    BeforeVolumeDelay(0),
+    AfterVolumeDelay(1);
 
-   public static final TriggerVolumeConditionTiming[] VALUES = values();
-   private final int value;
+    public static final TriggerVolumeConditionTiming[] VALUES = values();
 
-   TriggerVolumeConditionTiming(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    TriggerVolumeConditionTiming(int value) {
+        this.value = value;
+    }
 
-   public static TriggerVolumeConditionTiming fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("TriggerVolumeConditionTiming", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static TriggerVolumeConditionTiming fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("TriggerVolumeConditionTiming", value);
+    }
+}

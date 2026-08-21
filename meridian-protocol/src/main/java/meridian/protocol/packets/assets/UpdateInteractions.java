@@ -1,345 +1,224 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.Interaction;
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.Interaction;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateInteractions implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 66;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   public int maxId;
-   @Nullable
-   public Map<Integer, Interaction> interactions;
+    public static final int PACKET_ID = 66;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 66;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateInteractions() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    public int maxId;
+    @Nullable public java.util.Map<Integer, Interaction> interactions;
 
-   public UpdateInteractions(@Nonnull UpdateType type, int maxId, @Nullable Map<Integer, Interaction> interactions) {
-      this.type = type;
-      this.maxId = maxId;
-      this.interactions = interactions;
-   }
+    public UpdateInteractions() {
+    }
 
-   public UpdateInteractions(@Nonnull UpdateInteractions other) {
-      this.type = other.type;
-      this.maxId = other.maxId;
-      this.interactions = other.interactions;
-   }
+    public UpdateInteractions(@Nonnull UpdateType type, int maxId, @Nullable java.util.Map<Integer, Interaction> interactions) {
+        this.type = type;
+        this.maxId = maxId;
+        this.interactions = interactions;
+    }
 
-   @Nonnull
-   public static UpdateInteractions deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("UpdateInteractions", 6, buf.readableBytes() - offset);
-      }
+    public UpdateInteractions(@Nonnull UpdateInteractions other) {
+        this.type = other.type;
+        this.maxId = other.maxId;
+        this.interactions = other.interactions;
+    }
 
-      UpdateInteractions obj = new UpdateInteractions();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      obj.maxId = buf.getIntLE(offset + 2);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int interactionsCount = VarInt.peek(buf, pos);
-         if (interactionsCount < 0) {
-            throw ProtocolException.invalidVarInt("Interactions");
-         }
-
-         int interactionsVarLen = VarInt.size(interactionsCount);
-         if (interactionsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Interactions", interactionsCount, 4096000);
-         }
-
-         pos += interactionsVarLen;
-         obj.interactions = new HashMap<>(interactionsCount);
-
-         for (int i = 0; i < interactionsCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            Interaction val = Interaction.deserialize(buf, pos);
-            pos += Interaction.computeBytesConsumed(buf, pos);
-            if (obj.interactions.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("interactions", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateInteractions", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateInteractions", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static int getMaxId(MemorySegment mem) {
+        return getMaxId(mem, 0);
+    }
+    
+    public static int getMaxId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 2);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, Interaction> getInteractions(MemorySegment mem) {
+        return getInteractions(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, Interaction> getInteractions(MemorySegment mem, int offset) {
+        if (!hasInteractions(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 6;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Interactions");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Interactions", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Interactions", (int) java.lang.Math.min(off + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, Interaction> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = Interaction.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("Interactions", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += Interaction.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static int getMaxId(MemorySegment mem) {
-      return getMaxId(mem, 0);
-   }
-
-   public static int getMaxId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 2);
-   }
-
-   @Nullable
-   public static Map<Integer, Interaction> getInteractions(MemorySegment mem) {
-      return getInteractions(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, Interaction> getInteractions(MemorySegment mem, int offset) {
-      if (!hasInteractions(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 6;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Interactions", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("Interactions", len, 4096000);
-      }
-
-      Map<Integer, Interaction> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         Interaction value = Interaction.toObject(mem, off);
-         off += value.computeSizeWithTypeId();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("Interactions", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasInteractions(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateInteractions toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateInteractions toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateInteractions", offset + 6, (int)mem.byteSize());
-      }
-
-      Map<Integer, Interaction> interactions = null;
-      if (hasInteractions(mem, offset)) {
-         int off = offset + 6;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Interactions", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Interactions", len, 4096000);
-         }
-
-         interactions = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            Interaction value = Interaction.toObject(mem, off);
-            off += value.computeSizeWithTypeId();
-            if (interactions.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("Interactions", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasInteractions(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateInteractions toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateInteractions toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateInteractions and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateInteractions toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<Integer, Interaction> v2 = null;
+        if (hasInteractions(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Interactions");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("Interactions", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 5 > mem.byteSize()) throw ProtocolException.bufferTooSmall("Interactions", (int) java.lang.Math.min(off + (long) len * 5, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = Interaction.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("Interactions", key);
+                }
             }
-         }
-      }
-
-      return new UpdateInteractions(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), mem.get(PacketIO.PROTO_INT, offset + 2), interactions);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.interactions != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      buf.writeIntLE(this.maxId);
-      if (this.interactions != null) {
-         if (this.interactions.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Interactions", this.interactions.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.interactions.size());
-
-         for (Entry<Integer, Interaction> e : this.interactions.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serializeWithTypeId(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.interactions != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
-      int varOffset = offset + 6;
-      if (this.interactions != null) {
-         if (this.interactions.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("Interactions", this.interactions.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.interactions.size());
-
-         for (Entry<Integer, Interaction> e : this.interactions.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serializeWithTypeId(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.interactions != null) {
-         int interactionsSize = 0;
-
-         for (Entry<Integer, Interaction> kvp : this.interactions.entrySet()) {
-            interactionsSize += 4 + kvp.getValue().computeSizeWithTypeId();
-         }
-
-         size += VarInt.size(this.interactions.size()) + interactionsSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int interactionsCount = VarInt.peek(buffer, v);
-         if (interactionsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for Interactions");
-         }
-
-         if (interactionsCount > 4096000) {
-            return ValidationResult.error("Interactions exceeds max length 4096000");
-         }
-
-         v += VarInt.size(interactionsCount);
-
-         for (int i = 0; i < interactionsCount; i++) {
-            v += 4;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new UpdateInteractions(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_INT, offset + 2),
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.interactions != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
+        var varOffset = offset + 6;
+        if (this.interactions != null) {
+            
+            if (this.interactions.size() > 4096000) throw ProtocolException.dictionaryTooLarge("Interactions", interactions.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.interactions.size());
+            for (var e : this.interactions.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serializeWithTypeId(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (interactions != null) {
+        int interactionsSize = 0;
+for (var kvp : interactions.entrySet()) interactionsSize += 4 + kvp.getValue().computeSizeWithTypeId();
+size += VarInt.size(interactions.size()) + interactionsSize;
+    }
 
-            v += Interaction.computeBytesConsumed(buffer, v);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateInteractions clone() {
+        UpdateInteractions copy = new UpdateInteractions();
+        copy.type = this.type;
+        copy.maxId = this.maxId;
+        copy.interactions = this.interactions != null ? new java.util.HashMap<>(this.interactions) : null;
+        return copy;
+    }
 
-   public UpdateInteractions clone() {
-      UpdateInteractions copy = new UpdateInteractions();
-      copy.type = this.type;
-      copy.maxId = this.maxId;
-      copy.interactions = this.interactions != null ? new HashMap<>(this.interactions) : null;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateInteractions other)
-            ? false
-            : Objects.equals(this.type, other.type) && this.maxId == other.maxId && Objects.equals(this.interactions, other.interactions);
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateInteractions other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && this.maxId == other.maxId && java.util.Objects.equals(this.interactions, other.interactions);
+    }
 
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.maxId, this.interactions);
-   }
-}
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, maxId, interactions);
+    }
+
+}

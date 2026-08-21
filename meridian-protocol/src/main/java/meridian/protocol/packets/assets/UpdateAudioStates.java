@@ -1,354 +1,228 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.AudioState;
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.AudioState;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateAudioStates implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 89;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 1677721600;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   public int maxId;
-   @Nullable
-   public Map<Integer, AudioState> audioStates;
+    public static final int PACKET_ID = 89;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 89;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateAudioStates() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    public int maxId;
+    @Nullable public java.util.Map<Integer, AudioState> audioStates;
 
-   public UpdateAudioStates(@Nonnull UpdateType type, int maxId, @Nullable Map<Integer, AudioState> audioStates) {
-      this.type = type;
-      this.maxId = maxId;
-      this.audioStates = audioStates;
-   }
+    public UpdateAudioStates() {
+    }
 
-   public UpdateAudioStates(@Nonnull UpdateAudioStates other) {
-      this.type = other.type;
-      this.maxId = other.maxId;
-      this.audioStates = other.audioStates;
-   }
+    public UpdateAudioStates(@Nonnull UpdateType type, int maxId, @Nullable java.util.Map<Integer, AudioState> audioStates) {
+        this.type = type;
+        this.maxId = maxId;
+        this.audioStates = audioStates;
+    }
 
-   @Nonnull
-   public static UpdateAudioStates deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("UpdateAudioStates", 6, buf.readableBytes() - offset);
-      }
+    public UpdateAudioStates(@Nonnull UpdateAudioStates other) {
+        this.type = other.type;
+        this.maxId = other.maxId;
+        this.audioStates = other.audioStates;
+    }
 
-      UpdateAudioStates obj = new UpdateAudioStates();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      obj.maxId = buf.getIntLE(offset + 2);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int audioStatesCount = VarInt.peek(buf, pos);
-         if (audioStatesCount < 0) {
-            throw ProtocolException.invalidVarInt("AudioStates");
-         }
-
-         int audioStatesVarLen = VarInt.size(audioStatesCount);
-         if (audioStatesCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("AudioStates", audioStatesCount, 4096000);
-         }
-
-         pos += audioStatesVarLen;
-         obj.audioStates = new HashMap<>(audioStatesCount);
-
-         for (int i = 0; i < audioStatesCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            AudioState val = AudioState.deserialize(buf, pos);
-            pos += AudioState.computeBytesConsumed(buf, pos);
-            if (obj.audioStates.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("audioStates", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateAudioStates", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateAudioStates", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static int getMaxId(MemorySegment mem) {
+        return getMaxId(mem, 0);
+    }
+    
+    public static int getMaxId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 2);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, AudioState> getAudioStates(MemorySegment mem) {
+        return getAudioStates(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, AudioState> getAudioStates(MemorySegment mem, int offset) {
+        if (!hasAudioStates(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 6;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("AudioStates");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("AudioStates", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 28 > mem.byteSize()) throw ProtocolException.bufferTooSmall("AudioStates", (int) java.lang.Math.min(off + (long) len * 28, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, AudioState> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = AudioState.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("AudioStates", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += AudioState.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static int getMaxId(MemorySegment mem) {
-      return getMaxId(mem, 0);
-   }
-
-   public static int getMaxId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 2);
-   }
-
-   @Nullable
-   public static Map<Integer, AudioState> getAudioStates(MemorySegment mem) {
-      return getAudioStates(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, AudioState> getAudioStates(MemorySegment mem, int offset) {
-      if (!hasAudioStates(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 6;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("AudioStates", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("AudioStates", len, 4096000);
-      }
-
-      Map<Integer, AudioState> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         AudioState value = AudioState.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("AudioStates", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasAudioStates(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateAudioStates toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateAudioStates toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateAudioStates", offset + 6, (int)mem.byteSize());
-      }
-
-      Map<Integer, AudioState> audioStates = null;
-      if (hasAudioStates(mem, offset)) {
-         int off = offset + 6;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("AudioStates", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("AudioStates", len, 4096000);
-         }
-
-         audioStates = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            AudioState value = AudioState.toObject(mem, off);
-            off += value.computeSize();
-            if (audioStates.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("AudioStates", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasAudioStates(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateAudioStates toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateAudioStates toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateAudioStates and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateAudioStates toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        java.util.Map<Integer, AudioState> v2 = null;
+        if (hasAudioStates(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("AudioStates");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("AudioStates", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 28 > mem.byteSize()) throw ProtocolException.bufferTooSmall("AudioStates", (int) java.lang.Math.min(off + (long) len * 28, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = AudioState.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("AudioStates", key);
+                }
             }
-         }
-      }
-
-      return new UpdateAudioStates(UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), mem.get(PacketIO.PROTO_INT, offset + 2), audioStates);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.audioStates != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      buf.writeIntLE(this.maxId);
-      if (this.audioStates != null) {
-         if (this.audioStates.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("AudioStates", this.audioStates.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.audioStates.size());
-
-         for (Entry<Integer, AudioState> e : this.audioStates.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.audioStates != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
-      int varOffset = offset + 6;
-      if (this.audioStates != null) {
-         if (this.audioStates.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("AudioStates", this.audioStates.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.audioStates.size());
-
-         for (Entry<Integer, AudioState> e : this.audioStates.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.audioStates != null) {
-         int audioStatesSize = 0;
-
-         for (Entry<Integer, AudioState> kvp : this.audioStates.entrySet()) {
-            audioStatesSize += 4 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.audioStates.size()) + audioStatesSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int audioStatesCount = VarInt.peek(buffer, v);
-         if (audioStatesCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for AudioStates");
-         }
-
-         if (audioStatesCount > 4096000) {
-            return ValidationResult.error("AudioStates exceeds max length 4096000");
-         }
-
-         v += VarInt.size(audioStatesCount);
-
-         for (int i = 0; i < audioStatesCount; i++) {
-            v += 4;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new UpdateAudioStates(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_INT, offset + 2),
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.audioStates != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
+        var varOffset = offset + 6;
+        if (this.audioStates != null) {
+            
+            if (this.audioStates.size() > 4096000) throw ProtocolException.dictionaryTooLarge("AudioStates", audioStates.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.audioStates.size());
+            for (var e : this.audioStates.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (audioStates != null) {
+        int audioStatesSize = 0;
+for (var kvp : audioStates.entrySet()) audioStatesSize += 4 + kvp.getValue().computeSize();
+size += VarInt.size(audioStates.size()) + audioStatesSize;
+    }
 
-            v += AudioState.computeBytesConsumed(buffer, v);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateAudioStates clone() {
+        UpdateAudioStates copy = new UpdateAudioStates();
+        copy.type = this.type;
+        copy.maxId = this.maxId;
+        if (this.audioStates != null) {
+            java.util.Map<Integer, AudioState> m = new java.util.HashMap<>();
+            for (var e : this.audioStates.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.audioStates = m;
+        }
+        return copy;
+    }
 
-   public UpdateAudioStates clone() {
-      UpdateAudioStates copy = new UpdateAudioStates();
-      copy.type = this.type;
-      copy.maxId = this.maxId;
-      if (this.audioStates != null) {
-         Map<Integer, AudioState> m = new HashMap<>();
 
-         for (Entry<Integer, AudioState> e : this.audioStates.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateAudioStates other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && this.maxId == other.maxId && java.util.Objects.equals(this.audioStates, other.audioStates);
+    }
 
-         copy.audioStates = m;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, maxId, audioStates);
+    }
 
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateAudioStates other)
-            ? false
-            : Objects.equals(this.type, other.type) && this.maxId == other.maxId && Objects.equals(this.audioStates, other.audioStates);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.maxId, this.audioStates);
-   }
-}
+}

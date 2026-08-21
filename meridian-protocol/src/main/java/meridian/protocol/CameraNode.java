@@ -1,30 +1,31 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum CameraNode {
-   None(0),
-   Head(1),
-   LShoulder(2),
-   RShoulder(3),
-   Belly(4);
+    None(0),
+    Head(1),
+    LShoulder(2),
+    RShoulder(3),
+    Belly(4);
 
-   public static final CameraNode[] VALUES = values();
-   private final int value;
+    public static final CameraNode[] VALUES = values();
 
-   CameraNode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    CameraNode(int value) {
+        this.value = value;
+    }
 
-   public static CameraNode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("CameraNode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static CameraNode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("CameraNode", value);
+    }
+}

@@ -55,7 +55,7 @@ public class BackAuthHandler implements PacketHandler {
                         }
                         AuthToken out = new AuthToken(arr[0], arr[1]);
                         log.info("[BACK] Sending Pkt 12 to real server");
-                        impl.sendToServer(AuthToken.PACKET_ID, out.computeSize(), out::serialize);
+                        impl.sendToServer(out);
                     });
 
             return Action.HANDLED;
@@ -74,7 +74,7 @@ public class BackAuthHandler implements PacketHandler {
             }
             AuthGrant pkt = new AuthGrant(grant, auth.proxyServerIdentityToken);
             log.info("[FRONT] Sending Pkt 11 AuthGrant to client");
-            session.sendToClient(AuthGrant.PACKET_ID, pkt.computeSize(), pkt::serialize);
+            session.sendToClient(pkt);
         });
     }
 }

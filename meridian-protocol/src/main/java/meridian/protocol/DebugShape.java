@@ -1,32 +1,34 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum DebugShape {
-   Sphere(0),
-   Cylinder(1),
-   Cone(2),
-   Cube(3),
-   Frustum(4),
-   Sector(5),
-   Disc(6);
+    Sphere(0),
+    Cylinder(1),
+    Cone(2),
+    Cube(3),
+    Frustum(4),
+    Sector(5),
+    Disc(6),
+    Donut(7);
 
-   public static final DebugShape[] VALUES = values();
-   private final int value;
+    public static final DebugShape[] VALUES = values();
 
-   DebugShape(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    DebugShape(int value) {
+        this.value = value;
+    }
 
-   public static DebugShape fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("DebugShape", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static DebugShape fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("DebugShape", value);
+    }
+}

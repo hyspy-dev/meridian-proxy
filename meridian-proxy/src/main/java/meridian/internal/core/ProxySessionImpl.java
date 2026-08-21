@@ -84,26 +84,6 @@ public class ProxySessionImpl implements ProxySession {
         }
     }
 
-    public void sendToClient(int pktId, int bodySize, PacketForwarder.PacketSerializer serializer) {
-        Channel ch = clientChannel;
-        if (ch == null || !ch.isActive()) {
-            log.warn("sendToClient(pkt {}) failed — client channel not available", pktId);
-            return;
-        }
-        ByteBuf framed = PacketForwarder.serializeFramed(pktId, bodySize, serializer);
-        ch.eventLoop().execute(() -> ch.writeAndFlush(framed));
-    }
-
-    public void sendToServer(int pktId, int bodySize, PacketForwarder.PacketSerializer serializer) {
-        Channel ch = serverChannel;
-        if (ch == null || !ch.isActive()) {
-            log.warn("sendToServer(pkt {}) failed — server channel not available", pktId);
-            return;
-        }
-        ByteBuf framed = PacketForwarder.serializeFramed(pktId, bodySize, serializer);
-        ch.eventLoop().execute(() -> ch.writeAndFlush(framed));
-    }
-
     /** Pre-framed [len|id|payload] write to client. */
     public void sendRawToClient(ByteBuf framed) {
         Channel ch = clientChannel;

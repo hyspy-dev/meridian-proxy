@@ -1,222 +1,160 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class DamageEntry {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 9;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 9;
-   public static final int MAX_SIZE = 16384014;
-   @Nullable
-   public String labelKey;
-   public float min;
-   public float max;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 9;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 9;
+    public static final int MAX_SIZE = 16384014;
 
-   public DamageEntry() {
-   }
+    @Nullable public String labelKey;
+    public float min;
+    public float max;
 
-   public DamageEntry(@Nullable String labelKey, float min, float max) {
-      this.labelKey = labelKey;
-      this.min = min;
-      this.max = max;
-   }
+    public DamageEntry() {
+    }
 
-   public DamageEntry(@Nonnull DamageEntry other) {
-      this.labelKey = other.labelKey;
-      this.min = other.min;
-      this.max = other.max;
-   }
+    public DamageEntry(@Nullable String labelKey, float min, float max) {
+        this.labelKey = labelKey;
+        this.min = min;
+        this.max = max;
+    }
 
-   @Nonnull
-   public static DamageEntry deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 9) {
-         throw ProtocolException.bufferTooSmall("DamageEntry", 9, buf.readableBytes() - offset);
-      }
+    public DamageEntry(@Nonnull DamageEntry other) {
+        this.labelKey = other.labelKey;
+        this.min = other.min;
+        this.max = other.max;
+    }
 
-      DamageEntry obj = new DamageEntry();
-      byte nullBits = buf.getByte(offset);
-      obj.min = buf.getFloatLE(offset + 1);
-      obj.max = buf.getFloatLE(offset + 5);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int labelKeyLen = VarInt.peek(buf, pos);
-         if (labelKeyLen < 0) {
-            throw ProtocolException.invalidVarInt("LabelKey");
-         }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("DamageEntry", offset, (int) mem.byteSize());
+        long needed = (long) offset + 9;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageEntry", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String getLabelKey(MemorySegment mem) {
+        return getLabelKey(mem, 0);
+    }
+    
+    @Nullable
+    public static String getLabelKey(MemorySegment mem, int offset) {
+        return hasLabelKey(mem, offset) ? PacketIO.readVarString("LabelKey", mem, offset + 9, 4096000): null;
+    }
+    
+    public static float getMin(MemorySegment mem) {
+        return getMin(mem, 0);
+    }
+    
+    public static float getMin(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 1), "Min");
+    }
+    
+    public static float getMax(MemorySegment mem) {
+        return getMax(mem, 0);
+    }
+    
+    public static float getMax(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 5), "Max");
+    }
+    
+    public static boolean hasLabelKey(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static DamageEntry toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static DamageEntry toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one DamageEntry and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static DamageEntry toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 9;
+        var varPos = 0;
+        String v0 = null;
+        if (hasLabelKey(mem, offset)) {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("LabelKey", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new DamageEntry(
+            v0,
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 1), "Min"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 5), "Max")
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.labelKey != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        PacketIO.requireFinite(this.min, "Min"); mem.set(PacketIO.PROTO_FLOAT, offset + 1, this.min);
+        PacketIO.requireFinite(this.max, "Max"); mem.set(PacketIO.PROTO_FLOAT, offset + 5, this.max);
+        var varOffset = offset + 9;
+        if (this.labelKey != null) {
+            
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.labelKey, 4096000);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 9;
+        if (labelKey != null) size += PacketIO.stringSize(labelKey);
 
-         int labelKeyVarLen = VarInt.size(labelKeyLen);
-         if (labelKeyLen > 4096000) {
-            throw ProtocolException.stringTooLong("LabelKey", labelKeyLen, 4096000);
-         }
+        return size;
+    }
 
-         if (pos + labelKeyVarLen + labelKeyLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("LabelKey", pos + labelKeyVarLen + labelKeyLen, buf.readableBytes());
-         }
+    public DamageEntry clone() {
+        DamageEntry copy = new DamageEntry();
+        copy.labelKey = this.labelKey;
+        copy.min = this.min;
+        copy.max = this.max;
+        return copy;
+    }
 
-         obj.labelKey = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-         pos += labelKeyVarLen + labelKeyLen;
-      }
 
-      return obj;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof DamageEntry other)) return false;
+        return java.util.Objects.equals(this.labelKey, other.labelKey) && this.min == other.min && this.max == other.max;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int sl = VarInt.peek(buf, pos);
-         pos += VarInt.size(sl) + sl;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(labelKey, min, max);
+    }
 
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 9L;
-   }
-
-   @Nullable
-   public static String getLabelKey(MemorySegment mem) {
-      return getLabelKey(mem, 0);
-   }
-
-   @Nullable
-   public static String getLabelKey(MemorySegment mem, int offset) {
-      return hasLabelKey(mem, offset) ? PacketIO.readVarString("LabelKey", mem, offset + 9, 4096000, PacketIO.UTF8) : null;
-   }
-
-   public static float getMin(MemorySegment mem) {
-      return getMin(mem, 0);
-   }
-
-   public static float getMin(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 1);
-   }
-
-   public static float getMax(MemorySegment mem) {
-      return getMax(mem, 0);
-   }
-
-   public static float getMax(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 5);
-   }
-
-   public static boolean hasLabelKey(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static DamageEntry toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static DamageEntry toObject(MemorySegment mem, int offset) {
-      if (offset + 9 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("DamageEntry", offset + 9, (int)mem.byteSize());
-      } else {
-         return new DamageEntry(
-            hasLabelKey(mem, offset) ? PacketIO.readVarString("LabelKey", mem, offset + 9, 4096000, PacketIO.UTF8) : null,
-            mem.get(PacketIO.PROTO_FLOAT, offset + 1),
-            mem.get(PacketIO.PROTO_FLOAT, offset + 5)
-         );
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.labelKey != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeFloatLE(this.min);
-      buf.writeFloatLE(this.max);
-      if (this.labelKey != null) {
-         PacketIO.writeVarString(buf, this.labelKey, 4096000);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.labelKey != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 1, this.min);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 5, this.max);
-      int varOffset = offset + 9;
-      if (this.labelKey != null) {
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.labelKey, 4096000);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 9;
-      if (this.labelKey != null) {
-         size += PacketIO.stringSize(this.labelKey);
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 9) {
-         return ValidationResult.error("Buffer too small: expected at least 9 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int labelKeyLen = VarInt.peek(buffer, pos);
-         if (labelKeyLen < 0) {
-            return ValidationResult.error("Invalid string length for LabelKey");
-         }
-
-         if (labelKeyLen > 4096000) {
-            return ValidationResult.error("LabelKey exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(labelKeyLen);
-         pos += labelKeyLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading LabelKey");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public DamageEntry clone() {
-      DamageEntry copy = new DamageEntry();
-      copy.labelKey = this.labelKey;
-      copy.min = this.min;
-      copy.max = this.max;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof DamageEntry other) ? false : Objects.equals(this.labelKey, other.labelKey) && this.min == other.min && this.max == other.max;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.labelKey, this.min, this.max);
-   }
-}
+}

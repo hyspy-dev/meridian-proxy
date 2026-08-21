@@ -1,30 +1,31 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ShelterType {
-   Any(0),
-   Open(1),
-   Partial(2),
-   Sheltered(3),
-   Enclosed(4);
+    Any(0),
+    Open(1),
+    Partial(2),
+    Sheltered(3),
+    Enclosed(4);
 
-   public static final ShelterType[] VALUES = values();
-   private final int value;
+    public static final ShelterType[] VALUES = values();
 
-   ShelterType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ShelterType(int value) {
+        this.value = value;
+    }
 
-   public static ShelterType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ShelterType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ShelterType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ShelterType", value);
+    }
+}

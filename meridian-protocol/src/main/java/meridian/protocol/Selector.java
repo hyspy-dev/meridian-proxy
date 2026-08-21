@@ -1,111 +1,67 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public abstract class Selector {
-   public static final int MAX_SIZE = 42;
+    public static final int MAX_SIZE = 43;
 
-   @Nonnull
-   public static Selector deserialize(@Nonnull ByteBuf buf, int offset) {
-      int typeId = VarInt.peek(buf, offset);
-      int typeIdLen = VarInt.size(typeId);
+    
 
-      return switch (typeId) {
-         case 0 -> AOECircleSelector.deserialize(buf, offset + typeIdLen);
-         case 1 -> AOECylinderSelector.deserialize(buf, offset + typeIdLen);
-         case 2 -> RaycastSelector.deserialize(buf, offset + typeIdLen);
-         case 3 -> HorizontalSelector.deserialize(buf, offset + typeIdLen);
-         case 4 -> StabSelector.deserialize(buf, offset + typeIdLen);
-         default -> throw ProtocolException.unknownPolymorphicType("Selector", typeId);
-      };
-   }
 
-   public static Selector toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
+    public static Selector toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
 
-   public static Selector toObject(MemorySegment mem, int offset) {
-      int typeId = VarInt.get(mem, offset);
-      int typeIdLen = VarInt.size(typeId);
+    public static Selector toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
 
-      return switch (typeId) {
-         case 0 -> AOECircleSelector.toObject(mem, offset + typeIdLen);
-         case 1 -> AOECylinderSelector.toObject(mem, offset + typeIdLen);
-         case 2 -> RaycastSelector.toObject(mem, offset + typeIdLen);
-         case 3 -> HorizontalSelector.toObject(mem, offset + typeIdLen);
-         case 4 -> StabSelector.toObject(mem, offset + typeIdLen);
-         default -> throw ProtocolException.unknownPolymorphicType("Selector", typeId);
-      };
-   }
+    public static Selector toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // The subtype starts after the type id as encoded, which VarInt.size cannot report.
+        long typeIdPacked = VarInt.getWithLength(mem, offset);
+        int typeId = (int) typeIdPacked;
+        int typeIdLen = (int) (typeIdPacked >>> 32);
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int typeId = VarInt.peek(buf, offset);
-      int typeIdLen = VarInt.size(typeId);
+        return switch (typeId) {
+            case 0 -> AOECircleSelector.toObject(mem, offset + typeIdLen, cursor);
+                case 1 -> AOECylinderSelector.toObject(mem, offset + typeIdLen, cursor);
+                case 2 -> RaycastSelector.toObject(mem, offset + typeIdLen, cursor);
+                case 3 -> HorizontalSelector.toObject(mem, offset + typeIdLen, cursor);
+                case 4 -> StabSelector.toObject(mem, offset + typeIdLen, cursor);
+                case 5 -> DonutSelector.toObject(mem, offset + typeIdLen, cursor);
+            default -> throw ProtocolException.unknownPolymorphicType("Selector", typeId);
+        };
+    }
 
-      return typeIdLen + switch (typeId) {
-         case 0 -> AOECircleSelector.computeBytesConsumed(buf, offset + typeIdLen);
-         case 1 -> AOECylinderSelector.computeBytesConsumed(buf, offset + typeIdLen);
-         case 2 -> RaycastSelector.computeBytesConsumed(buf, offset + typeIdLen);
-         case 3 -> HorizontalSelector.computeBytesConsumed(buf, offset + typeIdLen);
-         case 4 -> StabSelector.computeBytesConsumed(buf, offset + typeIdLen);
-         default -> throw ProtocolException.unknownPolymorphicType("Selector", typeId);
-      };
-   }
 
-   public int getTypeId() {
-      if (this instanceof AOECircleSelector sub) {
-         return 0;
-      } else if (this instanceof AOECylinderSelector sub) {
-         return 1;
-      } else if (this instanceof RaycastSelector sub) {
-         return 2;
-      } else if (this instanceof HorizontalSelector sub) {
-         return 3;
-      } else if (this instanceof StabSelector sub) {
-         return 4;
-      } else {
-         throw new IllegalStateException("Unknown subtype: " + this.getClass().getName());
-      }
-   }
+    public int getTypeId() {
+        if (this instanceof AOECircleSelector sub) { return 0; }
+            if (this instanceof AOECylinderSelector sub) { return 1; }
+            if (this instanceof RaycastSelector sub) { return 2; }
+            if (this instanceof HorizontalSelector sub) { return 3; }
+            if (this instanceof StabSelector sub) { return 4; }
+            if (this instanceof DonutSelector sub) { return 5; }
+        throw new IllegalStateException("Unknown subtype: " + getClass().getName());
+    }
 
-   public abstract int serialize(@Nonnull ByteBuf var1);
+    public abstract int serialize(@Nonnull MemorySegment mem, int offset);
+    public abstract int computeSize();
 
-   public abstract int serialize(@Nonnull MemorySegment var1, int var2);
 
-   public abstract int computeSize();
+    public int serializeWithTypeId(@Nonnull MemorySegment mem, int offset) {
+        var len = VarInt.set(mem, offset, getTypeId());
+        return len + serialize(mem, offset + len);
+    }
 
-   public int serializeWithTypeId(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      VarInt.write(buf, this.getTypeId());
-      this.serialize(buf);
-      return buf.writerIndex() - startPos;
-   }
-
-   public int serializeWithTypeId(@Nonnull MemorySegment mem, int offset) {
-      int len = VarInt.set(mem, offset, this.getTypeId());
-      return len + this.serialize(mem, offset + len);
-   }
-
-   public int computeSizeWithTypeId() {
-      return VarInt.size(this.getTypeId()) + this.computeSize();
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      int typeId = VarInt.peek(buffer, offset);
-      int typeIdLen = VarInt.size(typeId);
-
-      return switch (typeId) {
-         case 0 -> AOECircleSelector.validateStructure(buffer, offset + typeIdLen);
-         case 1 -> AOECylinderSelector.validateStructure(buffer, offset + typeIdLen);
-         case 2 -> RaycastSelector.validateStructure(buffer, offset + typeIdLen);
-         case 3 -> HorizontalSelector.validateStructure(buffer, offset + typeIdLen);
-         case 4 -> StabSelector.validateStructure(buffer, offset + typeIdLen);
-         default -> ValidationResult.error("Unknown polymorphic type ID " + typeId + " for Selector");
-      };
-   }
-}
+    public int computeSizeWithTypeId() {
+        return VarInt.size(getTypeId()) + computeSize();
+    }
+}

@@ -1,200 +1,181 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
-import meridian.protocol.ModelTransform;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.ModelTransform;
 
 public class ClientTeleport implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 109;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 52;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 52;
-   public static final int MAX_SIZE = 52;
-   public byte teleportId;
-   @Nullable
-   public ModelTransform modelTransform;
-   public boolean resetVelocity;
+    public static final int PACKET_ID = 109;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 55;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 55;
+    public static final int MAX_SIZE = 55;
 
-   @Override
-   public int getId() {
-      return 109;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public ClientTeleport() {
-   }
+    public byte teleportId;
+    @Nonnull public short ignoredTransformFields;
+    @Nonnull public short relativeTransformFields;
+    @Nonnull public ModelTransform modelTransform = new ModelTransform();
+    public boolean resetVelocity;
 
-   public ClientTeleport(byte teleportId, @Nullable ModelTransform modelTransform, boolean resetVelocity) {
-      this.teleportId = teleportId;
-      this.modelTransform = modelTransform;
-      this.resetVelocity = resetVelocity;
-   }
+    public ClientTeleport() {
+    }
 
-   public ClientTeleport(@Nonnull ClientTeleport other) {
-      this.teleportId = other.teleportId;
-      this.modelTransform = other.modelTransform;
-      this.resetVelocity = other.resetVelocity;
-   }
+    public ClientTeleport(byte teleportId, @Nonnull short ignoredTransformFields, @Nonnull short relativeTransformFields, @Nonnull ModelTransform modelTransform, boolean resetVelocity) {
+        this.teleportId = teleportId;
+        this.ignoredTransformFields = ignoredTransformFields;
+        this.relativeTransformFields = relativeTransformFields;
+        this.modelTransform = modelTransform;
+        this.resetVelocity = resetVelocity;
+    }
 
-   @Nonnull
-   public static ClientTeleport deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 52) {
-         throw ProtocolException.bufferTooSmall("ClientTeleport", 52, buf.readableBytes() - offset);
-      }
+    public ClientTeleport(@Nonnull ClientTeleport other) {
+        this.teleportId = other.teleportId;
+        this.ignoredTransformFields = other.ignoredTransformFields;
+        this.relativeTransformFields = other.relativeTransformFields;
+        this.modelTransform = other.modelTransform;
+        this.resetVelocity = other.resetVelocity;
+    }
 
-      ClientTeleport obj = new ClientTeleport();
-      byte nullBits = buf.getByte(offset);
-      obj.teleportId = buf.getByte(offset + 1);
-      if ((nullBits & 1) != 0) {
-         obj.modelTransform = ModelTransform.deserialize(buf, offset + 2);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ClientTeleport", offset, (int) mem.byteSize());
+        long needed = (long) offset + 55;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ClientTeleport", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static byte getTeleportId(MemorySegment mem) {
+        return getTeleportId(mem, 0);
+    }
+    
+    public static byte getTeleportId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BYTE, offset + 0);
+    }
+    
+    public static short getIgnoredTransformFields(MemorySegment mem) {
+        return getIgnoredTransformFields(mem, 0);
+    }
+    
+    public static short getIgnoredTransformFields(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_SHORT, offset + 1);
+    }
+    
+    public static short getRelativeTransformFields(MemorySegment mem) {
+        return getRelativeTransformFields(mem, 0);
+    }
+    
+    public static short getRelativeTransformFields(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_SHORT, offset + 3);
+    }
+    
+    public static ModelTransform getModelTransform(MemorySegment mem) {
+        return getModelTransform(mem, 0);
+    }
+    
+    public static ModelTransform getModelTransform(MemorySegment mem, int offset) {
+        return ModelTransform.toObject(mem, offset + 5);
+    }
+    
+    public static boolean getResetVelocity(MemorySegment mem) {
+        return getResetVelocity(mem, 0);
+    }
+    
+    public static boolean getResetVelocity(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BOOL, offset + 54);
+    }
+    
+    
+    
+    
+    
+    public static ClientTeleport toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ClientTeleport toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ClientTeleport and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ClientTeleport toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new ClientTeleport(
+            mem.get(PacketIO.PROTO_BYTE, offset + 0),
+            mem.get(PacketIO.PROTO_SHORT, offset + 1),
+            mem.get(PacketIO.PROTO_SHORT, offset + 3),
+            ModelTransform.toObject(mem, offset + 5),
+            mem.get(PacketIO.PROTO_BOOL, offset + 54)
+        );
+        if (cursor != null) cursor.position = offset + 55;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, this.teleportId);
+        mem.set(PacketIO.PROTO_SHORT, offset + 1, this.ignoredTransformFields);
+        mem.set(PacketIO.PROTO_SHORT, offset + 3, this.relativeTransformFields);
+        this.modelTransform.serialize(mem, offset + 5);
+        mem.set(PacketIO.PROTO_BOOL, offset + 54, this.resetVelocity);
+        
+        
+    
+       return 55;
+    }
+    public int computeSize() {
+        return 55;
+    }
 
-      obj.resetVelocity = buf.getByte(offset + 51) != 0;
-      return obj;
-   }
+    public ClientTeleport clone() {
+        ClientTeleport copy = new ClientTeleport();
+        copy.teleportId = this.teleportId;
+        copy.ignoredTransformFields = this.ignoredTransformFields;
+        copy.relativeTransformFields = this.relativeTransformFields;
+        copy.modelTransform = this.modelTransform.clone();
+        copy.resetVelocity = this.resetVelocity;
+        return copy;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 52;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 52L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ClientTeleport other)) return false;
+        return this.teleportId == other.teleportId && java.util.Objects.equals(this.ignoredTransformFields, other.ignoredTransformFields) && java.util.Objects.equals(this.relativeTransformFields, other.relativeTransformFields) && java.util.Objects.equals(this.modelTransform, other.modelTransform) && this.resetVelocity == other.resetVelocity;
+    }
 
-   public static byte getTeleportId(MemorySegment mem) {
-      return getTeleportId(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(teleportId, ignoredTransformFields, relativeTransformFields, modelTransform, resetVelocity);
+    }
 
-   public static byte getTeleportId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BYTE, offset + 1);
-   }
-
-   @Nullable
-   public static ModelTransform getModelTransform(MemorySegment mem) {
-      return getModelTransform(mem, 0);
-   }
-
-   @Nullable
-   public static ModelTransform getModelTransform(MemorySegment mem, int offset) {
-      return hasModelTransform(mem, offset) ? ModelTransform.toObject(mem, offset + 2) : null;
-   }
-
-   public static boolean getResetVelocity(MemorySegment mem) {
-      return getResetVelocity(mem, 0);
-   }
-
-   public static boolean getResetVelocity(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 51);
-   }
-
-   public static boolean hasModelTransform(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ClientTeleport toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ClientTeleport toObject(MemorySegment mem, int offset) {
-      if (offset + 52 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ClientTeleport", offset + 52, (int)mem.byteSize());
-      } else {
-         return new ClientTeleport(
-            mem.get(PacketIO.PROTO_BYTE, offset + 1),
-            hasModelTransform(mem, offset) ? ModelTransform.toObject(mem, offset + 2) : null,
-            mem.get(PacketIO.PROTO_BOOL, offset + 51)
-         );
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.modelTransform != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.teleportId);
-      if (this.modelTransform != null) {
-         this.modelTransform.serialize(buf);
-      } else {
-         buf.writeZero(49);
-      }
-
-      buf.writeByte(this.resetVelocity ? 1 : 0);
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.modelTransform != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, this.teleportId);
-      if (this.modelTransform != null) {
-         this.modelTransform.serialize(mem, offset + 2);
-      } else {
-         mem.asSlice(offset + 2, 49L).fill((byte)0);
-      }
-
-      mem.set(PacketIO.PROTO_BOOL, offset + 51, this.resetVelocity);
-      return 52;
-   }
-
-   @Override
-   public int computeSize() {
-      return 52;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 52) {
-         return ValidationResult.error("Buffer too small: expected at least 52 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      return ValidationResult.OK;
-   }
-
-   public ClientTeleport clone() {
-      ClientTeleport copy = new ClientTeleport();
-      copy.teleportId = this.teleportId;
-      copy.modelTransform = this.modelTransform != null ? this.modelTransform.clone() : null;
-      copy.resetVelocity = this.resetVelocity;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ClientTeleport other)
-            ? false
-            : this.teleportId == other.teleportId && Objects.equals(this.modelTransform, other.modelTransform) && this.resetVelocity == other.resetVelocity;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.teleportId, this.modelTransform, this.resetVelocity);
-   }
-}
+}

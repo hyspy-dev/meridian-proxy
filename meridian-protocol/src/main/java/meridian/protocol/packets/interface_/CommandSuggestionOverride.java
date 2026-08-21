@@ -1,224 +1,160 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class CommandSuggestionOverride {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 9;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 9;
-   public static final int MAX_SIZE = 16384014;
-   public int argStart;
-   public int argCount;
-   @Nullable
-   public String argTypeId;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 9;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 9;
+    public static final int MAX_SIZE = 16384014;
 
-   public CommandSuggestionOverride() {
-   }
+    public int argStart;
+    public int argCount;
+    @Nullable public String argTypeId;
 
-   public CommandSuggestionOverride(int argStart, int argCount, @Nullable String argTypeId) {
-      this.argStart = argStart;
-      this.argCount = argCount;
-      this.argTypeId = argTypeId;
-   }
+    public CommandSuggestionOverride() {
+    }
 
-   public CommandSuggestionOverride(@Nonnull CommandSuggestionOverride other) {
-      this.argStart = other.argStart;
-      this.argCount = other.argCount;
-      this.argTypeId = other.argTypeId;
-   }
+    public CommandSuggestionOverride(int argStart, int argCount, @Nullable String argTypeId) {
+        this.argStart = argStart;
+        this.argCount = argCount;
+        this.argTypeId = argTypeId;
+    }
 
-   @Nonnull
-   public static CommandSuggestionOverride deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 9) {
-         throw ProtocolException.bufferTooSmall("CommandSuggestionOverride", 9, buf.readableBytes() - offset);
-      }
+    public CommandSuggestionOverride(@Nonnull CommandSuggestionOverride other) {
+        this.argStart = other.argStart;
+        this.argCount = other.argCount;
+        this.argTypeId = other.argTypeId;
+    }
 
-      CommandSuggestionOverride obj = new CommandSuggestionOverride();
-      byte nullBits = buf.getByte(offset);
-      obj.argStart = buf.getIntLE(offset + 1);
-      obj.argCount = buf.getIntLE(offset + 5);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int argTypeIdLen = VarInt.peek(buf, pos);
-         if (argTypeIdLen < 0) {
-            throw ProtocolException.invalidVarInt("ArgTypeId");
-         }
-
-         int argTypeIdVarLen = VarInt.size(argTypeIdLen);
-         if (argTypeIdLen > 4096000) {
-            throw ProtocolException.stringTooLong("ArgTypeId", argTypeIdLen, 4096000);
-         }
-
-         if (pos + argTypeIdVarLen + argTypeIdLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("ArgTypeId", pos + argTypeIdVarLen + argTypeIdLen, buf.readableBytes());
-         }
-
-         obj.argTypeId = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-         pos += argTypeIdVarLen + argTypeIdLen;
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int sl = VarInt.peek(buf, pos);
-         pos += VarInt.size(sl) + sl;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 9L;
-   }
-
-   public static int getArgStart(MemorySegment mem) {
-      return getArgStart(mem, 0);
-   }
-
-   public static int getArgStart(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   public static int getArgCount(MemorySegment mem) {
-      return getArgCount(mem, 0);
-   }
-
-   public static int getArgCount(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 5);
-   }
-
-   @Nullable
-   public static String getArgTypeId(MemorySegment mem) {
-      return getArgTypeId(mem, 0);
-   }
-
-   @Nullable
-   public static String getArgTypeId(MemorySegment mem, int offset) {
-      return hasArgTypeId(mem, offset) ? PacketIO.readVarString("ArgTypeId", mem, offset + 9, 4096000, PacketIO.UTF8) : null;
-   }
-
-   public static boolean hasArgTypeId(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static CommandSuggestionOverride toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static CommandSuggestionOverride toObject(MemorySegment mem, int offset) {
-      if (offset + 9 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("CommandSuggestionOverride", offset + 9, (int)mem.byteSize());
-      } else {
-         return new CommandSuggestionOverride(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("CommandSuggestionOverride", offset, (int) mem.byteSize());
+        long needed = (long) offset + 9;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("CommandSuggestionOverride", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getArgStart(MemorySegment mem) {
+        return getArgStart(mem, 0);
+    }
+    
+    public static int getArgStart(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 1);
+    }
+    
+    public static int getArgCount(MemorySegment mem) {
+        return getArgCount(mem, 0);
+    }
+    
+    public static int getArgCount(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 5);
+    }
+    
+    @Nullable
+    public static String getArgTypeId(MemorySegment mem) {
+        return getArgTypeId(mem, 0);
+    }
+    
+    @Nullable
+    public static String getArgTypeId(MemorySegment mem, int offset) {
+        return hasArgTypeId(mem, offset) ? PacketIO.readVarString("ArgTypeId", mem, offset + 9, 4096000): null;
+    }
+    
+    public static boolean hasArgTypeId(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static CommandSuggestionOverride toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static CommandSuggestionOverride toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one CommandSuggestionOverride and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static CommandSuggestionOverride toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 9;
+        var varPos = 0;
+        String v2 = null;
+        if (hasArgTypeId(mem, offset)) {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v2 = PacketIO.readVarString("ArgTypeId", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new CommandSuggestionOverride(
             mem.get(PacketIO.PROTO_INT, offset + 1),
             mem.get(PacketIO.PROTO_INT, offset + 5),
-            hasArgTypeId(mem, offset) ? PacketIO.readVarString("ArgTypeId", mem, offset + 9, 4096000, PacketIO.UTF8) : null
-         );
-      }
-   }
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.argTypeId != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_INT, offset + 1, this.argStart);
+        mem.set(PacketIO.PROTO_INT, offset + 5, this.argCount);
+        var varOffset = offset + 9;
+        if (this.argTypeId != null) {
+            
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.argTypeId, 4096000);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 9;
+        if (argTypeId != null) size += PacketIO.stringSize(argTypeId);
 
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.argTypeId != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+        return size;
+    }
 
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.argStart);
-      buf.writeIntLE(this.argCount);
-      if (this.argTypeId != null) {
-         PacketIO.writeVarString(buf, this.argTypeId, 4096000);
-      }
-   }
+    public CommandSuggestionOverride clone() {
+        CommandSuggestionOverride copy = new CommandSuggestionOverride();
+        copy.argStart = this.argStart;
+        copy.argCount = this.argCount;
+        copy.argTypeId = this.argTypeId;
+        return copy;
+    }
 
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.argTypeId != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.argStart);
-      mem.set(PacketIO.PROTO_INT, offset + 5, this.argCount);
-      int varOffset = offset + 9;
-      if (this.argTypeId != null) {
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.argTypeId, 4096000);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof CommandSuggestionOverride other)) return false;
+        return this.argStart == other.argStart && this.argCount == other.argCount && java.util.Objects.equals(this.argTypeId, other.argTypeId);
+    }
 
-      return varOffset - offset;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(argStart, argCount, argTypeId);
+    }
 
-   public int computeSize() {
-      int size = 9;
-      if (this.argTypeId != null) {
-         size += PacketIO.stringSize(this.argTypeId);
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 9) {
-         return ValidationResult.error("Buffer too small: expected at least 9 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         int argTypeIdLen = VarInt.peek(buffer, pos);
-         if (argTypeIdLen < 0) {
-            return ValidationResult.error("Invalid string length for ArgTypeId");
-         }
-
-         if (argTypeIdLen > 4096000) {
-            return ValidationResult.error("ArgTypeId exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(argTypeIdLen);
-         pos += argTypeIdLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading ArgTypeId");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public CommandSuggestionOverride clone() {
-      CommandSuggestionOverride copy = new CommandSuggestionOverride();
-      copy.argStart = this.argStart;
-      copy.argCount = this.argCount;
-      copy.argTypeId = this.argTypeId;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof CommandSuggestionOverride other)
-            ? false
-            : this.argStart == other.argStart && this.argCount == other.argCount && Objects.equals(this.argTypeId, other.argTypeId);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.argStart, this.argCount, this.argTypeId);
-   }
-}
+}

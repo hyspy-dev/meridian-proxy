@@ -1,255 +1,172 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class ItemEntityConfig {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 5;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 5;
-   public static final int MAX_SIZE = 16384010;
-   @Nullable
-   public String particleSystemId;
-   @Nullable
-   public Color particleColor;
-   public boolean showItemParticles;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 5;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 5;
+    public static final int MAX_SIZE = 16384010;
 
-   public ItemEntityConfig() {
-   }
+    @Nullable public String particleSystemId;
+    @Nullable public Color particleColor;
+    public boolean showItemParticles;
 
-   public ItemEntityConfig(@Nullable String particleSystemId, @Nullable Color particleColor, boolean showItemParticles) {
-      this.particleSystemId = particleSystemId;
-      this.particleColor = particleColor;
-      this.showItemParticles = showItemParticles;
-   }
+    public ItemEntityConfig() {
+    }
 
-   public ItemEntityConfig(@Nonnull ItemEntityConfig other) {
-      this.particleSystemId = other.particleSystemId;
-      this.particleColor = other.particleColor;
-      this.showItemParticles = other.showItemParticles;
-   }
+    public ItemEntityConfig(@Nullable String particleSystemId, @Nullable Color particleColor, boolean showItemParticles) {
+        this.particleSystemId = particleSystemId;
+        this.particleColor = particleColor;
+        this.showItemParticles = showItemParticles;
+    }
 
-   @Nonnull
-   public static ItemEntityConfig deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 5) {
-         throw ProtocolException.bufferTooSmall("ItemEntityConfig", 5, buf.readableBytes() - offset);
-      }
+    public ItemEntityConfig(@Nonnull ItemEntityConfig other) {
+        this.particleSystemId = other.particleSystemId;
+        this.particleColor = other.particleColor;
+        this.showItemParticles = other.showItemParticles;
+    }
 
-      ItemEntityConfig obj = new ItemEntityConfig();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.particleColor = Color.deserialize(buf, offset + 1);
-      }
-
-      obj.showItemParticles = buf.getByte(offset + 4) != 0;
-      int pos = offset + 5;
-      if ((nullBits & 2) != 0) {
-         int particleSystemIdLen = VarInt.peek(buf, pos);
-         if (particleSystemIdLen < 0) {
-            throw ProtocolException.invalidVarInt("ParticleSystemId");
-         }
-
-         int particleSystemIdVarLen = VarInt.size(particleSystemIdLen);
-         if (particleSystemIdLen > 4096000) {
-            throw ProtocolException.stringTooLong("ParticleSystemId", particleSystemIdLen, 4096000);
-         }
-
-         if (pos + particleSystemIdVarLen + particleSystemIdLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("ParticleSystemId", pos + particleSystemIdVarLen + particleSystemIdLen, buf.readableBytes());
-         }
-
-         obj.particleSystemId = PacketIO.readVarString(buf, pos, PacketIO.UTF8);
-         pos += particleSystemIdVarLen + particleSystemIdLen;
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 5;
-      if ((nullBits & 2) != 0) {
-         int sl = VarInt.peek(buf, pos);
-         pos += VarInt.size(sl) + sl;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 5L;
-   }
-
-   @Nullable
-   public static String getParticleSystemId(MemorySegment mem) {
-      return getParticleSystemId(mem, 0);
-   }
-
-   @Nullable
-   public static String getParticleSystemId(MemorySegment mem, int offset) {
-      return hasParticleSystemId(mem, offset) ? PacketIO.readVarString("ParticleSystemId", mem, offset + 5, 4096000, PacketIO.UTF8) : null;
-   }
-
-   @Nullable
-   public static Color getParticleColor(MemorySegment mem) {
-      return getParticleColor(mem, 0);
-   }
-
-   @Nullable
-   public static Color getParticleColor(MemorySegment mem, int offset) {
-      return hasParticleColor(mem, offset) ? Color.toObject(mem, offset + 1) : null;
-   }
-
-   public static boolean getShowItemParticles(MemorySegment mem) {
-      return getShowItemParticles(mem, 0);
-   }
-
-   public static boolean getShowItemParticles(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_BOOL, offset + 4);
-   }
-
-   public static boolean hasParticleColor(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasParticleSystemId(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static ItemEntityConfig toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ItemEntityConfig toObject(MemorySegment mem, int offset) {
-      if (offset + 5 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ItemEntityConfig", offset + 5, (int)mem.byteSize());
-      } else {
-         return new ItemEntityConfig(
-            hasParticleSystemId(mem, offset) ? PacketIO.readVarString("ParticleSystemId", mem, offset + 5, 4096000, PacketIO.UTF8) : null,
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ItemEntityConfig", offset, (int) mem.byteSize());
+        long needed = (long) offset + 5;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ItemEntityConfig", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String getParticleSystemId(MemorySegment mem) {
+        return getParticleSystemId(mem, 0);
+    }
+    
+    @Nullable
+    public static String getParticleSystemId(MemorySegment mem, int offset) {
+        return hasParticleSystemId(mem, offset) ? PacketIO.readVarString("ParticleSystemId", mem, offset + 5, 4096000): null;
+    }
+    
+    @Nullable
+    public static Color getParticleColor(MemorySegment mem) {
+        return getParticleColor(mem, 0);
+    }
+    
+    @Nullable
+    public static Color getParticleColor(MemorySegment mem, int offset) {
+        return hasParticleColor(mem, offset) ? Color.toObject(mem, offset + 1): null;
+    }
+    
+    public static boolean getShowItemParticles(MemorySegment mem) {
+        return getShowItemParticles(mem, 0);
+    }
+    
+    public static boolean getShowItemParticles(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_BOOL, offset + 4);
+    }
+    
+    public static boolean hasParticleColor(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasParticleSystemId(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    
+    
+    public static ItemEntityConfig toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ItemEntityConfig toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ItemEntityConfig and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ItemEntityConfig toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 5;
+        var varPos = 0;
+        String v0 = null;
+        if (hasParticleSystemId(mem, offset)) {
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("ParticleSystemId", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        }
+        var result = new ItemEntityConfig(
+            v0,
             hasParticleColor(mem, offset) ? Color.toObject(mem, offset + 1) : null,
             mem.get(PacketIO.PROTO_BOOL, offset + 4)
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.particleColor != null) nullBits |= 0x01;
+        if (this.particleSystemId != null) nullBits |= 0x02;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        if (this.particleColor != null) {
+            this.particleColor.serialize(mem, offset + 1);
+        } else {
+            mem.asSlice(offset + 1, 3).fill((byte) 0); 
+        }
+        mem.set(PacketIO.PROTO_BOOL, offset + 4, this.showItemParticles);
+        var varOffset = offset + 5;
+        if (this.particleSystemId != null) {
+            
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.particleSystemId, 4096000);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 5;
+        if (particleSystemId != null) size += PacketIO.stringSize(particleSystemId);
 
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.particleColor != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+        return size;
+    }
 
-      if (this.particleSystemId != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
+    public ItemEntityConfig clone() {
+        ItemEntityConfig copy = new ItemEntityConfig();
+        copy.particleSystemId = this.particleSystemId;
+        copy.particleColor = this.particleColor != null ? this.particleColor.clone() : null;
+        copy.showItemParticles = this.showItemParticles;
+        return copy;
+    }
 
-      buf.writeByte(nullBits);
-      if (this.particleColor != null) {
-         this.particleColor.serialize(buf);
-      } else {
-         buf.writeZero(3);
-      }
 
-      buf.writeByte(this.showItemParticles ? 1 : 0);
-      if (this.particleSystemId != null) {
-         PacketIO.writeVarString(buf, this.particleSystemId, 4096000);
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ItemEntityConfig other)) return false;
+        return java.util.Objects.equals(this.particleSystemId, other.particleSystemId) && java.util.Objects.equals(this.particleColor, other.particleColor) && this.showItemParticles == other.showItemParticles;
+    }
 
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.particleColor != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(particleSystemId, particleColor, showItemParticles);
+    }
 
-      if (this.particleSystemId != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.particleColor != null) {
-         this.particleColor.serialize(mem, offset + 1);
-      } else {
-         mem.asSlice(offset + 1, 3L).fill((byte)0);
-      }
-
-      mem.set(PacketIO.PROTO_BOOL, offset + 4, this.showItemParticles);
-      int varOffset = offset + 5;
-      if (this.particleSystemId != null) {
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.particleSystemId, 4096000);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 5;
-      if (this.particleSystemId != null) {
-         size += PacketIO.stringSize(this.particleSystemId);
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 5) {
-         return ValidationResult.error("Buffer too small: expected at least 5 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 5;
-      if ((nullBits & 2) != 0) {
-         int particleSystemIdLen = VarInt.peek(buffer, pos);
-         if (particleSystemIdLen < 0) {
-            return ValidationResult.error("Invalid string length for ParticleSystemId");
-         }
-
-         if (particleSystemIdLen > 4096000) {
-            return ValidationResult.error("ParticleSystemId exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(particleSystemIdLen);
-         pos += particleSystemIdLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading ParticleSystemId");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ItemEntityConfig clone() {
-      ItemEntityConfig copy = new ItemEntityConfig();
-      copy.particleSystemId = this.particleSystemId;
-      copy.particleColor = this.particleColor != null ? this.particleColor.clone() : null;
-      copy.showItemParticles = this.showItemParticles;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ItemEntityConfig other)
-            ? false
-            : Objects.equals(this.particleSystemId, other.particleSystemId)
-               && Objects.equals(this.particleColor, other.particleColor)
-               && this.showItemParticles == other.showItemParticles;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.particleSystemId, this.particleColor, this.showItemParticles);
-   }
-}
+}

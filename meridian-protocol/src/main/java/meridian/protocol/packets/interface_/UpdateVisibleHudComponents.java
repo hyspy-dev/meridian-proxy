@@ -1,291 +1,179 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class UpdateVisibleHudComponents implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 230;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 4096006;
-   @Nullable
-   public HudComponent[] visibleComponents;
+    public static final int PACKET_ID = 230;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 4096006;
 
-   @Override
-   public int getId() {
-      return 230;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateVisibleHudComponents() {
-   }
+    @Nullable public HudComponent[] visibleComponents;
 
-   public UpdateVisibleHudComponents(@Nullable HudComponent[] visibleComponents) {
-      this.visibleComponents = visibleComponents;
-   }
+    public UpdateVisibleHudComponents() {
+    }
 
-   public UpdateVisibleHudComponents(@Nonnull UpdateVisibleHudComponents other) {
-      this.visibleComponents = other.visibleComponents;
-   }
+    public UpdateVisibleHudComponents(@Nullable HudComponent[] visibleComponents) {
+        this.visibleComponents = visibleComponents;
+    }
 
-   @Nonnull
-   public static UpdateVisibleHudComponents deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("UpdateVisibleHudComponents", 1, buf.readableBytes() - offset);
-      }
+    public UpdateVisibleHudComponents(@Nonnull UpdateVisibleHudComponents other) {
+        this.visibleComponents = other.visibleComponents;
+    }
 
-      UpdateVisibleHudComponents obj = new UpdateVisibleHudComponents();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int visibleComponentsCount = VarInt.peek(buf, pos);
-         if (visibleComponentsCount < 0) {
-            throw ProtocolException.invalidVarInt("VisibleComponents");
-         }
-
-         int visibleComponentsVarLen = VarInt.size(visibleComponentsCount);
-         if (visibleComponentsCount > 4096000) {
-            throw ProtocolException.arrayTooLong("VisibleComponents", visibleComponentsCount, 4096000);
-         }
-
-         if (pos + visibleComponentsVarLen + visibleComponentsCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("VisibleComponents", pos + visibleComponentsVarLen + visibleComponentsCount * 1, buf.readableBytes());
-         }
-
-         pos += visibleComponentsVarLen;
-         obj.visibleComponents = new HudComponent[visibleComponentsCount];
-
-         for (int i = 0; i < visibleComponentsCount; i++) {
-            obj.visibleComponents[i] = HudComponent.fromValue(buf.getByte(pos));
-            pos++;
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen) + arrLen * 1;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static HudComponent[] getVisibleComponents(MemorySegment mem) {
-      return getVisibleComponents(mem, 0);
-   }
-
-   @Nullable
-   public static HudComponent[] getVisibleComponents(MemorySegment mem, int offset) {
-      if (!hasVisibleComponents(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("VisibleComponents", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("VisibleComponents", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 1L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("VisibleComponents", off + lenOffset + len * 1, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      HudComponent[] data = new HudComponent[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = HudComponent.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
-      }
-
-      return data;
-   }
-
-   public static boolean hasVisibleComponents(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateVisibleHudComponents toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateVisibleHudComponents toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateVisibleHudComponents", offset + 1, (int)mem.byteSize());
-      }
-
-      HudComponent[] visibleComponents = null;
-      if (hasVisibleComponents(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("VisibleComponents", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("VisibleComponents", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 1L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("VisibleComponents", off + lenOffset + len * 1, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         visibleComponents = new HudComponent[len];
-
-         for (int i = 0; i < len; i++) {
-            visibleComponents[i] = HudComponent.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
-         }
-      }
-
-      return new UpdateVisibleHudComponents(visibleComponents);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.visibleComponents != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.visibleComponents != null) {
-         if (this.visibleComponents.length > 4096000) {
-            throw ProtocolException.arrayTooLong("VisibleComponents", this.visibleComponents.length, 4096000);
-         }
-
-         VarInt.write(buf, this.visibleComponents.length);
-
-         for (HudComponent item : this.visibleComponents) {
-            buf.writeByte(item.getValue());
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.visibleComponents != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.visibleComponents != null) {
-         if (this.visibleComponents.length > 4096000) {
-            throw ProtocolException.arrayTooLong("VisibleComponents", this.visibleComponents.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.visibleComponents.length);
-
-         for (int i = 0; i < this.visibleComponents.length; i++) {
-            mem.set(PacketIO.PROTO_BYTE, varOffset + i * 1, (byte)this.visibleComponents[i].getValue());
-         }
-
-         varOffset += this.visibleComponents.length * 1;
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.visibleComponents != null) {
-         size += VarInt.size(this.visibleComponents.length) + this.visibleComponents.length * 1;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int visibleComponentsCount = VarInt.peek(buffer, pos);
-         if (visibleComponentsCount < 0) {
-            return ValidationResult.error("Invalid array count for VisibleComponents");
-         }
-
-         if (visibleComponentsCount > 4096000) {
-            return ValidationResult.error("VisibleComponents exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(visibleComponentsCount);
-         if (pos + visibleComponentsCount * 1L > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading VisibleComponents");
-         }
-
-         for (int i = 0; i < visibleComponentsCount; i++) {
-            int v = buffer.getByte(pos) & 255;
-            if (v >= 24) {
-               return ValidationResult.error("Invalid HudComponent value for VisibleComponents[i]");
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateVisibleHudComponents", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateVisibleHudComponents", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static HudComponent[] getVisibleComponents(MemorySegment mem) {
+        return getVisibleComponents(mem, 0);
+    }
+    
+    @Nullable
+    public static HudComponent[] getVisibleComponents(MemorySegment mem, int offset) {
+        if (!hasVisibleComponents(mem, offset)) return null;
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("VisibleComponents");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("VisibleComponents", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("VisibleComponents", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new HudComponent[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = HudComponent.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
+        }
+        return data;
+    }
+    
+    public static boolean hasVisibleComponents(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateVisibleHudComponents toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateVisibleHudComponents toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateVisibleHudComponents and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateVisibleHudComponents toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        HudComponent[] v0 = null;
+        if (hasVisibleComponents(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("VisibleComponents");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("VisibleComponents", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("VisibleComponents", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new HudComponent[len];
+            for (var i = 0; i < len; i++) {
+                v0[i] = HudComponent.fromValue(mem.get(PacketIO.PROTO_BYTE, off + i * 1));
             }
+            varPos = off + len - varBase;
+        }
+        var result = new UpdateVisibleHudComponents(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.visibleComponents != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.visibleComponents != null) {
+            
+            if (visibleComponents.length > 4096000) throw ProtocolException.arrayTooLong("VisibleComponents", visibleComponents.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.visibleComponents.length);
+            
+            for (var i = 0; i < this.visibleComponents.length; i++) {
+                mem.set(PacketIO.PROTO_BYTE, varOffset + i * 1, (byte) this.visibleComponents[i].getValue());
+            }
+            varOffset += this.visibleComponents.length * 1;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (visibleComponents != null) size += VarInt.size(visibleComponents.length) + visibleComponents.length * 1;
 
-            pos++;
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateVisibleHudComponents clone() {
+        UpdateVisibleHudComponents copy = new UpdateVisibleHudComponents();
+        copy.visibleComponents = this.visibleComponents != null ? java.util.Arrays.copyOf(this.visibleComponents, this.visibleComponents.length) : null;
+        return copy;
+    }
 
-   public UpdateVisibleHudComponents clone() {
-      UpdateVisibleHudComponents copy = new UpdateVisibleHudComponents();
-      copy.visibleComponents = this.visibleComponents != null ? Arrays.copyOf(this.visibleComponents, this.visibleComponents.length) : null;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof UpdateVisibleHudComponents other ? Arrays.equals(this.visibleComponents, other.visibleComponents) : false;
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateVisibleHudComponents other)) return false;
+        return java.util.Arrays.equals(this.visibleComponents, other.visibleComponents);
+    }
 
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.visibleComponents);
-   }
-}
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(visibleComponents);
+        return result;
+    }
+
+}

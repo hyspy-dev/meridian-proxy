@@ -1,26 +1,27 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.interface_;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ChatType {
-   Chat(0);
+    Chat(0);
 
-   public static final ChatType[] VALUES = values();
-   private final int value;
+    public static final ChatType[] VALUES = values();
 
-   ChatType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ChatType(int value) {
+        this.value = value;
+    }
 
-   public static ChatType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ChatType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ChatType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ChatType", value);
+    }
+}

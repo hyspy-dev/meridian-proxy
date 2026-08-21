@@ -1,341 +1,192 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class DamageCause {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 2;
-   public static final int VARIABLE_BLOCK_START = 9;
-   public static final int MAX_SIZE = 32768019;
-   @Nullable
-   public String id;
-   @Nullable
-   public String damageTextColor;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 2;
+    public static final int VARIABLE_BLOCK_START = 9;
+    public static final int MAX_SIZE = 32768019;
 
-   public DamageCause() {
-   }
+    @Nullable public String id;
+    @Nullable public String damageTextColor;
 
-   public DamageCause(@Nullable String id, @Nullable String damageTextColor) {
-      this.id = id;
-      this.damageTextColor = damageTextColor;
-   }
+    public DamageCause() {
+    }
 
-   public DamageCause(@Nonnull DamageCause other) {
-      this.id = other.id;
-      this.damageTextColor = other.damageTextColor;
-   }
+    public DamageCause(@Nullable String id, @Nullable String damageTextColor) {
+        this.id = id;
+        this.damageTextColor = damageTextColor;
+    }
 
-   @Nonnull
-   public static DamageCause deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 9) {
-         throw ProtocolException.bufferTooSmall("DamageCause", 9, buf.readableBytes() - offset);
-      }
+    public DamageCause(@Nonnull DamageCause other) {
+        this.id = other.id;
+        this.damageTextColor = other.damageTextColor;
+    }
 
-      DamageCause obj = new DamageCause();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         int varPosBase0 = buf.getIntLE(offset + 1);
-         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 9) {
-            throw ProtocolException.invalidOffset("Id", varPosBase0, buf.readableBytes());
-         }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("DamageCause", offset, (int) mem.byteSize());
+        long needed = (long) offset + 9;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("DamageCause", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String getId(MemorySegment mem) {
+        return getId(mem, 0);
+    }
+    
+    @Nullable
+    public static String getId(MemorySegment mem, int offset) {
+        return hasId(mem, offset) ? PacketIO.readVarString("Id", mem, offset + getValidatedOffset(mem, offset, 1, 9, "Id"), 4096000): null;
+    }
+    
+    @Nullable
+    public static String getDamageTextColor(MemorySegment mem) {
+        return getDamageTextColor(mem, 0);
+    }
+    
+    @Nullable
+    public static String getDamageTextColor(MemorySegment mem, int offset) {
+        return hasDamageTextColor(mem, offset) ? PacketIO.readVarString("DamageTextColor", mem, offset + getValidatedOffset(mem, offset, 5, 9, "DamageTextColor"), 4096000): null;
+    }
+    
+    public static boolean hasId(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasDamageTextColor(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+        int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+        if (offset < 0 || offset > buffer.byteSize() - base - varBlockStart)
+            throw ProtocolException.invalidOffset(fieldName, offset, (int) buffer.byteSize());
+        return varBlockStart + offset;
+    }
+    
+    /**
+     * Rejects an offset slot that does not name the position the field-order walk reached. A
+     * present field must sit where the previous field ended, and an absent field carries -1, so
+     * the slot a random-access getter resolves and the walk describe the same bytes.
+     */
+    private static void requireSlot(MemorySegment mem, int slotPosition, int expected, String fieldName) {
+        int slot = mem.get(PacketIO.PROTO_INT, slotPosition);
+        if (slot != expected) throw ProtocolException.nonCanonicalLayout(fieldName, slot, expected);
+    }
+    
+    public static DamageCause toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static DamageCause toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one DamageCause and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static DamageCause toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 9;
+        var varPos = 0;
+        String v0 = null;
+        if (hasId(mem, offset)) {
+            requireSlot(mem, offset + 1, varPos, "Id");
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("Id", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        } else {
+            requireSlot(mem, offset + 1, -1, "Id");
+        }
+        
+        String v1 = null;
+        if (hasDamageTextColor(mem, offset)) {
+            requireSlot(mem, offset + 5, varPos, "DamageTextColor");
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v1 = PacketIO.readVarString("DamageTextColor", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        } else {
+            requireSlot(mem, offset + 5, -1, "DamageTextColor");
+        }
+        var result = new DamageCause(
+            v0,
+            v1
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.id != null) nullBits |= 0x01;
+        if (this.damageTextColor != null) nullBits |= 0x02;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 9;
+        if (this.id != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 1, varOffset - offset - 9);
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.id, 4096000);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 1, -1);
+        }
+        if (this.damageTextColor != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 5, varOffset - offset - 9);
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.damageTextColor, 4096000);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 5, -1);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 9;
+        if (id != null) size += PacketIO.stringSize(id);
+    if (damageTextColor != null) size += PacketIO.stringSize(damageTextColor);
 
-         int varPos0 = offset + 9 + varPosBase0;
-         int idLen = VarInt.peek(buf, varPos0);
-         if (idLen < 0) {
-            throw ProtocolException.invalidVarInt("Id");
-         }
+        return size;
+    }
 
-         int idVarIntLen = VarInt.size(idLen);
-         if (idLen > 4096000) {
-            throw ProtocolException.stringTooLong("Id", idLen, 4096000);
-         }
+    public DamageCause clone() {
+        DamageCause copy = new DamageCause();
+        copy.id = this.id;
+        copy.damageTextColor = this.damageTextColor;
+        return copy;
+    }
 
-         if (varPos0 + idVarIntLen + idLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Id", varPos0 + idVarIntLen + idLen, buf.readableBytes());
-         }
 
-         obj.id = PacketIO.readVarString(buf, varPos0, PacketIO.UTF8);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof DamageCause other)) return false;
+        return java.util.Objects.equals(this.id, other.id) && java.util.Objects.equals(this.damageTextColor, other.damageTextColor);
+    }
 
-      if ((nullBits & 2) != 0) {
-         int varPosBase1 = buf.getIntLE(offset + 5);
-         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 9) {
-            throw ProtocolException.invalidOffset("DamageTextColor", varPosBase1, buf.readableBytes());
-         }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, damageTextColor);
+    }
 
-         int varPos1 = offset + 9 + varPosBase1;
-         int damageTextColorLen = VarInt.peek(buf, varPos1);
-         if (damageTextColorLen < 0) {
-            throw ProtocolException.invalidVarInt("DamageTextColor");
-         }
-
-         int damageTextColorVarIntLen = VarInt.size(damageTextColorLen);
-         if (damageTextColorLen > 4096000) {
-            throw ProtocolException.stringTooLong("DamageTextColor", damageTextColorLen, 4096000);
-         }
-
-         if (varPos1 + damageTextColorVarIntLen + damageTextColorLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("DamageTextColor", varPos1 + damageTextColorVarIntLen + damageTextColorLen, buf.readableBytes());
-         }
-
-         obj.damageTextColor = PacketIO.readVarString(buf, varPos1, PacketIO.UTF8);
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int maxEnd = 9;
-      if ((nullBits & 1) != 0) {
-         int fieldOffset0 = buf.getIntLE(offset + 1);
-         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 9) {
-            throw ProtocolException.invalidOffset("Id", fieldOffset0, maxEnd);
-         }
-
-         int pos0 = offset + 9 + fieldOffset0;
-         int sl = VarInt.peek(buf, pos0);
-         pos0 += VarInt.size(sl) + sl;
-         if (pos0 - offset > maxEnd) {
-            maxEnd = pos0 - offset;
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int fieldOffset1 = buf.getIntLE(offset + 5);
-         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 9) {
-            throw ProtocolException.invalidOffset("DamageTextColor", fieldOffset1, maxEnd);
-         }
-
-         int pos1 = offset + 9 + fieldOffset1;
-         int sl = VarInt.peek(buf, pos1);
-         pos1 += VarInt.size(sl) + sl;
-         if (pos1 - offset > maxEnd) {
-            maxEnd = pos1 - offset;
-         }
-      }
-
-      return maxEnd;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 9L;
-   }
-
-   @Nullable
-   public static String getId(MemorySegment mem) {
-      return getId(mem, 0);
-   }
-
-   @Nullable
-   public static String getId(MemorySegment mem, int offset) {
-      return hasId(mem, offset) ? PacketIO.readVarString("Id", mem, offset + getValidatedOffset(mem, offset, 1, 9, "Id"), 4096000, PacketIO.UTF8) : null;
-   }
-
-   @Nullable
-   public static String getDamageTextColor(MemorySegment mem) {
-      return getDamageTextColor(mem, 0);
-   }
-
-   @Nullable
-   public static String getDamageTextColor(MemorySegment mem, int offset) {
-      return hasDamageTextColor(mem, offset)
-         ? PacketIO.readVarString("DamageTextColor", mem, offset + getValidatedOffset(mem, offset, 5, 9, "DamageTextColor"), 4096000, PacketIO.UTF8)
-         : null;
-   }
-
-   public static boolean hasId(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasDamageTextColor(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
-      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
-      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
-         return varBlockStart + offset;
-      } else {
-         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
-      }
-   }
-
-   public static DamageCause toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static DamageCause toObject(MemorySegment mem, int offset) {
-      if (offset + 9 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("DamageCause", offset + 9, (int)mem.byteSize());
-      } else {
-         return new DamageCause(
-            hasId(mem, offset) ? PacketIO.readVarString("Id", mem, offset + getValidatedOffset(mem, offset, 1, 9, "Id"), 4096000, PacketIO.UTF8) : null,
-            hasDamageTextColor(mem, offset)
-               ? PacketIO.readVarString("DamageTextColor", mem, offset + getValidatedOffset(mem, offset, 5, 9, "DamageTextColor"), 4096000, PacketIO.UTF8)
-               : null
-         );
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      byte nullBits = 0;
-      if (this.id != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.damageTextColor != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      buf.writeByte(nullBits);
-      int idOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int damageTextColorOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int varBlockStart = buf.writerIndex();
-      if (this.id != null) {
-         buf.setIntLE(idOffsetSlot, buf.writerIndex() - varBlockStart);
-         PacketIO.writeVarString(buf, this.id, 4096000);
-      } else {
-         buf.setIntLE(idOffsetSlot, -1);
-      }
-
-      if (this.damageTextColor != null) {
-         buf.setIntLE(damageTextColorOffsetSlot, buf.writerIndex() - varBlockStart);
-         PacketIO.writeVarString(buf, this.damageTextColor, 4096000);
-      } else {
-         buf.setIntLE(damageTextColorOffsetSlot, -1);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.id != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.damageTextColor != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 9;
-      if (this.id != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 1, varOffset - offset - 9);
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.id, 4096000);
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 1, -1);
-      }
-
-      if (this.damageTextColor != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 5, varOffset - offset - 9);
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.damageTextColor, 4096000);
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 5, -1);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 9;
-      if (this.id != null) {
-         size += PacketIO.stringSize(this.id);
-      }
-
-      if (this.damageTextColor != null) {
-         size += PacketIO.stringSize(this.damageTextColor);
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 9) {
-         return ValidationResult.error("Buffer too small: expected at least 9 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         int idOffset = buffer.getIntLE(offset + 1);
-         if (idOffset < 0 || idOffset > buffer.writerIndex() - offset - 9) {
-            return ValidationResult.error("Invalid offset for Id");
-         }
-
-         int pos = offset + 9 + idOffset;
-         int idLen = VarInt.peek(buffer, pos);
-         if (idLen < 0) {
-            return ValidationResult.error("Invalid string length for Id");
-         }
-
-         if (idLen > 4096000) {
-            return ValidationResult.error("Id exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(idLen);
-         pos += idLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Id");
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int damageTextColorOffset = buffer.getIntLE(offset + 5);
-         if (damageTextColorOffset < 0 || damageTextColorOffset > buffer.writerIndex() - offset - 9) {
-            return ValidationResult.error("Invalid offset for DamageTextColor");
-         }
-
-         int pos = offset + 9 + damageTextColorOffset;
-         int damageTextColorLen = VarInt.peek(buffer, pos);
-         if (damageTextColorLen < 0) {
-            return ValidationResult.error("Invalid string length for DamageTextColor");
-         }
-
-         if (damageTextColorLen > 4096000) {
-            return ValidationResult.error("DamageTextColor exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(damageTextColorLen);
-         pos += damageTextColorLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading DamageTextColor");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public DamageCause clone() {
-      DamageCause copy = new DamageCause();
-      copy.id = this.id;
-      copy.damageTextColor = this.damageTextColor;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof DamageCause other) ? false : Objects.equals(this.id, other.id) && Objects.equals(this.damageTextColor, other.damageTextColor);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.id, this.damageTextColor);
-   }
-}
+}

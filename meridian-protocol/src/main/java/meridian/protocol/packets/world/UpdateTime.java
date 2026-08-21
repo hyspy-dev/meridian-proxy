@@ -1,163 +1,138 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.world;
 
-import meridian.protocol.InstantData;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.InstantData;
 
 public class UpdateTime implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 146;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 13;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 13;
-   public static final int MAX_SIZE = 13;
-   @Nullable
-   public InstantData gameTime;
+    public static final int PACKET_ID = 146;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 13;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 13;
+    public static final int MAX_SIZE = 13;
 
-   @Override
-   public int getId() {
-      return 146;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateTime() {
-   }
+    @Nullable public InstantData gameTime;
 
-   public UpdateTime(@Nullable InstantData gameTime) {
-      this.gameTime = gameTime;
-   }
+    public UpdateTime() {
+    }
 
-   public UpdateTime(@Nonnull UpdateTime other) {
-      this.gameTime = other.gameTime;
-   }
+    public UpdateTime(@Nullable InstantData gameTime) {
+        this.gameTime = gameTime;
+    }
 
-   @Nonnull
-   public static UpdateTime deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 13) {
-         throw ProtocolException.bufferTooSmall("UpdateTime", 13, buf.readableBytes() - offset);
-      }
+    public UpdateTime(@Nonnull UpdateTime other) {
+        this.gameTime = other.gameTime;
+    }
 
-      UpdateTime obj = new UpdateTime();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.gameTime = InstantData.deserialize(buf, offset + 1);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateTime", offset, (int) mem.byteSize());
+        long needed = (long) offset + 13;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateTime", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static InstantData getGameTime(MemorySegment mem) {
+        return getGameTime(mem, 0);
+    }
+    
+    @Nullable
+    public static InstantData getGameTime(MemorySegment mem, int offset) {
+        return hasGameTime(mem, offset) ? InstantData.toObject(mem, offset + 1): null;
+    }
+    
+    public static boolean hasGameTime(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateTime toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateTime toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateTime and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateTime toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new UpdateTime(
+            hasGameTime(mem, offset) ? InstantData.toObject(mem, offset + 1) : null
+        );
+        if (cursor != null) cursor.position = offset + 13;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.gameTime != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        if (this.gameTime != null) {
+            this.gameTime.serialize(mem, offset + 1);
+        } else {
+            mem.asSlice(offset + 1, 12).fill((byte) 0); 
+        }
+        
+        
+    
+       return 13;
+    }
+    public int computeSize() {
+        return 13;
+    }
 
-      return obj;
-   }
+    public UpdateTime clone() {
+        UpdateTime copy = new UpdateTime();
+        copy.gameTime = this.gameTime != null ? this.gameTime.clone() : null;
+        return copy;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 13;
-   }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 13L;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateTime other)) return false;
+        return java.util.Objects.equals(this.gameTime, other.gameTime);
+    }
 
-   @Nullable
-   public static InstantData getGameTime(MemorySegment mem) {
-      return getGameTime(mem, 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(gameTime);
+    }
 
-   @Nullable
-   public static InstantData getGameTime(MemorySegment mem, int offset) {
-      return hasGameTime(mem, offset) ? InstantData.toObject(mem, offset + 1) : null;
-   }
-
-   public static boolean hasGameTime(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateTime toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateTime toObject(MemorySegment mem, int offset) {
-      if (offset + 13 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateTime", offset + 13, (int)mem.byteSize());
-      } else {
-         return new UpdateTime(hasGameTime(mem, offset) ? InstantData.toObject(mem, offset + 1) : null);
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.gameTime != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.gameTime != null) {
-         this.gameTime.serialize(buf);
-      } else {
-         buf.writeZero(12);
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.gameTime != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.gameTime != null) {
-         this.gameTime.serialize(mem, offset + 1);
-      } else {
-         mem.asSlice(offset + 1, 12L).fill((byte)0);
-      }
-
-      return 13;
-   }
-
-   @Override
-   public int computeSize() {
-      return 13;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 13) {
-         return ValidationResult.error("Buffer too small: expected at least 13 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      return ValidationResult.OK;
-   }
-
-   public UpdateTime clone() {
-      UpdateTime copy = new UpdateTime();
-      copy.gameTime = this.gameTime != null ? this.gameTime.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof UpdateTime other ? Objects.equals(this.gameTime, other.gameTime) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.gameTime);
-   }
-}
+}

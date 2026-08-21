@@ -1,273 +1,173 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.auth;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class ConnectAccept implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 14;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 70;
-   @Nullable
-   public byte[] passwordChallenge;
+    public static final int PACKET_ID = 14;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 70;
 
-   @Override
-   public int getId() {
-      return 14;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public ConnectAccept() {
-   }
+    @Nullable public byte[] passwordChallenge;
 
-   public ConnectAccept(@Nullable byte[] passwordChallenge) {
-      this.passwordChallenge = passwordChallenge;
-   }
+    public ConnectAccept() {
+    }
 
-   public ConnectAccept(@Nonnull ConnectAccept other) {
-      this.passwordChallenge = other.passwordChallenge;
-   }
+    public ConnectAccept(@Nullable byte[] passwordChallenge) {
+        this.passwordChallenge = passwordChallenge;
+    }
 
-   @Nonnull
-   public static ConnectAccept deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("ConnectAccept", 1, buf.readableBytes() - offset);
-      }
+    public ConnectAccept(@Nonnull ConnectAccept other) {
+        this.passwordChallenge = other.passwordChallenge;
+    }
 
-      ConnectAccept obj = new ConnectAccept();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int passwordChallengeCount = VarInt.peek(buf, pos);
-         if (passwordChallengeCount < 0) {
-            throw ProtocolException.invalidVarInt("PasswordChallenge");
-         }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ConnectAccept", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ConnectAccept", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static byte[] getPasswordChallenge(MemorySegment mem) {
+        return getPasswordChallenge(mem, 0);
+    }
+    
+    @Nullable
+    public static byte[] getPasswordChallenge(MemorySegment mem, int offset) {
+        if (!hasPasswordChallenge(mem, offset)) return null;
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("PasswordChallenge");
+        var len = (int) packed;
+        if (len > 64) throw ProtocolException.arrayTooLong("PasswordChallenge", len, 64);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("PasswordChallenge", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new byte[len];
+        MemorySegment.copy(mem, PacketIO.PROTO_BYTE, off, data, 0, len);
+        return data;
+    }
+    
+    public static boolean hasPasswordChallenge(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static ConnectAccept toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ConnectAccept toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ConnectAccept and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ConnectAccept toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        byte[] v0 = null;
+        if (hasPasswordChallenge(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("PasswordChallenge");
+            var len = (int) packed;
+            if (len > 64) throw ProtocolException.arrayTooLong("PasswordChallenge", len, 64);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("PasswordChallenge", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new byte[len];
+            MemorySegment.copy(mem, PacketIO.PROTO_BYTE, off, v0, 0, len);
+            varPos = off + len - varBase;
+        }
+        var result = new ConnectAccept(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.passwordChallenge != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.passwordChallenge != null) {
+            
+            if (passwordChallenge.length > 64) throw ProtocolException.arrayTooLong("PasswordChallenge", passwordChallenge.length, 64);
+            varOffset += VarInt.set(mem, varOffset, this.passwordChallenge.length);
+            
+            MemorySegment.copy(this.passwordChallenge, 0, mem, PacketIO.PROTO_BYTE, varOffset, this.passwordChallenge.length);
+            varOffset += this.passwordChallenge.length * 1;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (passwordChallenge != null) size += VarInt.size(passwordChallenge.length) + passwordChallenge.length * 1;
 
-         int passwordChallengeVarLen = VarInt.size(passwordChallengeCount);
-         if (passwordChallengeCount > 64) {
-            throw ProtocolException.arrayTooLong("PasswordChallenge", passwordChallengeCount, 64);
-         }
+        return size;
+    }
 
-         if (pos + passwordChallengeVarLen + passwordChallengeCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("PasswordChallenge", pos + passwordChallengeVarLen + passwordChallengeCount * 1, buf.readableBytes());
-         }
+    public ConnectAccept clone() {
+        ConnectAccept copy = new ConnectAccept();
+        copy.passwordChallenge = this.passwordChallenge != null ? java.util.Arrays.copyOf(this.passwordChallenge, this.passwordChallenge.length) : null;
+        return copy;
+    }
 
-         pos += passwordChallengeVarLen;
-         obj.passwordChallenge = new byte[passwordChallengeCount];
 
-         for (int i = 0; i < passwordChallengeCount; i++) {
-            obj.passwordChallenge[i] = buf.getByte(pos + i * 1);
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ConnectAccept other)) return false;
+        return java.util.Arrays.equals(this.passwordChallenge, other.passwordChallenge);
+    }
 
-         pos += passwordChallengeCount * 1;
-      }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(passwordChallenge);
+        return result;
+    }
 
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen) + arrLen * 1;
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static byte[] getPasswordChallenge(MemorySegment mem) {
-      return getPasswordChallenge(mem, 0);
-   }
-
-   @Nullable
-   public static byte[] getPasswordChallenge(MemorySegment mem, int offset) {
-      if (!hasPasswordChallenge(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("PasswordChallenge", len);
-      }
-
-      if (len > 64) {
-         throw ProtocolException.arrayTooLong("PasswordChallenge", len, 64);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len * 1L > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("PasswordChallenge", off + lenOffset + len * 1, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      byte[] data = new byte[len];
-      MemorySegment.copy(mem, PacketIO.PROTO_BYTE, off, data, 0, len);
-      return data;
-   }
-
-   public static boolean hasPasswordChallenge(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ConnectAccept toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ConnectAccept toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ConnectAccept", offset + 1, (int)mem.byteSize());
-      }
-
-      byte[] passwordChallenge = null;
-      if (hasPasswordChallenge(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("PasswordChallenge", len);
-         }
-
-         if (len > 64) {
-            throw ProtocolException.arrayTooLong("PasswordChallenge", len, 64);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len * 1L > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("PasswordChallenge", off + lenOffset + len * 1, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         passwordChallenge = new byte[len];
-         MemorySegment.copy(mem, PacketIO.PROTO_BYTE, off, passwordChallenge, 0, len);
-      }
-
-      return new ConnectAccept(passwordChallenge);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.passwordChallenge != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.passwordChallenge != null) {
-         if (this.passwordChallenge.length > 64) {
-            throw ProtocolException.arrayTooLong("PasswordChallenge", this.passwordChallenge.length, 64);
-         }
-
-         VarInt.write(buf, this.passwordChallenge.length);
-
-         for (byte item : this.passwordChallenge) {
-            buf.writeByte(item);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.passwordChallenge != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.passwordChallenge != null) {
-         if (this.passwordChallenge.length > 64) {
-            throw ProtocolException.arrayTooLong("PasswordChallenge", this.passwordChallenge.length, 64);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.passwordChallenge.length);
-         MemorySegment.copy(this.passwordChallenge, 0, mem, PacketIO.PROTO_BYTE, varOffset, this.passwordChallenge.length);
-         varOffset += this.passwordChallenge.length * 1;
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.passwordChallenge != null) {
-         size += VarInt.size(this.passwordChallenge.length) + this.passwordChallenge.length * 1;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int passwordChallengeCount = VarInt.peek(buffer, pos);
-         if (passwordChallengeCount < 0) {
-            return ValidationResult.error("Invalid array count for PasswordChallenge");
-         }
-
-         if (passwordChallengeCount > 64) {
-            return ValidationResult.error("PasswordChallenge exceeds max length 64");
-         }
-
-         pos += VarInt.size(passwordChallengeCount);
-         pos += passwordChallengeCount * 1;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading PasswordChallenge");
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ConnectAccept clone() {
-      ConnectAccept copy = new ConnectAccept();
-      copy.passwordChallenge = this.passwordChallenge != null ? Arrays.copyOf(this.passwordChallenge, this.passwordChallenge.length) : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof ConnectAccept other ? Arrays.equals(this.passwordChallenge, other.passwordChallenge) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.passwordChallenge);
-   }
-}
+}

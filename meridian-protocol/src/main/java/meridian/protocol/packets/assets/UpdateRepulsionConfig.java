@@ -1,350 +1,222 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.assets;
 
-import meridian.protocol.NetworkChannel;
-import meridian.protocol.Packet;
-import meridian.protocol.RepulsionConfig;
-import meridian.protocol.ToClientPacket;
-import meridian.protocol.UpdateType;
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.NetworkChannel;
+import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.RepulsionConfig;
+import meridian.protocol.UpdateType;
+import java.util.HashMap;
 
 public class UpdateRepulsionConfig implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 75;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 6;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 6;
-   public static final int MAX_SIZE = 65536011;
-   @Nonnull
-   public UpdateType type = UpdateType.Init;
-   public int maxId;
-   @Nullable
-   public Map<Integer, RepulsionConfig> repulsionConfigs;
+    public static final int PACKET_ID = 75;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 6;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 6;
+    public static final int MAX_SIZE = 65536011;
 
-   @Override
-   public int getId() {
-      return 75;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public UpdateRepulsionConfig() {
-   }
+    @Nonnull public UpdateType type = UpdateType.Init;
+    public int maxId;
+    @Nullable public java.util.Map<Integer, RepulsionConfig> repulsionConfigs;
 
-   public UpdateRepulsionConfig(@Nonnull UpdateType type, int maxId, @Nullable Map<Integer, RepulsionConfig> repulsionConfigs) {
-      this.type = type;
-      this.maxId = maxId;
-      this.repulsionConfigs = repulsionConfigs;
-   }
+    public UpdateRepulsionConfig() {
+    }
 
-   public UpdateRepulsionConfig(@Nonnull UpdateRepulsionConfig other) {
-      this.type = other.type;
-      this.maxId = other.maxId;
-      this.repulsionConfigs = other.repulsionConfigs;
-   }
+    public UpdateRepulsionConfig(@Nonnull UpdateType type, int maxId, @Nullable java.util.Map<Integer, RepulsionConfig> repulsionConfigs) {
+        this.type = type;
+        this.maxId = maxId;
+        this.repulsionConfigs = repulsionConfigs;
+    }
 
-   @Nonnull
-   public static UpdateRepulsionConfig deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 6) {
-         throw ProtocolException.bufferTooSmall("UpdateRepulsionConfig", 6, buf.readableBytes() - offset);
-      }
+    public UpdateRepulsionConfig(@Nonnull UpdateRepulsionConfig other) {
+        this.type = other.type;
+        this.maxId = other.maxId;
+        this.repulsionConfigs = other.repulsionConfigs;
+    }
 
-      UpdateRepulsionConfig obj = new UpdateRepulsionConfig();
-      byte nullBits = buf.getByte(offset);
-      obj.type = UpdateType.fromValue(buf.getByte(offset + 1));
-      obj.maxId = buf.getIntLE(offset + 2);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int repulsionConfigsCount = VarInt.peek(buf, pos);
-         if (repulsionConfigsCount < 0) {
-            throw ProtocolException.invalidVarInt("RepulsionConfigs");
-         }
-
-         int repulsionConfigsVarLen = VarInt.size(repulsionConfigsCount);
-         if (repulsionConfigsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", repulsionConfigsCount, 4096000);
-         }
-
-         pos += repulsionConfigsVarLen;
-         obj.repulsionConfigs = new HashMap<>(repulsionConfigsCount);
-
-         for (int i = 0; i < repulsionConfigsCount; i++) {
-            int key = buf.getIntLE(pos);
-            pos += 4;
-            RepulsionConfig val = RepulsionConfig.deserialize(buf, pos);
-            pos += RepulsionConfig.computeBytesConsumed(buf, pos);
-            if (obj.repulsionConfigs.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("repulsionConfigs", key);
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("UpdateRepulsionConfig", offset, (int) mem.byteSize());
+        long needed = (long) offset + 6;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("UpdateRepulsionConfig", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static UpdateType getType(MemorySegment mem) {
+        return getType(mem, 0);
+    }
+    
+    public static UpdateType getType(MemorySegment mem, int offset) {
+        return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
+    }
+    
+    public static int getMaxId(MemorySegment mem) {
+        return getMaxId(mem, 0);
+    }
+    
+    public static int getMaxId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 2);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, RepulsionConfig> getRepulsionConfigs(MemorySegment mem) {
+        return getRepulsionConfigs(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, RepulsionConfig> getRepulsionConfigs(MemorySegment mem, int offset) {
+        if (!hasRepulsionConfigs(mem, offset)) return null;
+        var off = offset + 6;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("RepulsionConfigs");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 16 > mem.byteSize()) throw ProtocolException.bufferTooSmall("RepulsionConfigs", (int) java.lang.Math.min(off + (long) len * 16, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, RepulsionConfig> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = RepulsionConfig.toObject(mem, off);
+                off += 12;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("RepulsionConfigs", key);
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int dictLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos += 4;
-            pos += RepulsionConfig.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 6L;
-   }
-
-   public static UpdateType getType(MemorySegment mem) {
-      return getType(mem, 0);
-   }
-
-   public static UpdateType getType(MemorySegment mem, int offset) {
-      return UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1));
-   }
-
-   public static int getMaxId(MemorySegment mem) {
-      return getMaxId(mem, 0);
-   }
-
-   public static int getMaxId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 2);
-   }
-
-   @Nullable
-   public static Map<Integer, RepulsionConfig> getRepulsionConfigs(MemorySegment mem) {
-      return getRepulsionConfigs(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, RepulsionConfig> getRepulsionConfigs(MemorySegment mem, int offset) {
-      if (!hasRepulsionConfigs(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 6;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("RepulsionConfigs", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", len, 4096000);
-      }
-
-      Map<Integer, RepulsionConfig> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         RepulsionConfig value = RepulsionConfig.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("RepulsionConfigs", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasRepulsionConfigs(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static UpdateRepulsionConfig toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static UpdateRepulsionConfig toObject(MemorySegment mem, int offset) {
-      if (offset + 6 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("UpdateRepulsionConfig", offset + 6, (int)mem.byteSize());
-      }
-
-      Map<Integer, RepulsionConfig> repulsionConfigs = null;
-      if (hasRepulsionConfigs(mem, offset)) {
-         int off = offset + 6;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("RepulsionConfigs", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", len, 4096000);
-         }
-
-         repulsionConfigs = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            RepulsionConfig value = RepulsionConfig.toObject(mem, off);
-            off += value.computeSize();
-            if (repulsionConfigs.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("RepulsionConfigs", key);
+        }
+        return data;
+    }
+    
+    public static boolean hasRepulsionConfigs(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static UpdateRepulsionConfig toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static UpdateRepulsionConfig toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one UpdateRepulsionConfig and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static UpdateRepulsionConfig toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 6;
+        var varPos = 0;
+        java.util.Map<Integer, RepulsionConfig> v2 = null;
+        if (hasRepulsionConfigs(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("RepulsionConfigs");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 16 > mem.byteSize()) throw ProtocolException.bufferTooSmall("RepulsionConfigs", (int) java.lang.Math.min(off + (long) len * 16, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = RepulsionConfig.toObject(mem, off);
+                    off += 12;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("RepulsionConfigs", key);
+                }
             }
-         }
-      }
-
-      return new UpdateRepulsionConfig(
-         UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)), mem.get(PacketIO.PROTO_INT, offset + 2), repulsionConfigs
-      );
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.repulsionConfigs != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      buf.writeByte(this.type.getValue());
-      buf.writeIntLE(this.maxId);
-      if (this.repulsionConfigs != null) {
-         if (this.repulsionConfigs.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", this.repulsionConfigs.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.repulsionConfigs.size());
-
-         for (Entry<Integer, RepulsionConfig> e : this.repulsionConfigs.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.repulsionConfigs != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte)this.type.getValue());
-      mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
-      int varOffset = offset + 6;
-      if (this.repulsionConfigs != null) {
-         if (this.repulsionConfigs.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", this.repulsionConfigs.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.repulsionConfigs.size());
-
-         for (Entry<Integer, RepulsionConfig> e : this.repulsionConfigs.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 6;
-      if (this.repulsionConfigs != null) {
-         size += VarInt.size(this.repulsionConfigs.size()) + this.repulsionConfigs.size() * 16;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 6) {
-         return ValidationResult.error("Buffer too small: expected at least 6 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 1) & 255;
-      if (v >= 3) {
-         return ValidationResult.error("Invalid UpdateType value for Type");
-      }
-
-      v = offset + 6;
-      if ((nullBits & 1) != 0) {
-         int repulsionConfigsCount = VarInt.peek(buffer, v);
-         if (repulsionConfigsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for RepulsionConfigs");
-         }
-
-         if (repulsionConfigsCount > 4096000) {
-            return ValidationResult.error("RepulsionConfigs exceeds max length 4096000");
-         }
-
-         v += VarInt.size(repulsionConfigsCount);
-
-         for (int i = 0; i < repulsionConfigsCount; i++) {
-            v += 4;
-            if (v > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
+            varPos = off - varBase;
+        }
+        var result = new UpdateRepulsionConfig(
+            UpdateType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 1)),
+            mem.get(PacketIO.PROTO_INT, offset + 2),
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.repulsionConfigs != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 1, (byte) this.type.getValue());
+        mem.set(PacketIO.PROTO_INT, offset + 2, this.maxId);
+        var varOffset = offset + 6;
+        if (this.repulsionConfigs != null) {
+            
+            if (this.repulsionConfigs.size() > 4096000) throw ProtocolException.dictionaryTooLarge("RepulsionConfigs", repulsionConfigs.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.repulsionConfigs.size());
+            for (var e : this.repulsionConfigs.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 6;
+        if (repulsionConfigs != null) size += VarInt.size(repulsionConfigs.size()) + repulsionConfigs.size() * (4 + 12);
 
-            v += 12;
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public UpdateRepulsionConfig clone() {
+        UpdateRepulsionConfig copy = new UpdateRepulsionConfig();
+        copy.type = this.type;
+        copy.maxId = this.maxId;
+        if (this.repulsionConfigs != null) {
+            java.util.Map<Integer, RepulsionConfig> m = new java.util.HashMap<>();
+            for (var e : this.repulsionConfigs.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.repulsionConfigs = m;
+        }
+        return copy;
+    }
 
-   public UpdateRepulsionConfig clone() {
-      UpdateRepulsionConfig copy = new UpdateRepulsionConfig();
-      copy.type = this.type;
-      copy.maxId = this.maxId;
-      if (this.repulsionConfigs != null) {
-         Map<Integer, RepulsionConfig> m = new HashMap<>();
 
-         for (Entry<Integer, RepulsionConfig> e : this.repulsionConfigs.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof UpdateRepulsionConfig other)) return false;
+        return java.util.Objects.equals(this.type, other.type) && this.maxId == other.maxId && java.util.Objects.equals(this.repulsionConfigs, other.repulsionConfigs);
+    }
 
-         copy.repulsionConfigs = m;
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(type, maxId, repulsionConfigs);
+    }
 
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof UpdateRepulsionConfig other)
-            ? false
-            : Objects.equals(this.type, other.type) && this.maxId == other.maxId && Objects.equals(this.repulsionConfigs, other.repulsionConfigs);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.type, this.maxId, this.repulsionConfigs);
-   }
-}
+}

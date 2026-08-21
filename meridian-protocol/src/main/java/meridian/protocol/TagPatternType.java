@@ -1,29 +1,30 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum TagPatternType {
-   Equals(0),
-   And(1),
-   Or(2),
-   Not(3);
+    Equals(0),
+    And(1),
+    Or(2),
+    Not(3);
 
-   public static final TagPatternType[] VALUES = values();
-   private final int value;
+    public static final TagPatternType[] VALUES = values();
 
-   TagPatternType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    TagPatternType(int value) {
+        this.value = value;
+    }
 
-   public static TagPatternType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("TagPatternType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static TagPatternType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("TagPatternType", value);
+    }
+}

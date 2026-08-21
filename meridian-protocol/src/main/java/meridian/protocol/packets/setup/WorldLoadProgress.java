@@ -1,221 +1,175 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.setup;
 
-import meridian.protocol.FormattedMessage;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.FormattedMessage;
 
 public class WorldLoadProgress implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 21;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 9;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 9;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public FormattedMessage status;
-   public int percentComplete;
-   public int percentCompleteSubitem;
+    public static final int PACKET_ID = 21;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 9;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 9;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 21;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public WorldLoadProgress() {
-   }
+    @Nullable public FormattedMessage status;
+    public int percentComplete;
+    public int percentCompleteSubitem;
 
-   public WorldLoadProgress(@Nullable FormattedMessage status, int percentComplete, int percentCompleteSubitem) {
-      this.status = status;
-      this.percentComplete = percentComplete;
-      this.percentCompleteSubitem = percentCompleteSubitem;
-   }
+    public WorldLoadProgress() {
+    }
 
-   public WorldLoadProgress(@Nonnull WorldLoadProgress other) {
-      this.status = other.status;
-      this.percentComplete = other.percentComplete;
-      this.percentCompleteSubitem = other.percentCompleteSubitem;
-   }
+    public WorldLoadProgress(@Nullable FormattedMessage status, int percentComplete, int percentCompleteSubitem) {
+        this.status = status;
+        this.percentComplete = percentComplete;
+        this.percentCompleteSubitem = percentCompleteSubitem;
+    }
 
-   @Nonnull
-   public static WorldLoadProgress deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 9) {
-         throw ProtocolException.bufferTooSmall("WorldLoadProgress", 9, buf.readableBytes() - offset);
-      }
+    public WorldLoadProgress(@Nonnull WorldLoadProgress other) {
+        this.status = other.status;
+        this.percentComplete = other.percentComplete;
+        this.percentCompleteSubitem = other.percentCompleteSubitem;
+    }
 
-      WorldLoadProgress obj = new WorldLoadProgress();
-      byte nullBits = buf.getByte(offset);
-      obj.percentComplete = buf.getIntLE(offset + 1);
-      obj.percentCompleteSubitem = buf.getIntLE(offset + 5);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         obj.status = FormattedMessage.deserialize(buf, pos);
-         pos += FormattedMessage.computeBytesConsumed(buf, pos);
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         pos += FormattedMessage.computeBytesConsumed(buf, pos);
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 9L;
-   }
-
-   @Nullable
-   public static FormattedMessage getStatus(MemorySegment mem) {
-      return getStatus(mem, 0);
-   }
-
-   @Nullable
-   public static FormattedMessage getStatus(MemorySegment mem, int offset) {
-      return hasStatus(mem, offset) ? FormattedMessage.toObject(mem, offset + 9) : null;
-   }
-
-   public static int getPercentComplete(MemorySegment mem) {
-      return getPercentComplete(mem, 0);
-   }
-
-   public static int getPercentComplete(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   public static int getPercentCompleteSubitem(MemorySegment mem) {
-      return getPercentCompleteSubitem(mem, 0);
-   }
-
-   public static int getPercentCompleteSubitem(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 5);
-   }
-
-   public static boolean hasStatus(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static WorldLoadProgress toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static WorldLoadProgress toObject(MemorySegment mem, int offset) {
-      if (offset + 9 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("WorldLoadProgress", offset + 9, (int)mem.byteSize());
-      } else {
-         return new WorldLoadProgress(
-            hasStatus(mem, offset) ? FormattedMessage.toObject(mem, offset + 9) : null,
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("WorldLoadProgress", offset, (int) mem.byteSize());
+        long needed = (long) offset + 9;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("WorldLoadProgress", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static FormattedMessage getStatus(MemorySegment mem) {
+        return getStatus(mem, 0);
+    }
+    
+    @Nullable
+    public static FormattedMessage getStatus(MemorySegment mem, int offset) {
+        return hasStatus(mem, offset) ? FormattedMessage.toObject(mem, offset + 9): null;
+    }
+    
+    public static int getPercentComplete(MemorySegment mem) {
+        return getPercentComplete(mem, 0);
+    }
+    
+    public static int getPercentComplete(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 1);
+    }
+    
+    public static int getPercentCompleteSubitem(MemorySegment mem) {
+        return getPercentCompleteSubitem(mem, 0);
+    }
+    
+    public static int getPercentCompleteSubitem(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 5);
+    }
+    
+    public static boolean hasStatus(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static WorldLoadProgress toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static WorldLoadProgress toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one WorldLoadProgress and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static WorldLoadProgress toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 9;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        FormattedMessage v0 = null;
+        if (hasStatus(mem, offset)) {
+            v0 = FormattedMessage.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new WorldLoadProgress(
+            v0,
             mem.get(PacketIO.PROTO_INT, offset + 1),
             mem.get(PacketIO.PROTO_INT, offset + 5)
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.status != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_INT, offset + 1, this.percentComplete);
+        mem.set(PacketIO.PROTO_INT, offset + 5, this.percentCompleteSubitem);
+        var varOffset = offset + 9;
+        if (this.status != null) {
+            
+            varOffset += this.status.serialize(mem, varOffset);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 9;
+        if (status != null) size += status.computeSize();
 
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.status != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+        return size;
+    }
 
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.percentComplete);
-      buf.writeIntLE(this.percentCompleteSubitem);
-      if (this.status != null) {
-         this.status.serialize(buf);
-      }
-   }
+    public WorldLoadProgress clone() {
+        WorldLoadProgress copy = new WorldLoadProgress();
+        copy.status = this.status != null ? this.status.clone() : null;
+        copy.percentComplete = this.percentComplete;
+        copy.percentCompleteSubitem = this.percentCompleteSubitem;
+        return copy;
+    }
 
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.status != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.percentComplete);
-      mem.set(PacketIO.PROTO_INT, offset + 5, this.percentCompleteSubitem);
-      int varOffset = offset + 9;
-      if (this.status != null) {
-         varOffset += this.status.serialize(mem, varOffset);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof WorldLoadProgress other)) return false;
+        return java.util.Objects.equals(this.status, other.status) && this.percentComplete == other.percentComplete && this.percentCompleteSubitem == other.percentCompleteSubitem;
+    }
 
-      return varOffset - offset;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(status, percentComplete, percentCompleteSubitem);
+    }
 
-   @Override
-   public int computeSize() {
-      int size = 9;
-      if (this.status != null) {
-         size += this.status.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 9) {
-         return ValidationResult.error("Buffer too small: expected at least 9 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         ValidationResult statusResult = FormattedMessage.validateStructure(buffer, pos);
-         if (!statusResult.isValid()) {
-            return ValidationResult.error("Invalid Status: " + statusResult.error());
-         }
-
-         pos += FormattedMessage.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public WorldLoadProgress clone() {
-      WorldLoadProgress copy = new WorldLoadProgress();
-      copy.status = this.status != null ? this.status.clone() : null;
-      copy.percentComplete = this.percentComplete;
-      copy.percentCompleteSubitem = this.percentCompleteSubitem;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof WorldLoadProgress other)
-            ? false
-            : Objects.equals(this.status, other.status)
-               && this.percentComplete == other.percentComplete
-               && this.percentCompleteSubitem == other.percentCompleteSubitem;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.status, this.percentComplete, this.percentCompleteSubitem);
-   }
-}
+}

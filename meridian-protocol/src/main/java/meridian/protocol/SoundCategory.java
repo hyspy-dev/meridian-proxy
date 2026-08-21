@@ -1,30 +1,31 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum SoundCategory {
-   Music(0),
-   Ambient(1),
-   SFX(2),
-   UI(3),
-   Voice(4);
+    Music(0),
+    Ambient(1),
+    SFX(2),
+    UI(3),
+    Voice(4);
 
-   public static final SoundCategory[] VALUES = values();
-   private final int value;
+    public static final SoundCategory[] VALUES = values();
 
-   SoundCategory(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    SoundCategory(int value) {
+        this.value = value;
+    }
 
-   public static SoundCategory fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("SoundCategory", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static SoundCategory fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("SoundCategory", value);
+    }
+}

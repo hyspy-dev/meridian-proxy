@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ItemGridInfoDisplayMode {
-   Tooltip(0),
-   Adjacent(1),
-   None(2);
+    Tooltip(0),
+    Adjacent(1),
+    None(2);
 
-   public static final ItemGridInfoDisplayMode[] VALUES = values();
-   private final int value;
+    public static final ItemGridInfoDisplayMode[] VALUES = values();
 
-   ItemGridInfoDisplayMode(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ItemGridInfoDisplayMode(int value) {
+        this.value = value;
+    }
 
-   public static ItemGridInfoDisplayMode fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ItemGridInfoDisplayMode", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ItemGridInfoDisplayMode fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ItemGridInfoDisplayMode", value);
+    }
+}

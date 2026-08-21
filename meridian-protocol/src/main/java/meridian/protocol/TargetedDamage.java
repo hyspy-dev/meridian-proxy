@@ -1,200 +1,159 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class TargetedDamage {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 9;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 9;
-   public static final int MAX_SIZE = 1677721600;
-   public int index;
-   @Nullable
-   public DamageEffects damageEffects;
-   public int next;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 9;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 9;
+    public static final int MAX_SIZE = 1677721600;
 
-   public TargetedDamage() {
-   }
+    public int index;
+    @Nullable public DamageEffects damageEffects;
+    public int next;
 
-   public TargetedDamage(int index, @Nullable DamageEffects damageEffects, int next) {
-      this.index = index;
-      this.damageEffects = damageEffects;
-      this.next = next;
-   }
+    public TargetedDamage() {
+    }
 
-   public TargetedDamage(@Nonnull TargetedDamage other) {
-      this.index = other.index;
-      this.damageEffects = other.damageEffects;
-      this.next = other.next;
-   }
+    public TargetedDamage(int index, @Nullable DamageEffects damageEffects, int next) {
+        this.index = index;
+        this.damageEffects = damageEffects;
+        this.next = next;
+    }
 
-   @Nonnull
-   public static TargetedDamage deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 9) {
-         throw ProtocolException.bufferTooSmall("TargetedDamage", 9, buf.readableBytes() - offset);
-      }
+    public TargetedDamage(@Nonnull TargetedDamage other) {
+        this.index = other.index;
+        this.damageEffects = other.damageEffects;
+        this.next = other.next;
+    }
 
-      TargetedDamage obj = new TargetedDamage();
-      byte nullBits = buf.getByte(offset);
-      obj.index = buf.getIntLE(offset + 1);
-      obj.next = buf.getIntLE(offset + 5);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         obj.damageEffects = DamageEffects.deserialize(buf, pos);
-         pos += DamageEffects.computeBytesConsumed(buf, pos);
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         pos += DamageEffects.computeBytesConsumed(buf, pos);
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 9L;
-   }
-
-   public static int getIndex(MemorySegment mem) {
-      return getIndex(mem, 0);
-   }
-
-   public static int getIndex(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 1);
-   }
-
-   @Nullable
-   public static DamageEffects getDamageEffects(MemorySegment mem) {
-      return getDamageEffects(mem, 0);
-   }
-
-   @Nullable
-   public static DamageEffects getDamageEffects(MemorySegment mem, int offset) {
-      return hasDamageEffects(mem, offset) ? DamageEffects.toObject(mem, offset + 9) : null;
-   }
-
-   public static int getNext(MemorySegment mem) {
-      return getNext(mem, 0);
-   }
-
-   public static int getNext(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 5);
-   }
-
-   public static boolean hasDamageEffects(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static TargetedDamage toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static TargetedDamage toObject(MemorySegment mem, int offset) {
-      if (offset + 9 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("TargetedDamage", offset + 9, (int)mem.byteSize());
-      } else {
-         return new TargetedDamage(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("TargetedDamage", offset, (int) mem.byteSize());
+        long needed = (long) offset + 9;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("TargetedDamage", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getIndex(MemorySegment mem) {
+        return getIndex(mem, 0);
+    }
+    
+    public static int getIndex(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 1);
+    }
+    
+    @Nullable
+    public static DamageEffects getDamageEffects(MemorySegment mem) {
+        return getDamageEffects(mem, 0);
+    }
+    
+    @Nullable
+    public static DamageEffects getDamageEffects(MemorySegment mem, int offset) {
+        return hasDamageEffects(mem, offset) ? DamageEffects.toObject(mem, offset + 9): null;
+    }
+    
+    public static int getNext(MemorySegment mem) {
+        return getNext(mem, 0);
+    }
+    
+    public static int getNext(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 5);
+    }
+    
+    public static boolean hasDamageEffects(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static TargetedDamage toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static TargetedDamage toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one TargetedDamage and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static TargetedDamage toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 9;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        DamageEffects v1 = null;
+        if (hasDamageEffects(mem, offset)) {
+            v1 = DamageEffects.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        }
+        var result = new TargetedDamage(
             mem.get(PacketIO.PROTO_INT, offset + 1),
-            hasDamageEffects(mem, offset) ? DamageEffects.toObject(mem, offset + 9) : null,
+            v1,
             mem.get(PacketIO.PROTO_INT, offset + 5)
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.damageEffects != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        mem.set(PacketIO.PROTO_INT, offset + 1, this.index);
+        mem.set(PacketIO.PROTO_INT, offset + 5, this.next);
+        var varOffset = offset + 9;
+        if (this.damageEffects != null) {
+            
+            varOffset += this.damageEffects.serialize(mem, varOffset);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 9;
+        if (damageEffects != null) size += damageEffects.computeSize();
 
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.damageEffects != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+        return size;
+    }
 
-      buf.writeByte(nullBits);
-      buf.writeIntLE(this.index);
-      buf.writeIntLE(this.next);
-      if (this.damageEffects != null) {
-         this.damageEffects.serialize(buf);
-      }
-   }
+    public TargetedDamage clone() {
+        TargetedDamage copy = new TargetedDamage();
+        copy.index = this.index;
+        copy.damageEffects = this.damageEffects != null ? this.damageEffects.clone() : null;
+        copy.next = this.next;
+        return copy;
+    }
 
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.damageEffects != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      mem.set(PacketIO.PROTO_INT, offset + 1, this.index);
-      mem.set(PacketIO.PROTO_INT, offset + 5, this.next);
-      int varOffset = offset + 9;
-      if (this.damageEffects != null) {
-         varOffset += this.damageEffects.serialize(mem, varOffset);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof TargetedDamage other)) return false;
+        return this.index == other.index && java.util.Objects.equals(this.damageEffects, other.damageEffects) && this.next == other.next;
+    }
 
-      return varOffset - offset;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(index, damageEffects, next);
+    }
 
-   public int computeSize() {
-      int size = 9;
-      if (this.damageEffects != null) {
-         size += this.damageEffects.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 9) {
-         return ValidationResult.error("Buffer too small: expected at least 9 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 9;
-      if ((nullBits & 1) != 0) {
-         ValidationResult damageEffectsResult = DamageEffects.validateStructure(buffer, pos);
-         if (!damageEffectsResult.isValid()) {
-            return ValidationResult.error("Invalid DamageEffects: " + damageEffectsResult.error());
-         }
-
-         pos += DamageEffects.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public TargetedDamage clone() {
-      TargetedDamage copy = new TargetedDamage();
-      copy.index = this.index;
-      copy.damageEffects = this.damageEffects != null ? this.damageEffects.clone() : null;
-      copy.next = this.next;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof TargetedDamage other)
-            ? false
-            : this.index == other.index && Objects.equals(this.damageEffects, other.damageEffects) && this.next == other.next;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.index, this.damageEffects, this.next);
-   }
-}
+}

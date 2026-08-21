@@ -136,7 +136,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
             QuicSslContext clientSslContext = QuicSslContextBuilder.forClient()
                     .keyManager(clientKey, null, clientCert)
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .applicationProtocols("hytale/2", "hytale/1")
+                    .applicationProtocols(HytaleAlpn.CURRENT, HytaleAlpn.PREVIOUS)
                     .build();
 
             Bootstrap b = new Bootstrap();

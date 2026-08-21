@@ -1,135 +1,137 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class BarBeatPosition {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 12;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 12;
-   public static final int MAX_SIZE = 12;
-   public int bar;
-   public int beat;
-   public float ms;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 12;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 12;
+    public static final int MAX_SIZE = 12;
 
-   public BarBeatPosition() {
-   }
+    public int bar;
+    public int beat;
+    public float ms;
 
-   public BarBeatPosition(int bar, int beat, float ms) {
-      this.bar = bar;
-      this.beat = beat;
-      this.ms = ms;
-   }
+    public BarBeatPosition() {
+    }
 
-   public BarBeatPosition(@Nonnull BarBeatPosition other) {
-      this.bar = other.bar;
-      this.beat = other.beat;
-      this.ms = other.ms;
-   }
+    public BarBeatPosition(int bar, int beat, float ms) {
+        this.bar = bar;
+        this.beat = beat;
+        this.ms = ms;
+    }
 
-   @Nonnull
-   public static BarBeatPosition deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 12) {
-         throw ProtocolException.bufferTooSmall("BarBeatPosition", 12, buf.readableBytes() - offset);
-      }
+    public BarBeatPosition(@Nonnull BarBeatPosition other) {
+        this.bar = other.bar;
+        this.beat = other.beat;
+        this.ms = other.ms;
+    }
 
-      BarBeatPosition obj = new BarBeatPosition();
-      obj.bar = buf.getIntLE(offset + 0);
-      obj.beat = buf.getIntLE(offset + 4);
-      obj.ms = buf.getFloatLE(offset + 8);
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("BarBeatPosition", offset, (int) mem.byteSize());
+        long needed = (long) offset + 12;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("BarBeatPosition", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getBar(MemorySegment mem) {
+        return getBar(mem, 0);
+    }
+    
+    public static int getBar(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    public static int getBeat(MemorySegment mem) {
+        return getBeat(mem, 0);
+    }
+    
+    public static int getBeat(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 4);
+    }
+    
+    public static float getMs(MemorySegment mem) {
+        return getMs(mem, 0);
+    }
+    
+    public static float getMs(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 8), "Ms");
+    }
+    
+    
+    
+    
+    
+    public static BarBeatPosition toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static BarBeatPosition toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one BarBeatPosition and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static BarBeatPosition toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new BarBeatPosition(
+            mem.get(PacketIO.PROTO_INT, offset + 0),
+            mem.get(PacketIO.PROTO_INT, offset + 4),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 8), "Ms")
+        );
+        if (cursor != null) cursor.position = offset + 12;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.bar);
+        mem.set(PacketIO.PROTO_INT, offset + 4, this.beat);
+        PacketIO.requireFinite(this.ms, "Ms"); mem.set(PacketIO.PROTO_FLOAT, offset + 8, this.ms);
+        
+        
+    
+       return 12;
+    }
+    public int computeSize() {
+        return 12;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 12;
-   }
+    public BarBeatPosition clone() {
+        BarBeatPosition copy = new BarBeatPosition();
+        copy.bar = this.bar;
+        copy.beat = this.beat;
+        copy.ms = this.ms;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 12L;
-   }
 
-   public static int getBar(MemorySegment mem) {
-      return getBar(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BarBeatPosition other)) return false;
+        return this.bar == other.bar && this.beat == other.beat && this.ms == other.ms;
+    }
 
-   public static int getBar(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(bar, beat, ms);
+    }
 
-   public static int getBeat(MemorySegment mem) {
-      return getBeat(mem, 0);
-   }
-
-   public static int getBeat(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 4);
-   }
-
-   public static float getMs(MemorySegment mem) {
-      return getMs(mem, 0);
-   }
-
-   public static float getMs(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 8);
-   }
-
-   public static BarBeatPosition toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static BarBeatPosition toObject(MemorySegment mem, int offset) {
-      if (offset + 12 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("BarBeatPosition", offset + 12, (int)mem.byteSize());
-      } else {
-         return new BarBeatPosition(mem.get(PacketIO.PROTO_INT, offset + 0), mem.get(PacketIO.PROTO_INT, offset + 4), mem.get(PacketIO.PROTO_FLOAT, offset + 8));
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeIntLE(this.bar);
-      buf.writeIntLE(this.beat);
-      buf.writeFloatLE(this.ms);
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_INT, offset + 0, this.bar);
-      mem.set(PacketIO.PROTO_INT, offset + 4, this.beat);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 8, this.ms);
-      return 12;
-   }
-
-   public int computeSize() {
-      return 12;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      return buffer.readableBytes() - offset < 12 ? ValidationResult.error("Buffer too small: expected at least 12 bytes") : ValidationResult.OK;
-   }
-
-   public BarBeatPosition clone() {
-      BarBeatPosition copy = new BarBeatPosition();
-      copy.bar = this.bar;
-      copy.beat = this.beat;
-      copy.ms = this.ms;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof BarBeatPosition other) ? false : this.bar == other.bar && this.beat == other.beat && this.ms == other.ms;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.bar, this.beat, this.ms);
-   }
-}
+}

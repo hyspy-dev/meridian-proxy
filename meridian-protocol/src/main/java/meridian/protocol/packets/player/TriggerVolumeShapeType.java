@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.player;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum TriggerVolumeShapeType {
-   Box(0),
-   Sphere(1),
-   Cylinder(2);
+    Box(0),
+    Sphere(1),
+    Cylinder(2);
 
-   public static final TriggerVolumeShapeType[] VALUES = values();
-   private final int value;
+    public static final TriggerVolumeShapeType[] VALUES = values();
 
-   TriggerVolumeShapeType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    TriggerVolumeShapeType(int value) {
+        this.value = value;
+    }
 
-   public static TriggerVolumeShapeType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("TriggerVolumeShapeType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static TriggerVolumeShapeType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("TriggerVolumeShapeType", value);
+    }
+}

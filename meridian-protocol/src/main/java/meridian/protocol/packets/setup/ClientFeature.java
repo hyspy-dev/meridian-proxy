@@ -1,36 +1,37 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.setup;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum ClientFeature {
-   SplitVelocity(0),
-   Mantling(1),
-   SprintForce(2),
-   CrouchSlide(3),
-   SafetyRoll(4),
-   DisplayHealthBars(5),
-   DisplayCombatText(6),
-   CanHideHelmet(7),
-   CanHideCuirass(8),
-   CanHideGauntlets(9),
-   CanHidePants(10);
+    SplitVelocity(0),
+    Mantling(1),
+    SprintForce(2),
+    CrouchSlide(3),
+    SafetyRoll(4),
+    DisplayHealthBars(5),
+    DisplayCombatText(6),
+    CanHideHelmet(7),
+    CanHideCuirass(8),
+    CanHideGauntlets(9),
+    CanHidePants(10);
 
-   public static final ClientFeature[] VALUES = values();
-   private final int value;
+    public static final ClientFeature[] VALUES = values();
 
-   ClientFeature(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    ClientFeature(int value) {
+        this.value = value;
+    }
 
-   public static ClientFeature fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("ClientFeature", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static ClientFeature fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("ClientFeature", value);
+    }
+}

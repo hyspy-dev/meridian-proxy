@@ -1,111 +1,109 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.buildertools;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class BuilderToolBrushAxisArg {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1;
-   @Nonnull
-   public BrushAxis defaultValue = BrushAxis.None;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1;
 
-   public BuilderToolBrushAxisArg() {
-   }
+    @Nonnull public BrushAxis defaultValue = BrushAxis.None;
 
-   public BuilderToolBrushAxisArg(@Nonnull BrushAxis defaultValue) {
-      this.defaultValue = defaultValue;
-   }
+    public BuilderToolBrushAxisArg() {
+    }
 
-   public BuilderToolBrushAxisArg(@Nonnull BuilderToolBrushAxisArg other) {
-      this.defaultValue = other.defaultValue;
-   }
+    public BuilderToolBrushAxisArg(@Nonnull BrushAxis defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
-   @Nonnull
-   public static BuilderToolBrushAxisArg deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("BuilderToolBrushAxisArg", 1, buf.readableBytes() - offset);
-      }
+    public BuilderToolBrushAxisArg(@Nonnull BuilderToolBrushAxisArg other) {
+        this.defaultValue = other.defaultValue;
+    }
 
-      BuilderToolBrushAxisArg obj = new BuilderToolBrushAxisArg();
-      obj.defaultValue = BrushAxis.fromValue(buf.getByte(offset + 0));
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("BuilderToolBrushAxisArg", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("BuilderToolBrushAxisArg", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static BrushAxis getDefault(MemorySegment mem) {
+        return getDefault(mem, 0);
+    }
+    
+    public static BrushAxis getDefault(MemorySegment mem, int offset) {
+        return BrushAxis.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 0));
+    }
+    
+    
+    
+    
+    
+    public static BuilderToolBrushAxisArg toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static BuilderToolBrushAxisArg toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one BuilderToolBrushAxisArg and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static BuilderToolBrushAxisArg toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new BuilderToolBrushAxisArg(
+            BrushAxis.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 0))
+        );
+        if (cursor != null) cursor.position = offset + 1;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, (byte) this.defaultValue.getValue());
+        
+        
+    
+       return 1;
+    }
+    public int computeSize() {
+        return 1;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 1;
-   }
+    public BuilderToolBrushAxisArg clone() {
+        BuilderToolBrushAxisArg copy = new BuilderToolBrushAxisArg();
+        copy.defaultValue = this.defaultValue;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
 
-   public static BrushAxis getDefault(MemorySegment mem) {
-      return getDefault(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BuilderToolBrushAxisArg other)) return false;
+        return java.util.Objects.equals(this.defaultValue, other.defaultValue);
+    }
 
-   public static BrushAxis getDefault(MemorySegment mem, int offset) {
-      return BrushAxis.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 0));
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(defaultValue);
+    }
 
-   public static BuilderToolBrushAxisArg toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static BuilderToolBrushAxisArg toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("BuilderToolBrushAxisArg", offset + 1, (int)mem.byteSize());
-      } else {
-         return new BuilderToolBrushAxisArg(BrushAxis.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 0)));
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeByte(this.defaultValue.getValue());
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, (byte)this.defaultValue.getValue());
-      return 1;
-   }
-
-   public int computeSize() {
-      return 1;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      int v = buffer.getByte(offset + 0) & 255;
-      return v >= 5 ? ValidationResult.error("Invalid BrushAxis value for Default") : ValidationResult.OK;
-   }
-
-   public BuilderToolBrushAxisArg clone() {
-      BuilderToolBrushAxisArg copy = new BuilderToolBrushAxisArg();
-      copy.defaultValue = this.defaultValue;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof BuilderToolBrushAxisArg other ? Objects.equals(this.defaultValue, other.defaultValue) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.defaultValue);
-   }
-}
+}

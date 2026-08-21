@@ -1,26 +1,27 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum PhysicsType {
-   Standard(0);
+    Standard(0);
 
-   public static final PhysicsType[] VALUES = values();
-   private final int value;
+    public static final PhysicsType[] VALUES = values();
 
-   PhysicsType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    PhysicsType(int value) {
+        this.value = value;
+    }
 
-   public static PhysicsType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("PhysicsType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static PhysicsType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("PhysicsType", value);
+    }
+}

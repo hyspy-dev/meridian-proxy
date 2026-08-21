@@ -1,33 +1,34 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum VariantRotation {
-   None(0),
-   Wall(1),
-   UpDown(2),
-   Pipe(3),
-   DoublePipe(4),
-   NESW(5),
-   UpDownNESW(6),
-   All(7);
+    None(0),
+    Wall(1),
+    UpDown(2),
+    Pipe(3),
+    DoublePipe(4),
+    NESW(5),
+    UpDownNESW(6),
+    All(7);
 
-   public static final VariantRotation[] VALUES = values();
-   private final int value;
+    public static final VariantRotation[] VALUES = values();
 
-   VariantRotation(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    VariantRotation(int value) {
+        this.value = value;
+    }
 
-   public static VariantRotation fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("VariantRotation", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static VariantRotation fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("VariantRotation", value);
+    }
+}

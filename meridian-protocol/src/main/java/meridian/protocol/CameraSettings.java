@@ -1,338 +1,214 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.joml.Vector3fc;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import org.joml.*;
 
 public class CameraSettings {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 13;
-   public static final int VARIABLE_FIELD_COUNT = 2;
-   public static final int VARIABLE_BLOCK_START = 21;
-   public static final int MAX_SIZE = 8192049;
-   @Nullable
-   public Vector3fc positionOffset;
-   @Nullable
-   public CameraAxis yaw;
-   @Nullable
-   public CameraAxis pitch;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 13;
+    public static final int VARIABLE_FIELD_COUNT = 2;
+    public static final int VARIABLE_BLOCK_START = 21;
+    public static final int MAX_SIZE = 8192049;
 
-   public CameraSettings() {
-   }
+    @Nullable public Vector3fc positionOffset;
+    @Nullable public CameraAxis yaw;
+    @Nullable public CameraAxis pitch;
 
-   public CameraSettings(@Nullable Vector3fc positionOffset, @Nullable CameraAxis yaw, @Nullable CameraAxis pitch) {
-      this.positionOffset = positionOffset;
-      this.yaw = yaw;
-      this.pitch = pitch;
-   }
+    public CameraSettings() {
+    }
 
-   public CameraSettings(@Nonnull CameraSettings other) {
-      this.positionOffset = other.positionOffset;
-      this.yaw = other.yaw;
-      this.pitch = other.pitch;
-   }
+    public CameraSettings(@Nullable Vector3fc positionOffset, @Nullable CameraAxis yaw, @Nullable CameraAxis pitch) {
+        this.positionOffset = positionOffset;
+        this.yaw = yaw;
+        this.pitch = pitch;
+    }
 
-   @Nonnull
-   public static CameraSettings deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 21) {
-         throw ProtocolException.bufferTooSmall("CameraSettings", 21, buf.readableBytes() - offset);
-      }
+    public CameraSettings(@Nonnull CameraSettings other) {
+        this.positionOffset = other.positionOffset;
+        this.yaw = other.yaw;
+        this.pitch = other.pitch;
+    }
 
-      CameraSettings obj = new CameraSettings();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.positionOffset = PacketIO.readVector3f(buf, offset + 1);
-      }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("CameraSettings", offset, (int) mem.byteSize());
+        long needed = (long) offset + 21;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("CameraSettings", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static Vector3fc getPositionOffset(MemorySegment mem) {
+        return getPositionOffset(mem, 0);
+    }
+    
+    @Nullable
+    public static Vector3fc getPositionOffset(MemorySegment mem, int offset) {
+        return hasPositionOffset(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 1), "PositionOffset"): null;
+    }
+    
+    @Nullable
+    public static CameraAxis getYaw(MemorySegment mem) {
+        return getYaw(mem, 0);
+    }
+    
+    @Nullable
+    public static CameraAxis getYaw(MemorySegment mem, int offset) {
+        return hasYaw(mem, offset) ? CameraAxis.toObject(mem, offset + getValidatedOffset(mem, offset, 13, 21, "Yaw")): null;
+    }
+    
+    @Nullable
+    public static CameraAxis getPitch(MemorySegment mem) {
+        return getPitch(mem, 0);
+    }
+    
+    @Nullable
+    public static CameraAxis getPitch(MemorySegment mem, int offset) {
+        return hasPitch(mem, offset) ? CameraAxis.toObject(mem, offset + getValidatedOffset(mem, offset, 17, 21, "Pitch")): null;
+    }
+    
+    public static boolean hasPositionOffset(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasYaw(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    public static boolean hasPitch(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x04) != 0;
+    }
+    
+    private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+        int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+        if (offset < 0 || offset > buffer.byteSize() - base - varBlockStart)
+            throw ProtocolException.invalidOffset(fieldName, offset, (int) buffer.byteSize());
+        return varBlockStart + offset;
+    }
+    
+    /**
+     * Rejects an offset slot that does not name the position the field-order walk reached. A
+     * present field must sit where the previous field ended, and an absent field carries -1, so
+     * the slot a random-access getter resolves and the walk describe the same bytes.
+     */
+    private static void requireSlot(MemorySegment mem, int slotPosition, int expected, String fieldName) {
+        int slot = mem.get(PacketIO.PROTO_INT, slotPosition);
+        if (slot != expected) throw ProtocolException.nonCanonicalLayout(fieldName, slot, expected);
+    }
+    
+    public static CameraSettings toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static CameraSettings toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one CameraSettings and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static CameraSettings toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 21;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        CameraAxis v1 = null;
+        if (hasYaw(mem, offset)) {
+            requireSlot(mem, offset + 13, varPos, "Yaw");
+            v1 = CameraAxis.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        } else {
+            requireSlot(mem, offset + 13, -1, "Yaw");
+        }
+        
+        CameraAxis v2 = null;
+        if (hasPitch(mem, offset)) {
+            requireSlot(mem, offset + 17, varPos, "Pitch");
+            v2 = CameraAxis.toObject(mem, varBase + varPos, walkCursor);
+            varPos = walkCursor.position - varBase;
+        } else {
+            requireSlot(mem, offset + 17, -1, "Pitch");
+        }
+        var result = new CameraSettings(
+            hasPositionOffset(mem, offset) ? PacketIO.requireFinite(PacketIO.readVector3f(mem, offset + 1), "PositionOffset") : null,
+            v1,
+            v2
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.positionOffset != null) nullBits |= 0x01;
+        if (this.yaw != null) nullBits |= 0x02;
+        if (this.pitch != null) nullBits |= 0x04;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        if (this.positionOffset != null) {
+            PacketIO.requireFinite(this.positionOffset, "PositionOffset"); PacketIO.writeVector3f(mem, offset + 1, this.positionOffset);
+        } else {
+            mem.asSlice(offset + 1, 12).fill((byte) 0); 
+        }
+        var varOffset = offset + 21;
+        if (this.yaw != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 13, varOffset - offset - 21);
+            varOffset += this.yaw.serialize(mem, varOffset);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 13, -1);
+        }
+        if (this.pitch != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 17, varOffset - offset - 21);
+            varOffset += this.pitch.serialize(mem, varOffset);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 17, -1);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 21;
+        if (yaw != null) size += yaw.computeSize();
+    if (pitch != null) size += pitch.computeSize();
 
-      if ((nullBits & 2) != 0) {
-         int varPosBase0 = buf.getIntLE(offset + 13);
-         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 21) {
-            throw ProtocolException.invalidOffset("Yaw", varPosBase0, buf.readableBytes());
-         }
+        return size;
+    }
 
-         int varPos0 = offset + 21 + varPosBase0;
-         obj.yaw = CameraAxis.deserialize(buf, varPos0);
-      }
+    public CameraSettings clone() {
+        CameraSettings copy = new CameraSettings();
+        copy.positionOffset = this.positionOffset;
+        copy.yaw = this.yaw != null ? this.yaw.clone() : null;
+        copy.pitch = this.pitch != null ? this.pitch.clone() : null;
+        return copy;
+    }
 
-      if ((nullBits & 4) != 0) {
-         int varPosBase1 = buf.getIntLE(offset + 17);
-         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 21) {
-            throw ProtocolException.invalidOffset("Pitch", varPosBase1, buf.readableBytes());
-         }
 
-         int varPos1 = offset + 21 + varPosBase1;
-         obj.pitch = CameraAxis.deserialize(buf, varPos1);
-      }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof CameraSettings other)) return false;
+        return java.util.Objects.equals(this.positionOffset, other.positionOffset) && java.util.Objects.equals(this.yaw, other.yaw) && java.util.Objects.equals(this.pitch, other.pitch);
+    }
 
-      return obj;
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(positionOffset, yaw, pitch);
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int maxEnd = 21;
-      if ((nullBits & 2) != 0) {
-         int fieldOffset0 = buf.getIntLE(offset + 13);
-         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 21) {
-            throw ProtocolException.invalidOffset("Yaw", fieldOffset0, maxEnd);
-         }
-
-         int pos0 = offset + 21 + fieldOffset0;
-         pos0 += CameraAxis.computeBytesConsumed(buf, pos0);
-         if (pos0 - offset > maxEnd) {
-            maxEnd = pos0 - offset;
-         }
-      }
-
-      if ((nullBits & 4) != 0) {
-         int fieldOffset1 = buf.getIntLE(offset + 17);
-         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 21) {
-            throw ProtocolException.invalidOffset("Pitch", fieldOffset1, maxEnd);
-         }
-
-         int pos1 = offset + 21 + fieldOffset1;
-         pos1 += CameraAxis.computeBytesConsumed(buf, pos1);
-         if (pos1 - offset > maxEnd) {
-            maxEnd = pos1 - offset;
-         }
-      }
-
-      return maxEnd;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 21L;
-   }
-
-   @Nullable
-   public static Vector3fc getPositionOffset(MemorySegment mem) {
-      return getPositionOffset(mem, 0);
-   }
-
-   @Nullable
-   public static Vector3fc getPositionOffset(MemorySegment mem, int offset) {
-      return hasPositionOffset(mem, offset) ? PacketIO.readVector3f(mem, offset + 1) : null;
-   }
-
-   @Nullable
-   public static CameraAxis getYaw(MemorySegment mem) {
-      return getYaw(mem, 0);
-   }
-
-   @Nullable
-   public static CameraAxis getYaw(MemorySegment mem, int offset) {
-      return hasYaw(mem, offset) ? CameraAxis.toObject(mem, offset + getValidatedOffset(mem, offset, 13, 21, "Yaw")) : null;
-   }
-
-   @Nullable
-   public static CameraAxis getPitch(MemorySegment mem) {
-      return getPitch(mem, 0);
-   }
-
-   @Nullable
-   public static CameraAxis getPitch(MemorySegment mem, int offset) {
-      return hasPitch(mem, offset) ? CameraAxis.toObject(mem, offset + getValidatedOffset(mem, offset, 17, 21, "Pitch")) : null;
-   }
-
-   public static boolean hasPositionOffset(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasYaw(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static boolean hasPitch(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 4) != 0;
-   }
-
-   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
-      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
-      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
-         return varBlockStart + offset;
-      } else {
-         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
-      }
-   }
-
-   public static CameraSettings toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static CameraSettings toObject(MemorySegment mem, int offset) {
-      if (offset + 21 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("CameraSettings", offset + 21, (int)mem.byteSize());
-      } else {
-         return new CameraSettings(
-            hasPositionOffset(mem, offset) ? PacketIO.readVector3f(mem, offset + 1) : null,
-            hasYaw(mem, offset) ? CameraAxis.toObject(mem, offset + getValidatedOffset(mem, offset, 13, 21, "Yaw")) : null,
-            hasPitch(mem, offset) ? CameraAxis.toObject(mem, offset + getValidatedOffset(mem, offset, 17, 21, "Pitch")) : null
-         );
-      }
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      byte nullBits = 0;
-      if (this.positionOffset != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.yaw != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.pitch != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.positionOffset != null) {
-         PacketIO.writeVector3f(buf, this.positionOffset);
-      } else {
-         buf.writeZero(12);
-      }
-
-      int yawOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int pitchOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int varBlockStart = buf.writerIndex();
-      if (this.yaw != null) {
-         buf.setIntLE(yawOffsetSlot, buf.writerIndex() - varBlockStart);
-         this.yaw.serialize(buf);
-      } else {
-         buf.setIntLE(yawOffsetSlot, -1);
-      }
-
-      if (this.pitch != null) {
-         buf.setIntLE(pitchOffsetSlot, buf.writerIndex() - varBlockStart);
-         this.pitch.serialize(buf);
-      } else {
-         buf.setIntLE(pitchOffsetSlot, -1);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.positionOffset != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.yaw != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.pitch != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.positionOffset != null) {
-         PacketIO.writeVector3f(mem, offset + 1, this.positionOffset);
-      } else {
-         mem.asSlice(offset + 1, 12L).fill((byte)0);
-      }
-
-      int varOffset = offset + 21;
-      if (this.yaw != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 13, varOffset - offset - 21);
-         varOffset += this.yaw.serialize(mem, varOffset);
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 13, -1);
-      }
-
-      if (this.pitch != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 17, varOffset - offset - 21);
-         varOffset += this.pitch.serialize(mem, varOffset);
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 17, -1);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 21;
-      if (this.yaw != null) {
-         size += this.yaw.computeSize();
-      }
-
-      if (this.pitch != null) {
-         size += this.pitch.computeSize();
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 21) {
-         return ValidationResult.error("Buffer too small: expected at least 21 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      if ((nullBits & 2) != 0) {
-         int yawOffset = buffer.getIntLE(offset + 13);
-         if (yawOffset < 0 || yawOffset > buffer.writerIndex() - offset - 21) {
-            return ValidationResult.error("Invalid offset for Yaw");
-         }
-
-         int pos = offset + 21 + yawOffset;
-         ValidationResult yawResult = CameraAxis.validateStructure(buffer, pos);
-         if (!yawResult.isValid()) {
-            return ValidationResult.error("Invalid Yaw: " + yawResult.error());
-         }
-
-         pos += CameraAxis.computeBytesConsumed(buffer, pos);
-      }
-
-      if ((nullBits & 4) != 0) {
-         int pitchOffset = buffer.getIntLE(offset + 17);
-         if (pitchOffset < 0 || pitchOffset > buffer.writerIndex() - offset - 21) {
-            return ValidationResult.error("Invalid offset for Pitch");
-         }
-
-         int pos = offset + 21 + pitchOffset;
-         ValidationResult pitchResult = CameraAxis.validateStructure(buffer, pos);
-         if (!pitchResult.isValid()) {
-            return ValidationResult.error("Invalid Pitch: " + pitchResult.error());
-         }
-
-         pos += CameraAxis.computeBytesConsumed(buffer, pos);
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public CameraSettings clone() {
-      CameraSettings copy = new CameraSettings();
-      copy.positionOffset = this.positionOffset;
-      copy.yaw = this.yaw != null ? this.yaw.clone() : null;
-      copy.pitch = this.pitch != null ? this.pitch.clone() : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof CameraSettings other)
-            ? false
-            : Objects.equals(this.positionOffset, other.positionOffset) && Objects.equals(this.yaw, other.yaw) && Objects.equals(this.pitch, other.pitch);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.positionOffset, this.yaw, this.pitch);
-   }
-}
+}

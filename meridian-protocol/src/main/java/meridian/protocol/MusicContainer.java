@@ -1,133 +1,84 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public abstract class MusicContainer {
-   public static final int MAX_SIZE = 1677721605;
-   public float volume;
-   public int loopCount;
-   public float weight;
-   @Nullable
-   public Rangef silenceAfter;
-   @Nullable
-   public Rangef exitSilence;
-   public float fadeInDuration;
-   public float fadeOutDuration;
-   @Nonnull
-   public MusicTransitionType transitionType = MusicTransitionType.Crossfade;
-   public float transitionDuration;
-   public boolean playToCompletion;
-   public float resumeMemoryDuration;
-   @Nullable
-   public String nameTranslationKey;
-   public int audioCategoryIndex;
-   @Nullable
-   public TempoSettings tempo;
-   @Nullable
-   public StateBinding[] stateBindings;
+    public static final int MAX_SIZE = 1677721605;
 
-   @Nonnull
-   public static MusicContainer deserialize(@Nonnull ByteBuf buf, int offset) {
-      int typeId = VarInt.peek(buf, offset);
-      int typeIdLen = VarInt.size(typeId);
+        public float volume;
+    public int loopCount;
+    public float weight;
+    @Nullable public Rangef silenceAfter;
+    @Nullable public Rangef exitSilence;
+    public float fadeInDuration;
+    public float fadeOutDuration;
+    @Nonnull public MusicTransitionType transitionType = MusicTransitionType.Crossfade;
+    public float transitionDuration;
+    @Nullable public MusicSync exitAt;
+    @Nullable public DestinationAlign align;
+    @Nullable public String alignMarkerName;
+    public boolean playToCompletion;
+    public float resumeMemoryDuration;
+    @Nullable public String nameTranslationKey;
+    public int audioCategoryIndex;
+    @Nullable public TempoSettings tempo;
+    @Nullable public StateBinding[] stateBindings;
+    @Nullable public StingerBinding[] stingers;
 
-      return switch (typeId) {
-         case 0 -> SingleTrackMusicContainer.deserialize(buf, offset + typeIdLen);
-         case 1 -> RandomMusicContainer.deserialize(buf, offset + typeIdLen);
-         case 2 -> SequenceMusicContainer.deserialize(buf, offset + typeIdLen);
-         case 3 -> HorizontalMusicContainer.deserialize(buf, offset + typeIdLen);
-         case 4 -> SegmentMusicContainer.deserialize(buf, offset + typeIdLen);
-         default -> throw ProtocolException.unknownPolymorphicType("MusicContainer", typeId);
-      };
-   }
 
-   public static MusicContainer toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
 
-   public static MusicContainer toObject(MemorySegment mem, int offset) {
-      int typeId = VarInt.get(mem, offset);
-      int typeIdLen = VarInt.size(typeId);
+    public static MusicContainer toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
 
-      return switch (typeId) {
-         case 0 -> SingleTrackMusicContainer.toObject(mem, offset + typeIdLen);
-         case 1 -> RandomMusicContainer.toObject(mem, offset + typeIdLen);
-         case 2 -> SequenceMusicContainer.toObject(mem, offset + typeIdLen);
-         case 3 -> HorizontalMusicContainer.toObject(mem, offset + typeIdLen);
-         case 4 -> SegmentMusicContainer.toObject(mem, offset + typeIdLen);
-         default -> throw ProtocolException.unknownPolymorphicType("MusicContainer", typeId);
-      };
-   }
+    public static MusicContainer toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      int typeId = VarInt.peek(buf, offset);
-      int typeIdLen = VarInt.size(typeId);
+    public static MusicContainer toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // The subtype starts after the type id as encoded, which VarInt.size cannot report.
+        long typeIdPacked = VarInt.getWithLength(mem, offset);
+        int typeId = (int) typeIdPacked;
+        int typeIdLen = (int) (typeIdPacked >>> 32);
 
-      return typeIdLen + switch (typeId) {
-         case 0 -> SingleTrackMusicContainer.computeBytesConsumed(buf, offset + typeIdLen);
-         case 1 -> RandomMusicContainer.computeBytesConsumed(buf, offset + typeIdLen);
-         case 2 -> SequenceMusicContainer.computeBytesConsumed(buf, offset + typeIdLen);
-         case 3 -> HorizontalMusicContainer.computeBytesConsumed(buf, offset + typeIdLen);
-         case 4 -> SegmentMusicContainer.computeBytesConsumed(buf, offset + typeIdLen);
-         default -> throw ProtocolException.unknownPolymorphicType("MusicContainer", typeId);
-      };
-   }
+        return switch (typeId) {
+            case 0 -> SingleTrackMusicContainer.toObject(mem, offset + typeIdLen, cursor);
+                case 1 -> RandomMusicContainer.toObject(mem, offset + typeIdLen, cursor);
+                case 2 -> SequenceMusicContainer.toObject(mem, offset + typeIdLen, cursor);
+                case 3 -> HorizontalMusicContainer.toObject(mem, offset + typeIdLen, cursor);
+                case 4 -> SegmentMusicContainer.toObject(mem, offset + typeIdLen, cursor);
+            default -> throw ProtocolException.unknownPolymorphicType("MusicContainer", typeId);
+        };
+    }
 
-   public int getTypeId() {
-      if (this instanceof SingleTrackMusicContainer sub) {
-         return 0;
-      } else if (this instanceof RandomMusicContainer sub) {
-         return 1;
-      } else if (this instanceof SequenceMusicContainer sub) {
-         return 2;
-      } else if (this instanceof HorizontalMusicContainer sub) {
-         return 3;
-      } else if (this instanceof SegmentMusicContainer sub) {
-         return 4;
-      } else {
-         throw new IllegalStateException("Unknown subtype: " + this.getClass().getName());
-      }
-   }
 
-   public abstract int serialize(@Nonnull ByteBuf var1);
+    public int getTypeId() {
+        if (this instanceof SingleTrackMusicContainer sub) { return 0; }
+            if (this instanceof RandomMusicContainer sub) { return 1; }
+            if (this instanceof SequenceMusicContainer sub) { return 2; }
+            if (this instanceof HorizontalMusicContainer sub) { return 3; }
+            if (this instanceof SegmentMusicContainer sub) { return 4; }
+        throw new IllegalStateException("Unknown subtype: " + getClass().getName());
+    }
 
-   public abstract int serialize(@Nonnull MemorySegment var1, int var2);
+    public abstract int serialize(@Nonnull MemorySegment mem, int offset);
+    public abstract int computeSize();
 
-   public abstract int computeSize();
 
-   public int serializeWithTypeId(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      VarInt.write(buf, this.getTypeId());
-      this.serialize(buf);
-      return buf.writerIndex() - startPos;
-   }
+    public int serializeWithTypeId(@Nonnull MemorySegment mem, int offset) {
+        var len = VarInt.set(mem, offset, getTypeId());
+        return len + serialize(mem, offset + len);
+    }
 
-   public int serializeWithTypeId(@Nonnull MemorySegment mem, int offset) {
-      int len = VarInt.set(mem, offset, this.getTypeId());
-      return len + this.serialize(mem, offset + len);
-   }
-
-   public int computeSizeWithTypeId() {
-      return VarInt.size(this.getTypeId()) + this.computeSize();
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      int typeId = VarInt.peek(buffer, offset);
-      int typeIdLen = VarInt.size(typeId);
-
-      return switch (typeId) {
-         case 0 -> SingleTrackMusicContainer.validateStructure(buffer, offset + typeIdLen);
-         case 1 -> RandomMusicContainer.validateStructure(buffer, offset + typeIdLen);
-         case 2 -> SequenceMusicContainer.validateStructure(buffer, offset + typeIdLen);
-         case 3 -> HorizontalMusicContainer.validateStructure(buffer, offset + typeIdLen);
-         case 4 -> SegmentMusicContainer.validateStructure(buffer, offset + typeIdLen);
-         default -> ValidationResult.error("Unknown polymorphic type ID " + typeId + " for MusicContainer");
-      };
-   }
-}
+    public int computeSizeWithTypeId() {
+        return VarInt.size(getTypeId()) + computeSize();
+    }
+}

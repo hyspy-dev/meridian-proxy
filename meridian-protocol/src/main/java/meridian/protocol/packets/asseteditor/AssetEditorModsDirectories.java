@@ -1,324 +1,188 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class AssetEditorModsDirectories implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 356;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public String[] directories;
+    public static final int PACKET_ID = 356;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 356;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public AssetEditorModsDirectories() {
-   }
+    @Nullable public String[] directories;
 
-   public AssetEditorModsDirectories(@Nullable String[] directories) {
-      this.directories = directories;
-   }
+    public AssetEditorModsDirectories() {
+    }
 
-   public AssetEditorModsDirectories(@Nonnull AssetEditorModsDirectories other) {
-      this.directories = other.directories;
-   }
+    public AssetEditorModsDirectories(@Nullable String[] directories) {
+        this.directories = directories;
+    }
 
-   @Nonnull
-   public static AssetEditorModsDirectories deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("AssetEditorModsDirectories", 1, buf.readableBytes() - offset);
-      }
+    public AssetEditorModsDirectories(@Nonnull AssetEditorModsDirectories other) {
+        this.directories = other.directories;
+    }
 
-      AssetEditorModsDirectories obj = new AssetEditorModsDirectories();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int directoriesCount = VarInt.peek(buf, pos);
-         if (directoriesCount < 0) {
-            throw ProtocolException.invalidVarInt("Directories");
-         }
-
-         int directoriesVarLen = VarInt.size(directoriesCount);
-         if (directoriesCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Directories", directoriesCount, 4096000);
-         }
-
-         if (pos + directoriesVarLen + directoriesCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Directories", pos + directoriesVarLen + directoriesCount * 1, buf.readableBytes());
-         }
-
-         pos += directoriesVarLen;
-         obj.directories = new String[directoriesCount];
-
-         for (int i = 0; i < directoriesCount; i++) {
-            int strLen = VarInt.peek(buf, pos);
-            if (strLen < 0) {
-               throw ProtocolException.invalidVarInt("directories[" + i + "]");
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("AssetEditorModsDirectories", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("AssetEditorModsDirectories", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String[] getDirectories(MemorySegment mem) {
+        return getDirectories(mem, 0);
+    }
+    
+    @Nullable
+    public static String[] getDirectories(MemorySegment mem, int offset) {
+        if (!hasDirectories(mem, offset)) return null;
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Directories");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Directories", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Directories", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new String[len];
+        for (var i = 0; i < len; i++) {
+            var sp = VarInt.getWithLength(mem, off);
+            data[i] = PacketIO.readVarString("Directories", mem, off, 0, 4096000, sp);
+            off += (int) sp + (int) (sp >>> 32);
+        }
+        return data;
+    }
+    
+    public static boolean hasDirectories(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static AssetEditorModsDirectories toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static AssetEditorModsDirectories toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one AssetEditorModsDirectories and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static AssetEditorModsDirectories toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        String[] v0 = null;
+        if (hasDirectories(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Directories");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Directories", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Directories", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new String[len];
+            for (var i = 0; i < len; i++) {
+                var sp = VarInt.getWithLength(mem, off);
+                v0[i] = PacketIO.readVarString("Directories", mem, off, 0, 4096000, sp);
+                off += (int) sp + (int) (sp >>> 32);
             }
-
-            int strVarLen = VarInt.size(strLen);
-            if (strLen > 4096000) {
-               throw ProtocolException.stringTooLong("directories[" + i + "]", strLen, 4096000);
+            varPos = off - varBase;
+        }
+        var result = new AssetEditorModsDirectories(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.directories != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.directories != null) {
+            
+            if (directories.length > 4096000) throw ProtocolException.arrayTooLong("Directories", directories.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.directories.length);
+            
+            var directoriesValueOffset = 0;
+            for (var i = 0; i < this.directories.length; i++) {
+                directoriesValueOffset += PacketIO.writeVarString(mem, varOffset + directoriesValueOffset, this.directories[i], 4096000);
             }
+            varOffset += directoriesValueOffset;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (directories != null) {
+        int directoriesSize = 0;
+for (var elem : directories) directoriesSize += PacketIO.stringSize(elem);
+size += VarInt.size(directories.length) + directoriesSize;
+    }
 
-            if (pos + strVarLen + strLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("directories[" + i + "]", pos + strVarLen + strLen, buf.readableBytes());
-            }
+        return size;
+    }
 
-            obj.directories[i] = PacketIO.readVarString(buf, pos);
-            pos += strVarLen + strLen;
-         }
-      }
+    public AssetEditorModsDirectories clone() {
+        AssetEditorModsDirectories copy = new AssetEditorModsDirectories();
+        copy.directories = this.directories != null ? java.util.Arrays.copyOf(this.directories, this.directories.length) : null;
+        return copy;
+    }
 
-      return obj;
-   }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen);
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof AssetEditorModsDirectories other)) return false;
+        return java.util.Arrays.equals(this.directories, other.directories);
+    }
 
-         for (int i = 0; i < arrLen; i++) {
-            int sl = VarInt.peek(buf, pos);
-            pos += VarInt.size(sl) + sl;
-         }
-      }
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(directories);
+        return result;
+    }
 
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static String[] getDirectories(MemorySegment mem) {
-      return getDirectories(mem, 0);
-   }
-
-   @Nullable
-   public static String[] getDirectories(MemorySegment mem, int offset) {
-      if (!hasDirectories(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Directories", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Directories", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Directories", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      String[] data = new String[len];
-
-      for (int i = 0; i < len; i++) {
-         long sp = VarInt.getWithLength(mem, off);
-         int n = (int)sp + (int)(sp >>> 32);
-         data[i] = PacketIO.readVarString("Directories", mem, off, 16384000, PacketIO.UTF8);
-         off += n;
-      }
-
-      return data;
-   }
-
-   public static boolean hasDirectories(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static AssetEditorModsDirectories toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static AssetEditorModsDirectories toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("AssetEditorModsDirectories", offset + 1, (int)mem.byteSize());
-      }
-
-      String[] directories = null;
-      if (hasDirectories(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Directories", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Directories", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Directories", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         directories = new String[len];
-
-         for (int i = 0; i < len; i++) {
-            long sp = VarInt.getWithLength(mem, off);
-            int n = (int)sp + (int)(sp >>> 32);
-            directories[i] = PacketIO.readVarString("Directories", mem, off, 16384000, PacketIO.UTF8);
-            off += n;
-         }
-      }
-
-      return new AssetEditorModsDirectories(directories);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.directories != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.directories != null) {
-         if (this.directories.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Directories", this.directories.length, 4096000);
-         }
-
-         VarInt.write(buf, this.directories.length);
-
-         for (String item : this.directories) {
-            PacketIO.writeVarString(buf, item, 4096000);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.directories != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.directories != null) {
-         if (this.directories.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Directories", this.directories.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.directories.length);
-         int directoriesValueOffset = 0;
-
-         for (int i = 0; i < this.directories.length; i++) {
-            directoriesValueOffset += PacketIO.writeVarString(mem, varOffset + directoriesValueOffset, this.directories[i], 16384000);
-         }
-
-         varOffset += directoriesValueOffset;
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.directories != null) {
-         int directoriesSize = 0;
-
-         for (String elem : this.directories) {
-            directoriesSize += PacketIO.stringSize(elem);
-         }
-
-         size += VarInt.size(this.directories.length) + directoriesSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int directoriesCount = VarInt.peek(buffer, pos);
-         if (directoriesCount < 0) {
-            return ValidationResult.error("Invalid array count for Directories");
-         }
-
-         if (directoriesCount > 4096000) {
-            return ValidationResult.error("Directories exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(directoriesCount);
-
-         for (int i = 0; i < directoriesCount; i++) {
-            int strLen = VarInt.peek(buffer, pos);
-            if (strLen < 0) {
-               return ValidationResult.error("Invalid string length in Directories");
-            }
-
-            pos += VarInt.size(strLen);
-            pos += strLen;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading string in Directories");
-            }
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public AssetEditorModsDirectories clone() {
-      AssetEditorModsDirectories copy = new AssetEditorModsDirectories();
-      copy.directories = this.directories != null ? Arrays.copyOf(this.directories, this.directories.length) : null;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof AssetEditorModsDirectories other ? Arrays.equals(this.directories, other.directories) : false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.directories);
-   }
-}
+}

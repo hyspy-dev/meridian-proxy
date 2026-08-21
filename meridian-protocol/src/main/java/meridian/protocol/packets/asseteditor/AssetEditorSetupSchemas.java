@@ -1,301 +1,188 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.asseteditor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
+import meridian.protocol.io.ReadCursor;
 import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 
 public class AssetEditorSetupSchemas implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 305;
-   public static final boolean IS_COMPRESSED = true;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 1;
-   public static final int VARIABLE_BLOCK_START = 1;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public SchemaFile[] schemas;
+    public static final int PACKET_ID = 305;
+    public static final boolean IS_COMPRESSED = true;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 1;
+    public static final int VARIABLE_BLOCK_START = 1;
+    public static final int MAX_SIZE = 1677721600;
 
-   @Override
-   public int getId() {
-      return 305;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public AssetEditorSetupSchemas() {
-   }
+    @Nullable public SchemaFile[] schemas;
 
-   public AssetEditorSetupSchemas(@Nullable SchemaFile[] schemas) {
-      this.schemas = schemas;
-   }
+    public AssetEditorSetupSchemas() {
+    }
 
-   public AssetEditorSetupSchemas(@Nonnull AssetEditorSetupSchemas other) {
-      this.schemas = other.schemas;
-   }
+    public AssetEditorSetupSchemas(@Nullable SchemaFile[] schemas) {
+        this.schemas = schemas;
+    }
 
-   @Nonnull
-   public static AssetEditorSetupSchemas deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 1) {
-         throw ProtocolException.bufferTooSmall("AssetEditorSetupSchemas", 1, buf.readableBytes() - offset);
-      }
+    public AssetEditorSetupSchemas(@Nonnull AssetEditorSetupSchemas other) {
+        this.schemas = other.schemas;
+    }
 
-      AssetEditorSetupSchemas obj = new AssetEditorSetupSchemas();
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int schemasCount = VarInt.peek(buf, pos);
-         if (schemasCount < 0) {
-            throw ProtocolException.invalidVarInt("Schemas");
-         }
-
-         int schemasVarLen = VarInt.size(schemasCount);
-         if (schemasCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Schemas", schemasCount, 4096000);
-         }
-
-         if (pos + schemasVarLen + schemasCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Schemas", pos + schemasVarLen + schemasCount * 1, buf.readableBytes());
-         }
-
-         pos += schemasVarLen;
-         obj.schemas = new SchemaFile[schemasCount];
-
-         for (int i = 0; i < schemasCount; i++) {
-            obj.schemas[i] = SchemaFile.deserialize(buf, pos);
-            pos += SchemaFile.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int arrLen = VarInt.peek(buf, pos);
-         pos += VarInt.size(arrLen);
-
-         for (int i = 0; i < arrLen; i++) {
-            pos += SchemaFile.computeBytesConsumed(buf, pos);
-         }
-      }
-
-      return pos - offset;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 1L;
-   }
-
-   @Nullable
-   public static SchemaFile[] getSchemas(MemorySegment mem) {
-      return getSchemas(mem, 0);
-   }
-
-   @Nullable
-   public static SchemaFile[] getSchemas(MemorySegment mem, int offset) {
-      if (!hasSchemas(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + 1;
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Schemas", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Schemas", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Schemas", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      SchemaFile[] data = new SchemaFile[len];
-
-      for (int i = 0; i < len; i++) {
-         data[i] = SchemaFile.toObject(mem, off);
-         off += data[i].computeSize();
-      }
-
-      return data;
-   }
-
-   public static boolean hasSchemas(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static AssetEditorSetupSchemas toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static AssetEditorSetupSchemas toObject(MemorySegment mem, int offset) {
-      if (offset + 1 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("AssetEditorSetupSchemas", offset + 1, (int)mem.byteSize());
-      }
-
-      SchemaFile[] schemas = null;
-      if (hasSchemas(mem, offset)) {
-         int off = offset + 1;
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Schemas", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Schemas", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Schemas", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         schemas = new SchemaFile[len];
-
-         for (int i = 0; i < len; i++) {
-            schemas[i] = SchemaFile.toObject(mem, off);
-            off += schemas[i].computeSize();
-         }
-      }
-
-      return new AssetEditorSetupSchemas(schemas);
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.schemas != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      buf.writeByte(nullBits);
-      if (this.schemas != null) {
-         if (this.schemas.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Schemas", this.schemas.length, 4096000);
-         }
-
-         VarInt.write(buf, this.schemas.length);
-
-         for (SchemaFile item : this.schemas) {
-            item.serialize(buf);
-         }
-      }
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.schemas != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 1;
-      if (this.schemas != null) {
-         if (this.schemas.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Schemas", this.schemas.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.schemas.length);
-         int schemasValueOffset = 0;
-
-         for (int i = 0; i < this.schemas.length; i++) {
-            schemasValueOffset += this.schemas[i].serialize(mem, varOffset + schemasValueOffset);
-         }
-
-         varOffset += schemasValueOffset;
-      }
-
-      return varOffset - offset;
-   }
-
-   @Override
-   public int computeSize() {
-      int size = 1;
-      if (this.schemas != null) {
-         int schemasSize = 0;
-
-         for (SchemaFile elem : this.schemas) {
-            schemasSize += elem.computeSize();
-         }
-
-         size += VarInt.size(this.schemas.length) + schemasSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 1) {
-         return ValidationResult.error("Buffer too small: expected at least 1 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int pos = offset + 1;
-      if ((nullBits & 1) != 0) {
-         int schemasCount = VarInt.peek(buffer, pos);
-         if (schemasCount < 0) {
-            return ValidationResult.error("Invalid array count for Schemas");
-         }
-
-         if (schemasCount > 4096000) {
-            return ValidationResult.error("Schemas exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(schemasCount);
-
-         for (int i = 0; i < schemasCount; i++) {
-            ValidationResult structResult = SchemaFile.validateStructure(buffer, pos);
-            if (!structResult.isValid()) {
-               return ValidationResult.error("Invalid SchemaFile in Schemas[" + i + "]: " + structResult.error());
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("AssetEditorSetupSchemas", offset, (int) mem.byteSize());
+        long needed = (long) offset + 1;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("AssetEditorSetupSchemas", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static SchemaFile[] getSchemas(MemorySegment mem) {
+        return getSchemas(mem, 0);
+    }
+    
+    @Nullable
+    public static SchemaFile[] getSchemas(MemorySegment mem, int offset) {
+        if (!hasSchemas(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + 1;
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Schemas");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Schemas", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Schemas", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new SchemaFile[len];
+        for (var i = 0; i < len; i++) {
+            data[i] = SchemaFile.toObject(mem, off, walkCursor);
+            off = walkCursor.position;
+        }
+        return data;
+    }
+    
+    public static boolean hasSchemas(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static AssetEditorSetupSchemas toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static AssetEditorSetupSchemas toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one AssetEditorSetupSchemas and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static AssetEditorSetupSchemas toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 1;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        SchemaFile[] v0 = null;
+        if (hasSchemas(mem, offset)) {
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Schemas");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Schemas", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Schemas", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v0 = new SchemaFile[len];
+            for (var i = 0; i < len; i++) {
+                v0[i] = SchemaFile.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
             }
+            varPos = off - varBase;
+        }
+        var result = new AssetEditorSetupSchemas(
+            v0
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.schemas != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 1;
+        if (this.schemas != null) {
+            
+            if (schemas.length > 4096000) throw ProtocolException.arrayTooLong("Schemas", schemas.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.schemas.length);
+            
+            var schemasValueOffset = 0;
+            for (var i = 0; i < this.schemas.length; i++) {
+                schemasValueOffset += this.schemas[i].serialize(mem, varOffset + schemasValueOffset);
+            }
+            varOffset += schemasValueOffset;
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 1;
+        if (schemas != null) {
+        int schemasSize = 0;
+for (var elem : schemas) schemasSize += elem.computeSize();
+size += VarInt.size(schemas.length) + schemasSize;
+    }
 
-            pos += SchemaFile.computeBytesConsumed(buffer, pos);
-         }
-      }
+        return size;
+    }
 
-      return ValidationResult.OK;
-   }
+    public AssetEditorSetupSchemas clone() {
+        AssetEditorSetupSchemas copy = new AssetEditorSetupSchemas();
+        copy.schemas = this.schemas != null ? java.util.Arrays.stream(this.schemas).map(e -> e.clone()).toArray(SchemaFile[]::new) : null;
+        return copy;
+    }
 
-   public AssetEditorSetupSchemas clone() {
-      AssetEditorSetupSchemas copy = new AssetEditorSetupSchemas();
-      copy.schemas = this.schemas != null ? Arrays.stream(this.schemas).map(e -> e.clone()).toArray(SchemaFile[]::new) : null;
-      return copy;
-   }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return obj instanceof AssetEditorSetupSchemas other ? Arrays.equals(this.schemas, other.schemas) : false;
-      }
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof AssetEditorSetupSchemas other)) return false;
+        return java.util.Arrays.equals(this.schemas, other.schemas);
+    }
 
-   @Override
-   public int hashCode() {
-      int result = 1;
-      return 31 * result + Arrays.hashCode(this.schemas);
-   }
-}
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Arrays.hashCode(schemas);
+        return result;
+    }
+
+}

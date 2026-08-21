@@ -1,239 +1,195 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.entities;
 
-import meridian.protocol.ChangeVelocityType;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
-import meridian.protocol.Position;
+import meridian.protocol.ToServerPacket;
 import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import meridian.protocol.ChangeVelocityType;
+import meridian.protocol.Position;
 
 public class ApplyKnockback implements Packet, ToClientPacket {
-   public static final int PACKET_ID = 164;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 38;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 38;
-   public static final int MAX_SIZE = 38;
-   @Nullable
-   public Position hitPosition;
-   public float x;
-   public float y;
-   public float z;
-   @Nonnull
-   public ChangeVelocityType changeType = ChangeVelocityType.Add;
+    public static final int PACKET_ID = 164;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 38;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 38;
+    public static final int MAX_SIZE = 38;
 
-   @Override
-   public int getId() {
-      return 164;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public ApplyKnockback() {
-   }
+    @Nullable public Position hitPosition;
+    public float x;
+    public float y;
+    public float z;
+    @Nonnull public ChangeVelocityType changeType = ChangeVelocityType.Add;
 
-   public ApplyKnockback(@Nullable Position hitPosition, float x, float y, float z, @Nonnull ChangeVelocityType changeType) {
-      this.hitPosition = hitPosition;
-      this.x = x;
-      this.y = y;
-      this.z = z;
-      this.changeType = changeType;
-   }
+    public ApplyKnockback() {
+    }
 
-   public ApplyKnockback(@Nonnull ApplyKnockback other) {
-      this.hitPosition = other.hitPosition;
-      this.x = other.x;
-      this.y = other.y;
-      this.z = other.z;
-      this.changeType = other.changeType;
-   }
+    public ApplyKnockback(@Nullable Position hitPosition, float x, float y, float z, @Nonnull ChangeVelocityType changeType) {
+        this.hitPosition = hitPosition;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.changeType = changeType;
+    }
 
-   @Nonnull
-   public static ApplyKnockback deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 38) {
-         throw ProtocolException.bufferTooSmall("ApplyKnockback", 38, buf.readableBytes() - offset);
-      }
+    public ApplyKnockback(@Nonnull ApplyKnockback other) {
+        this.hitPosition = other.hitPosition;
+        this.x = other.x;
+        this.y = other.y;
+        this.z = other.z;
+        this.changeType = other.changeType;
+    }
 
-      ApplyKnockback obj = new ApplyKnockback();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         obj.hitPosition = Position.deserialize(buf, offset + 1);
-      }
-
-      obj.x = buf.getFloatLE(offset + 25);
-      obj.y = buf.getFloatLE(offset + 29);
-      obj.z = buf.getFloatLE(offset + 33);
-      obj.changeType = ChangeVelocityType.fromValue(buf.getByte(offset + 37));
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 38;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 38L;
-   }
-
-   @Nullable
-   public static Position getHitPosition(MemorySegment mem) {
-      return getHitPosition(mem, 0);
-   }
-
-   @Nullable
-   public static Position getHitPosition(MemorySegment mem, int offset) {
-      return hasHitPosition(mem, offset) ? Position.toObject(mem, offset + 1) : null;
-   }
-
-   public static float getX(MemorySegment mem) {
-      return getX(mem, 0);
-   }
-
-   public static float getX(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 25);
-   }
-
-   public static float getY(MemorySegment mem) {
-      return getY(mem, 0);
-   }
-
-   public static float getY(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 29);
-   }
-
-   public static float getZ(MemorySegment mem) {
-      return getZ(mem, 0);
-   }
-
-   public static float getZ(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_FLOAT, offset + 33);
-   }
-
-   public static ChangeVelocityType getChangeType(MemorySegment mem) {
-      return getChangeType(mem, 0);
-   }
-
-   public static ChangeVelocityType getChangeType(MemorySegment mem, int offset) {
-      return ChangeVelocityType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 37));
-   }
-
-   public static boolean hasHitPosition(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static ApplyKnockback toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ApplyKnockback toObject(MemorySegment mem, int offset) {
-      if (offset + 38 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ApplyKnockback", offset + 38, (int)mem.byteSize());
-      } else {
-         return new ApplyKnockback(
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ApplyKnockback", offset, (int) mem.byteSize());
+        long needed = (long) offset + 38;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ApplyKnockback", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static Position getHitPosition(MemorySegment mem) {
+        return getHitPosition(mem, 0);
+    }
+    
+    @Nullable
+    public static Position getHitPosition(MemorySegment mem, int offset) {
+        return hasHitPosition(mem, offset) ? Position.toObject(mem, offset + 1): null;
+    }
+    
+    public static float getX(MemorySegment mem) {
+        return getX(mem, 0);
+    }
+    
+    public static float getX(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 25), "X");
+    }
+    
+    public static float getY(MemorySegment mem) {
+        return getY(mem, 0);
+    }
+    
+    public static float getY(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 29), "Y");
+    }
+    
+    public static float getZ(MemorySegment mem) {
+        return getZ(mem, 0);
+    }
+    
+    public static float getZ(MemorySegment mem, int offset) {
+        return PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 33), "Z");
+    }
+    
+    public static ChangeVelocityType getChangeType(MemorySegment mem) {
+        return getChangeType(mem, 0);
+    }
+    
+    public static ChangeVelocityType getChangeType(MemorySegment mem, int offset) {
+        return ChangeVelocityType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 37));
+    }
+    
+    public static boolean hasHitPosition(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    
+    
+    public static ApplyKnockback toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ApplyKnockback toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ApplyKnockback and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ApplyKnockback toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new ApplyKnockback(
             hasHitPosition(mem, offset) ? Position.toObject(mem, offset + 1) : null,
-            mem.get(PacketIO.PROTO_FLOAT, offset + 25),
-            mem.get(PacketIO.PROTO_FLOAT, offset + 29),
-            mem.get(PacketIO.PROTO_FLOAT, offset + 33),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 25), "X"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 29), "Y"),
+            PacketIO.requireFinite(mem.get(PacketIO.PROTO_FLOAT, offset + 33), "Z"),
             ChangeVelocityType.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 37))
-         );
-      }
-   }
+        );
+        if (cursor != null) cursor.position = offset + 38;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.hitPosition != null) nullBits |= 0x01;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        if (this.hitPosition != null) {
+            this.hitPosition.serialize(mem, offset + 1);
+        } else {
+            mem.asSlice(offset + 1, 24).fill((byte) 0); 
+        }
+        PacketIO.requireFinite(this.x, "X"); mem.set(PacketIO.PROTO_FLOAT, offset + 25, this.x);
+        PacketIO.requireFinite(this.y, "Y"); mem.set(PacketIO.PROTO_FLOAT, offset + 29, this.y);
+        PacketIO.requireFinite(this.z, "Z"); mem.set(PacketIO.PROTO_FLOAT, offset + 33, this.z);
+        mem.set(PacketIO.PROTO_BYTE, offset + 37, (byte) this.changeType.getValue());
+        
+        
+    
+       return 38;
+    }
+    public int computeSize() {
+        return 38;
+    }
 
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      byte nullBits = 0;
-      if (this.hitPosition != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+    public ApplyKnockback clone() {
+        ApplyKnockback copy = new ApplyKnockback();
+        copy.hitPosition = this.hitPosition != null ? this.hitPosition.clone() : null;
+        copy.x = this.x;
+        copy.y = this.y;
+        copy.z = this.z;
+        copy.changeType = this.changeType;
+        return copy;
+    }
 
-      buf.writeByte(nullBits);
-      if (this.hitPosition != null) {
-         this.hitPosition.serialize(buf);
-      } else {
-         buf.writeZero(24);
-      }
 
-      buf.writeFloatLE(this.x);
-      buf.writeFloatLE(this.y);
-      buf.writeFloatLE(this.z);
-      buf.writeByte(this.changeType.getValue());
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ApplyKnockback other)) return false;
+        return java.util.Objects.equals(this.hitPosition, other.hitPosition) && this.x == other.x && this.y == other.y && this.z == other.z && java.util.Objects.equals(this.changeType, other.changeType);
+    }
 
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.hitPosition != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(hitPosition, x, y, z, changeType);
+    }
 
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      if (this.hitPosition != null) {
-         this.hitPosition.serialize(mem, offset + 1);
-      } else {
-         mem.asSlice(offset + 1, 24L).fill((byte)0);
-      }
-
-      mem.set(PacketIO.PROTO_FLOAT, offset + 25, this.x);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 29, this.y);
-      mem.set(PacketIO.PROTO_FLOAT, offset + 33, this.z);
-      mem.set(PacketIO.PROTO_BYTE, offset + 37, (byte)this.changeType.getValue());
-      return 38;
-   }
-
-   @Override
-   public int computeSize() {
-      return 38;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 38) {
-         return ValidationResult.error("Buffer too small: expected at least 38 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      int v = buffer.getByte(offset + 37) & 255;
-      return v >= 2 ? ValidationResult.error("Invalid ChangeVelocityType value for ChangeType") : ValidationResult.OK;
-   }
-
-   public ApplyKnockback clone() {
-      ApplyKnockback copy = new ApplyKnockback();
-      copy.hitPosition = this.hitPosition != null ? this.hitPosition.clone() : null;
-      copy.x = this.x;
-      copy.y = this.y;
-      copy.z = this.z;
-      copy.changeType = this.changeType;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ApplyKnockback other)
-            ? false
-            : Objects.equals(this.hitPosition, other.hitPosition)
-               && this.x == other.x
-               && this.y == other.y
-               && this.z == other.z
-               && Objects.equals(this.changeType, other.changeType);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.hitPosition, this.x, this.y, this.z, this.changeType);
-   }
-}
+}

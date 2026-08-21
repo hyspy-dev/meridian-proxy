@@ -1,38 +1,39 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum Cosmetic {
-   Haircut(0),
-   FacialHair(1),
-   Undertop(2),
-   Overtop(3),
-   Pants(4),
-   Overpants(5),
-   Shoes(6),
-   Gloves(7),
-   Cape(8),
-   HeadAccessory(9),
-   FaceAccessory(10),
-   EarAccessory(11),
-   Ear(12);
+    Haircut(0),
+    FacialHair(1),
+    Undertop(2),
+    Overtop(3),
+    Pants(4),
+    Overpants(5),
+    Shoes(6),
+    Gloves(7),
+    Cape(8),
+    HeadAccessory(9),
+    FaceAccessory(10),
+    EarAccessory(11),
+    Ear(12);
 
-   public static final Cosmetic[] VALUES = values();
-   private final int value;
+    public static final Cosmetic[] VALUES = values();
 
-   Cosmetic(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    Cosmetic(int value) {
+        this.value = value;
+    }
 
-   public static Cosmetic fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("Cosmetic", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static Cosmetic fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("Cosmetic", value);
+    }
+}

@@ -1,903 +1,411 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
-import meridian.protocol.io.PacketIO;
-import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import meridian.protocol.io.VarInt;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import meridian.protocol.io.PacketIO;
+import meridian.protocol.io.ProtocolException;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+import java.util.HashMap;
 
 public class ItemReticleConfig {
-   public static final int NULLABLE_BIT_FIELD_SIZE = 1;
-   public static final int FIXED_BLOCK_SIZE = 1;
-   public static final int VARIABLE_FIELD_COUNT = 4;
-   public static final int VARIABLE_BLOCK_START = 17;
-   public static final int MAX_SIZE = 1677721600;
-   @Nullable
-   public String id;
-   @Nullable
-   public String[] base;
-   @Nullable
-   public Map<Integer, ItemReticle> serverEvents;
-   @Nullable
-   public Map<ItemReticleClientEvent, ItemReticle> clientEvents;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 1;
+    public static final int FIXED_BLOCK_SIZE = 1;
+    public static final int VARIABLE_FIELD_COUNT = 4;
+    public static final int VARIABLE_BLOCK_START = 17;
+    public static final int MAX_SIZE = 1677721600;
 
-   public ItemReticleConfig() {
-   }
+    @Nullable public String id;
+    @Nullable public String[] base;
+    @Nullable public java.util.Map<Integer, ItemReticle> serverEvents;
+    @Nullable public java.util.Map<ItemReticleClientEvent, ItemReticle> clientEvents;
 
-   public ItemReticleConfig(
-      @Nullable String id,
-      @Nullable String[] base,
-      @Nullable Map<Integer, ItemReticle> serverEvents,
-      @Nullable Map<ItemReticleClientEvent, ItemReticle> clientEvents
-   ) {
-      this.id = id;
-      this.base = base;
-      this.serverEvents = serverEvents;
-      this.clientEvents = clientEvents;
-   }
+    public ItemReticleConfig() {
+    }
 
-   public ItemReticleConfig(@Nonnull ItemReticleConfig other) {
-      this.id = other.id;
-      this.base = other.base;
-      this.serverEvents = other.serverEvents;
-      this.clientEvents = other.clientEvents;
-   }
+    public ItemReticleConfig(@Nullable String id, @Nullable String[] base, @Nullable java.util.Map<Integer, ItemReticle> serverEvents, @Nullable java.util.Map<ItemReticleClientEvent, ItemReticle> clientEvents) {
+        this.id = id;
+        this.base = base;
+        this.serverEvents = serverEvents;
+        this.clientEvents = clientEvents;
+    }
 
-   @Nonnull
-   public static ItemReticleConfig deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 17) {
-         throw ProtocolException.bufferTooSmall("ItemReticleConfig", 17, buf.readableBytes() - offset);
-      }
+    public ItemReticleConfig(@Nonnull ItemReticleConfig other) {
+        this.id = other.id;
+        this.base = other.base;
+        this.serverEvents = other.serverEvents;
+        this.clientEvents = other.clientEvents;
+    }
 
-      ItemReticleConfig obj = new ItemReticleConfig();
-      byte nullBits = buf.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         int varPosBase0 = buf.getIntLE(offset + 1);
-         if (varPosBase0 < 0 || varPosBase0 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("Id", varPosBase0, buf.readableBytes());
-         }
-
-         int varPos0 = offset + 17 + varPosBase0;
-         int idLen = VarInt.peek(buf, varPos0);
-         if (idLen < 0) {
-            throw ProtocolException.invalidVarInt("Id");
-         }
-
-         int idVarIntLen = VarInt.size(idLen);
-         if (idLen > 4096000) {
-            throw ProtocolException.stringTooLong("Id", idLen, 4096000);
-         }
-
-         if (varPos0 + idVarIntLen + idLen > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Id", varPos0 + idVarIntLen + idLen, buf.readableBytes());
-         }
-
-         obj.id = PacketIO.readVarString(buf, varPos0, PacketIO.UTF8);
-      }
-
-      if ((nullBits & 2) != 0) {
-         int varPosBase1 = buf.getIntLE(offset + 5);
-         if (varPosBase1 < 0 || varPosBase1 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("Base", varPosBase1, buf.readableBytes());
-         }
-
-         int varPos1 = offset + 17 + varPosBase1;
-         int baseCount = VarInt.peek(buf, varPos1);
-         if (baseCount < 0) {
-            throw ProtocolException.invalidVarInt("Base");
-         }
-
-         int varIntLen = VarInt.size(baseCount);
-         if (baseCount > 4096000) {
-            throw ProtocolException.arrayTooLong("Base", baseCount, 4096000);
-         }
-
-         if (varPos1 + varIntLen + baseCount * 1L > buf.readableBytes()) {
-            throw ProtocolException.bufferTooSmall("Base", varPos1 + varIntLen + baseCount * 1, buf.readableBytes());
-         }
-
-         obj.base = new String[baseCount];
-         int elemPos = varPos1 + varIntLen;
-
-         for (int i = 0; i < baseCount; i++) {
-            int strLen = VarInt.peek(buf, elemPos);
-            if (strLen < 0) {
-               throw ProtocolException.invalidVarInt("base[" + i + "]");
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("ItemReticleConfig", offset, (int) mem.byteSize());
+        long needed = (long) offset + 17;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("ItemReticleConfig", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    @Nullable
+    public static String getId(MemorySegment mem) {
+        return getId(mem, 0);
+    }
+    
+    @Nullable
+    public static String getId(MemorySegment mem, int offset) {
+        return hasId(mem, offset) ? PacketIO.readVarString("Id", mem, offset + getValidatedOffset(mem, offset, 1, 17, "Id"), 4096000): null;
+    }
+    
+    @Nullable
+    public static String[] getBase(MemorySegment mem) {
+        return getBase(mem, 0);
+    }
+    
+    @Nullable
+    public static String[] getBase(MemorySegment mem, int offset) {
+        if (!hasBase(mem, offset)) return null;
+        var off = offset + getValidatedOffset(mem, offset, 5, 17, "Base");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("Base");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.arrayTooLong("Base", len, 4096000);
+        var lenOffset = (int) (packed >>> 32);
+        if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Base", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+        off += lenOffset;
+        var data = new String[len];
+        for (var i = 0; i < len; i++) {
+            var sp = VarInt.getWithLength(mem, off);
+            data[i] = PacketIO.readVarString("Base", mem, off, 0, 4096000, sp);
+            off += (int) sp + (int) (sp >>> 32);
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, ItemReticle> getServerEvents(MemorySegment mem) {
+        return getServerEvents(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<Integer, ItemReticle> getServerEvents(MemorySegment mem, int offset) {
+        if (!hasServerEvents(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + getValidatedOffset(mem, offset, 9, 17, "ServerEvents");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("ServerEvents");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("ServerEvents", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 10 > mem.byteSize()) throw ProtocolException.bufferTooSmall("ServerEvents", (int) java.lang.Math.min(off + (long) len * 10, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<Integer, ItemReticle> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = mem.get(PacketIO.PROTO_INT, off);
+                off += 4;
+            var value = ItemReticle.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("ServerEvents", key);
             }
-
-            int strVarLen = VarInt.size(strLen);
-            if (strLen > 4096000) {
-               throw ProtocolException.stringTooLong("base[" + i + "]", strLen, 4096000);
+        }
+        return data;
+    }
+    
+    @Nullable
+    public static java.util.Map<ItemReticleClientEvent, ItemReticle> getClientEvents(MemorySegment mem) {
+        return getClientEvents(mem, 0);
+    }
+    
+    @Nullable
+    public static java.util.Map<ItemReticleClientEvent, ItemReticle> getClientEvents(MemorySegment mem, int offset) {
+        if (!hasClientEvents(mem, offset)) return null;
+        var walkCursor = new ReadCursor();
+        var off = offset + getValidatedOffset(mem, offset, 13, 17, "ClientEvents");
+        var packed = VarInt.getWithLength(mem, off);
+        if (packed == -1L) throw ProtocolException.invalidVarInt("ClientEvents");
+        var len = (int) packed;
+        if (len > 4096000) throw ProtocolException.dictionaryTooLarge("ClientEvents", len, 4096000);
+        
+        off += (int) (packed >>> 32);
+        if (off + (long) len * 7 > mem.byteSize()) throw ProtocolException.bufferTooSmall("ClientEvents", (int) java.lang.Math.min(off + (long) len * 7, Integer.MAX_VALUE), (int) mem.byteSize());
+        java.util.Map<ItemReticleClientEvent, ItemReticle> data = new HashMap<>(len);
+        for (var i = 0; i < len; i++) {
+            var key = ItemReticleClientEvent.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
+                off += 1;
+            var value = ItemReticle.toObject(mem, off, walkCursor);
+                off = walkCursor.position;
+            if (data.put(key, value) != null) {
+                throw ProtocolException.duplicateKey("ClientEvents", key);
             }
-
-            if (elemPos + strVarLen + strLen > buf.readableBytes()) {
-               throw ProtocolException.bufferTooSmall("base[" + i + "]", elemPos + strVarLen + strLen, buf.readableBytes());
+        }
+        return data;
+    }
+    
+    public static boolean hasId(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x01) != 0;
+    }
+    
+    public static boolean hasBase(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x02) != 0;
+    }
+    
+    public static boolean hasServerEvents(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x04) != 0;
+    }
+    
+    public static boolean hasClientEvents(MemorySegment mem, int offset) {
+        var b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
+        return (b & 0x08) != 0;
+    }
+    
+    private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
+        int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
+        if (offset < 0 || offset > buffer.byteSize() - base - varBlockStart)
+            throw ProtocolException.invalidOffset(fieldName, offset, (int) buffer.byteSize());
+        return varBlockStart + offset;
+    }
+    
+    /**
+     * Rejects an offset slot that does not name the position the field-order walk reached. A
+     * present field must sit where the previous field ended, and an absent field carries -1, so
+     * the slot a random-access getter resolves and the walk describe the same bytes.
+     */
+    private static void requireSlot(MemorySegment mem, int slotPosition, int expected, String fieldName) {
+        int slot = mem.get(PacketIO.PROTO_INT, slotPosition);
+        if (slot != expected) throw ProtocolException.nonCanonicalLayout(fieldName, slot, expected);
+    }
+    
+    public static ItemReticleConfig toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static ItemReticleConfig toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one ItemReticleConfig and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static ItemReticleConfig toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var varBase = offset + 17;
+        var varPos = 0;
+        var walkCursor = cursor != null ? cursor : new ReadCursor();
+        String v0 = null;
+        if (hasId(mem, offset)) {
+            requireSlot(mem, offset + 1, varPos, "Id");
+            var off = varBase + varPos;
+            var sp = VarInt.getWithLength(mem, off);
+            v0 = PacketIO.readVarString("Id", mem, off, 0, 4096000, sp);
+            varPos += (int) sp + (int) (sp >>> 32);
+        } else {
+            requireSlot(mem, offset + 1, -1, "Id");
+        }
+        
+        String[] v1 = null;
+        if (hasBase(mem, offset)) {
+            requireSlot(mem, offset + 5, varPos, "Base");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("Base");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.arrayTooLong("Base", len, 4096000);
+            var lenOffset = (int) (packed >>> 32);
+            if (off + lenOffset + len > mem.byteSize()) throw ProtocolException.bufferTooSmall("Base", (int) java.lang.Math.min(off + lenOffset + len, Integer.MAX_VALUE), (int) mem.byteSize());
+            off += lenOffset;
+            v1 = new String[len];
+            for (var i = 0; i < len; i++) {
+                var sp = VarInt.getWithLength(mem, off);
+                v1[i] = PacketIO.readVarString("Base", mem, off, 0, 4096000, sp);
+                off += (int) sp + (int) (sp >>> 32);
             }
-
-            obj.base[i] = PacketIO.readVarString(buf, elemPos);
-            elemPos += strVarLen + strLen;
-         }
-      }
-
-      if ((nullBits & 4) != 0) {
-         int varPosBase2 = buf.getIntLE(offset + 9);
-         if (varPosBase2 < 0 || varPosBase2 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("ServerEvents", varPosBase2, buf.readableBytes());
-         }
-
-         int varPos2 = offset + 17 + varPosBase2;
-         int serverEventsCount = VarInt.peek(buf, varPos2);
-         if (serverEventsCount < 0) {
-            throw ProtocolException.invalidVarInt("ServerEvents");
-         }
-
-         int varIntLen = VarInt.size(serverEventsCount);
-         if (serverEventsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ServerEvents", serverEventsCount, 4096000);
-         }
-
-         obj.serverEvents = new HashMap<>(serverEventsCount);
-         int dictPos = varPos2 + varIntLen;
-
-         for (int i = 0; i < serverEventsCount; i++) {
-            int key = buf.getIntLE(dictPos);
-            dictPos += 4;
-            ItemReticle val = ItemReticle.deserialize(buf, dictPos);
-            dictPos += ItemReticle.computeBytesConsumed(buf, dictPos);
-            if (obj.serverEvents.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("serverEvents", key);
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 5, -1, "Base");
+        }
+        
+        java.util.Map<Integer, ItemReticle> v2 = null;
+        if (hasServerEvents(mem, offset)) {
+            requireSlot(mem, offset + 9, varPos, "ServerEvents");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("ServerEvents");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("ServerEvents", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 10 > mem.byteSize()) throw ProtocolException.bufferTooSmall("ServerEvents", (int) java.lang.Math.min(off + (long) len * 10, Integer.MAX_VALUE), (int) mem.byteSize());
+            v2 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = mem.get(PacketIO.PROTO_INT, off);
+                    off += 4;
+                var value = ItemReticle.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v2.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("ServerEvents", key);
+                }
             }
-         }
-      }
-
-      if ((nullBits & 8) != 0) {
-         int varPosBase3 = buf.getIntLE(offset + 13);
-         if (varPosBase3 < 0 || varPosBase3 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("ClientEvents", varPosBase3, buf.readableBytes());
-         }
-
-         int varPos3 = offset + 17 + varPosBase3;
-         int clientEventsCount = VarInt.peek(buf, varPos3);
-         if (clientEventsCount < 0) {
-            throw ProtocolException.invalidVarInt("ClientEvents");
-         }
-
-         int varIntLen = VarInt.size(clientEventsCount);
-         if (clientEventsCount > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ClientEvents", clientEventsCount, 4096000);
-         }
-
-         obj.clientEvents = new HashMap<>(clientEventsCount);
-         int dictPos = varPos3 + varIntLen;
-
-         for (int i = 0; i < clientEventsCount; i++) {
-            ItemReticleClientEvent key = ItemReticleClientEvent.fromValue(buf.getByte(dictPos));
-            ItemReticle val = ItemReticle.deserialize(buf, ++dictPos);
-            dictPos += ItemReticle.computeBytesConsumed(buf, dictPos);
-            if (obj.clientEvents.put(key, val) != null) {
-               throw ProtocolException.duplicateKey("clientEvents", key);
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 9, -1, "ServerEvents");
+        }
+        
+        java.util.Map<ItemReticleClientEvent, ItemReticle> v3 = null;
+        if (hasClientEvents(mem, offset)) {
+            requireSlot(mem, offset + 13, varPos, "ClientEvents");
+            var off = varBase + varPos;
+            var packed = VarInt.getWithLength(mem, off);
+            if (packed == -1L) throw ProtocolException.invalidVarInt("ClientEvents");
+            var len = (int) packed;
+            if (len > 4096000) throw ProtocolException.dictionaryTooLarge("ClientEvents", len, 4096000);
+            
+            off += (int) (packed >>> 32);
+            if (off + (long) len * 7 > mem.byteSize()) throw ProtocolException.bufferTooSmall("ClientEvents", (int) java.lang.Math.min(off + (long) len * 7, Integer.MAX_VALUE), (int) mem.byteSize());
+            v3 = new HashMap<>(len);
+            for (var i = 0; i < len; i++) {
+                var key = ItemReticleClientEvent.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
+                    off += 1;
+                var value = ItemReticle.toObject(mem, off, walkCursor);
+                    off = walkCursor.position;
+                if (v3.put(key, value) != null) {
+                    throw ProtocolException.duplicateKey("ClientEvents", key);
+                }
             }
-         }
-      }
-
-      return obj;
-   }
-
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      byte nullBits = buf.getByte(offset);
-      int maxEnd = 17;
-      if ((nullBits & 1) != 0) {
-         int fieldOffset0 = buf.getIntLE(offset + 1);
-         if (fieldOffset0 < 0 || fieldOffset0 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("Id", fieldOffset0, maxEnd);
-         }
-
-         int pos0 = offset + 17 + fieldOffset0;
-         int sl = VarInt.peek(buf, pos0);
-         pos0 += VarInt.size(sl) + sl;
-         if (pos0 - offset > maxEnd) {
-            maxEnd = pos0 - offset;
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int fieldOffset1 = buf.getIntLE(offset + 5);
-         if (fieldOffset1 < 0 || fieldOffset1 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("Base", fieldOffset1, maxEnd);
-         }
-
-         int pos1 = offset + 17 + fieldOffset1;
-         int arrLen = VarInt.peek(buf, pos1);
-         pos1 += VarInt.size(arrLen);
-
-         for (int i = 0; i < arrLen; i++) {
-            int sl = VarInt.peek(buf, pos1);
-            pos1 += VarInt.size(sl) + sl;
-         }
-
-         if (pos1 - offset > maxEnd) {
-            maxEnd = pos1 - offset;
-         }
-      }
-
-      if ((nullBits & 4) != 0) {
-         int fieldOffset2 = buf.getIntLE(offset + 9);
-         if (fieldOffset2 < 0 || fieldOffset2 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("ServerEvents", fieldOffset2, maxEnd);
-         }
-
-         int pos2 = offset + 17 + fieldOffset2;
-         int dictLen = VarInt.peek(buf, pos2);
-         pos2 += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos2 += 4;
-            pos2 += ItemReticle.computeBytesConsumed(buf, pos2);
-         }
-
-         if (pos2 - offset > maxEnd) {
-            maxEnd = pos2 - offset;
-         }
-      }
-
-      if ((nullBits & 8) != 0) {
-         int fieldOffset3 = buf.getIntLE(offset + 13);
-         if (fieldOffset3 < 0 || fieldOffset3 > buf.writerIndex() - offset - 17) {
-            throw ProtocolException.invalidOffset("ClientEvents", fieldOffset3, maxEnd);
-         }
-
-         int pos3 = offset + 17 + fieldOffset3;
-         int dictLen = VarInt.peek(buf, pos3);
-         pos3 += VarInt.size(dictLen);
-
-         for (int i = 0; i < dictLen; i++) {
-            pos3 = ++pos3 + ItemReticle.computeBytesConsumed(buf, pos3);
-         }
-
-         if (pos3 - offset > maxEnd) {
-            maxEnd = pos3 - offset;
-         }
-      }
-
-      return maxEnd;
-   }
-
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 17L;
-   }
-
-   @Nullable
-   public static String getId(MemorySegment mem) {
-      return getId(mem, 0);
-   }
-
-   @Nullable
-   public static String getId(MemorySegment mem, int offset) {
-      return hasId(mem, offset) ? PacketIO.readVarString("Id", mem, offset + getValidatedOffset(mem, offset, 1, 17, "Id"), 4096000, PacketIO.UTF8) : null;
-   }
-
-   @Nullable
-   public static String[] getBase(MemorySegment mem) {
-      return getBase(mem, 0);
-   }
-
-   @Nullable
-   public static String[] getBase(MemorySegment mem, int offset) {
-      if (!hasBase(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 5, 17, "Base");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("Base", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.arrayTooLong("Base", len, 4096000);
-      }
-
-      int lenOffset = (int)(packed >>> 32);
-      if (off + lenOffset + len > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("Base", off + lenOffset + len, (int)mem.byteSize());
-      }
-
-      off += lenOffset;
-      String[] data = new String[len];
-
-      for (int i = 0; i < len; i++) {
-         long sp = VarInt.getWithLength(mem, off);
-         int n = (int)sp + (int)(sp >>> 32);
-         data[i] = PacketIO.readVarString("Base", mem, off, 16384000, PacketIO.UTF8);
-         off += n;
-      }
-
-      return data;
-   }
-
-   @Nullable
-   public static Map<Integer, ItemReticle> getServerEvents(MemorySegment mem) {
-      return getServerEvents(mem, 0);
-   }
-
-   @Nullable
-   public static Map<Integer, ItemReticle> getServerEvents(MemorySegment mem, int offset) {
-      if (!hasServerEvents(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 9, 17, "ServerEvents");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("ServerEvents", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("ServerEvents", len, 4096000);
-      }
-
-      Map<Integer, ItemReticle> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         int key = mem.get(PacketIO.PROTO_INT, off);
-         off += 4;
-         ItemReticle value = ItemReticle.toObject(mem, off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("ServerEvents", key);
-         }
-      }
-
-      return data;
-   }
-
-   @Nullable
-   public static Map<ItemReticleClientEvent, ItemReticle> getClientEvents(MemorySegment mem) {
-      return getClientEvents(mem, 0);
-   }
-
-   @Nullable
-   public static Map<ItemReticleClientEvent, ItemReticle> getClientEvents(MemorySegment mem, int offset) {
-      if (!hasClientEvents(mem, offset)) {
-         return null;
-      }
-
-      int off = offset + getValidatedOffset(mem, offset, 13, 17, "ClientEvents");
-      long packed = VarInt.getWithLength(mem, off);
-      int len = (int)packed;
-      if (len < 0) {
-         throw ProtocolException.negativeLength("ClientEvents", len);
-      }
-
-      if (len > 4096000) {
-         throw ProtocolException.dictionaryTooLarge("ClientEvents", len, 4096000);
-      }
-
-      Map<ItemReticleClientEvent, ItemReticle> data = new HashMap<>(len);
-      off += (int)(packed >>> 32);
-
-      for (int i = 0; i < len; i++) {
-         ItemReticleClientEvent key = ItemReticleClientEvent.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
-         ItemReticle value = ItemReticle.toObject(mem, ++off);
-         off += value.computeSize();
-         if (data.put(key, value) != null) {
-            throw ProtocolException.duplicateKey("ClientEvents", key);
-         }
-      }
-
-      return data;
-   }
-
-   public static boolean hasId(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 1) != 0;
-   }
-
-   public static boolean hasBase(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 2) != 0;
-   }
-
-   public static boolean hasServerEvents(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 4) != 0;
-   }
-
-   public static boolean hasClientEvents(MemorySegment mem, int offset) {
-      byte b = mem.get(PacketIO.PROTO_BYTE, offset + 0);
-      return (b & 8) != 0;
-   }
-
-   private static int getValidatedOffset(MemorySegment buffer, int base, int slotPosition, int varBlockStart, String fieldName) {
-      int offset = buffer.get(PacketIO.PROTO_INT, base + slotPosition);
-      if (offset >= 0 && offset <= buffer.byteSize() - base - varBlockStart) {
-         return varBlockStart + offset;
-      } else {
-         throw ProtocolException.invalidOffset(fieldName, offset, (int)buffer.byteSize());
-      }
-   }
-
-   public static ItemReticleConfig toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static ItemReticleConfig toObject(MemorySegment mem, int offset) {
-      if (offset + 17 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("ItemReticleConfig", offset + 17, (int)mem.byteSize());
-      }
-
-      String[] base = null;
-      if (hasBase(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 5, 17, "Base");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("Base", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.arrayTooLong("Base", len, 4096000);
-         }
-
-         int lenOffset = (int)(packed >>> 32);
-         if (off + lenOffset + len > mem.byteSize()) {
-            throw ProtocolException.bufferTooSmall("Base", off + lenOffset + len, (int)mem.byteSize());
-         }
-
-         off += lenOffset;
-         base = new String[len];
-
-         for (int i = 0; i < len; i++) {
-            long sp = VarInt.getWithLength(mem, off);
-            int n = (int)sp + (int)(sp >>> 32);
-            base[i] = PacketIO.readVarString("Base", mem, off, 16384000, PacketIO.UTF8);
-            off += n;
-         }
-      }
-
-      Map<Integer, ItemReticle> serverEvents = null;
-      if (hasServerEvents(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 9, 17, "ServerEvents");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("ServerEvents", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ServerEvents", len, 4096000);
-         }
-
-         serverEvents = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            int key = mem.get(PacketIO.PROTO_INT, off);
-            off += 4;
-            ItemReticle value = ItemReticle.toObject(mem, off);
-            off += value.computeSize();
-            if (serverEvents.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("ServerEvents", key);
+            varPos = off - varBase;
+        } else {
+            requireSlot(mem, offset + 13, -1, "ClientEvents");
+        }
+        var result = new ItemReticleConfig(
+            v0,
+            v1,
+            v2,
+            v3
+        );
+        if (cursor != null) cursor.position = varBase + varPos;
+        return result;
+    }
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        byte nullBits;
+        nullBits = 0;
+        if (this.id != null) nullBits |= 0x01;
+        if (this.base != null) nullBits |= 0x02;
+        if (this.serverEvents != null) nullBits |= 0x04;
+        if (this.clientEvents != null) nullBits |= 0x08;
+        mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
+        
+        
+        var varOffset = offset + 17;
+        if (this.id != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 1, varOffset - offset - 17);
+            varOffset += PacketIO.writeVarString(mem, varOffset, this.id, 4096000);
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 1, -1);
+        }
+        if (this.base != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 5, varOffset - offset - 17);
+            if (base.length > 4096000) throw ProtocolException.arrayTooLong("Base", base.length, 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.base.length);
+            
+            var baseValueOffset = 0;
+            for (var i = 0; i < this.base.length; i++) {
+                baseValueOffset += PacketIO.writeVarString(mem, varOffset + baseValueOffset, this.base[i], 4096000);
             }
-         }
-      }
-
-      Map<ItemReticleClientEvent, ItemReticle> clientEvents = null;
-      if (hasClientEvents(mem, offset)) {
-         int off = offset + getValidatedOffset(mem, offset, 13, 17, "ClientEvents");
-         long packed = VarInt.getWithLength(mem, off);
-         int len = (int)packed;
-         if (len < 0) {
-            throw ProtocolException.negativeLength("ClientEvents", len);
-         }
-
-         if (len > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ClientEvents", len, 4096000);
-         }
-
-         clientEvents = new HashMap<>(len);
-         off += (int)(packed >>> 32);
-
-         for (int i = 0; i < len; i++) {
-            ItemReticleClientEvent key = ItemReticleClientEvent.fromValue(mem.get(PacketIO.PROTO_BYTE, off));
-            ItemReticle value = ItemReticle.toObject(mem, ++off);
-            off += value.computeSize();
-            if (clientEvents.put(key, value) != null) {
-               throw ProtocolException.duplicateKey("ClientEvents", key);
+            varOffset += baseValueOffset;
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 5, -1);
+        }
+        if (this.serverEvents != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 9, varOffset - offset - 17);
+            if (this.serverEvents.size() > 4096000) throw ProtocolException.dictionaryTooLarge("ServerEvents", serverEvents.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.serverEvents.size());
+            for (var e : this.serverEvents.entrySet()) {
+                mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
+                varOffset += 4;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
-         }
-      }
-
-      return new ItemReticleConfig(
-         hasId(mem, offset) ? PacketIO.readVarString("Id", mem, offset + getValidatedOffset(mem, offset, 1, 17, "Id"), 4096000, PacketIO.UTF8) : null,
-         base,
-         serverEvents,
-         clientEvents
-      );
-   }
-
-   public void serialize(@Nonnull ByteBuf buf) {
-      int startPos = buf.writerIndex();
-      byte nullBits = 0;
-      if (this.id != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.base != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.serverEvents != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.clientEvents != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      buf.writeByte(nullBits);
-      int idOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int baseOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int serverEventsOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int clientEventsOffsetSlot = buf.writerIndex();
-      buf.writeIntLE(0);
-      int varBlockStart = buf.writerIndex();
-      if (this.id != null) {
-         buf.setIntLE(idOffsetSlot, buf.writerIndex() - varBlockStart);
-         PacketIO.writeVarString(buf, this.id, 4096000);
-      } else {
-         buf.setIntLE(idOffsetSlot, -1);
-      }
-
-      if (this.base != null) {
-         buf.setIntLE(baseOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.base.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Base", this.base.length, 4096000);
-         }
-
-         VarInt.write(buf, this.base.length);
-
-         for (String item : this.base) {
-            PacketIO.writeVarString(buf, item, 4096000);
-         }
-      } else {
-         buf.setIntLE(baseOffsetSlot, -1);
-      }
-
-      if (this.serverEvents != null) {
-         buf.setIntLE(serverEventsOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.serverEvents.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ServerEvents", this.serverEvents.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.serverEvents.size());
-
-         for (Entry<Integer, ItemReticle> e : this.serverEvents.entrySet()) {
-            buf.writeIntLE(e.getKey());
-            e.getValue().serialize(buf);
-         }
-      } else {
-         buf.setIntLE(serverEventsOffsetSlot, -1);
-      }
-
-      if (this.clientEvents != null) {
-         buf.setIntLE(clientEventsOffsetSlot, buf.writerIndex() - varBlockStart);
-         if (this.clientEvents.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ClientEvents", this.clientEvents.size(), 4096000);
-         }
-
-         VarInt.write(buf, this.clientEvents.size());
-
-         for (Entry<ItemReticleClientEvent, ItemReticle> e : this.clientEvents.entrySet()) {
-            buf.writeByte(e.getKey().getValue());
-            e.getValue().serialize(buf);
-         }
-      } else {
-         buf.setIntLE(clientEventsOffsetSlot, -1);
-      }
-   }
-
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      byte nullBits = 0;
-      if (this.id != null) {
-         nullBits = (byte)(nullBits | 1);
-      }
-
-      if (this.base != null) {
-         nullBits = (byte)(nullBits | 2);
-      }
-
-      if (this.serverEvents != null) {
-         nullBits = (byte)(nullBits | 4);
-      }
-
-      if (this.clientEvents != null) {
-         nullBits = (byte)(nullBits | 8);
-      }
-
-      mem.set(PacketIO.PROTO_BYTE, offset + 0, nullBits);
-      int varOffset = offset + 17;
-      if (this.id != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 1, varOffset - offset - 17);
-         varOffset += PacketIO.writeVarString(mem, varOffset, this.id, 4096000);
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 1, -1);
-      }
-
-      if (this.base != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 5, varOffset - offset - 17);
-         if (this.base.length > 4096000) {
-            throw ProtocolException.arrayTooLong("Base", this.base.length, 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.base.length);
-         int baseValueOffset = 0;
-
-         for (int i = 0; i < this.base.length; i++) {
-            baseValueOffset += PacketIO.writeVarString(mem, varOffset + baseValueOffset, this.base[i], 16384000);
-         }
-
-         varOffset += baseValueOffset;
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 5, -1);
-      }
-
-      if (this.serverEvents != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 9, varOffset - offset - 17);
-         if (this.serverEvents.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ServerEvents", this.serverEvents.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.serverEvents.size());
-
-         for (Entry<Integer, ItemReticle> e : this.serverEvents.entrySet()) {
-            mem.set(PacketIO.PROTO_INT, varOffset, e.getKey());
-            varOffset += 4;
-            varOffset += e.getValue().serialize(mem, varOffset);
-         }
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 9, -1);
-      }
-
-      if (this.clientEvents != null) {
-         mem.set(PacketIO.PROTO_INT, offset + 13, varOffset - offset - 17);
-         if (this.clientEvents.size() > 4096000) {
-            throw ProtocolException.dictionaryTooLarge("ClientEvents", this.clientEvents.size(), 4096000);
-         }
-
-         varOffset += VarInt.set(mem, varOffset, this.clientEvents.size());
-
-         for (Entry<ItemReticleClientEvent, ItemReticle> e : this.clientEvents.entrySet()) {
-            mem.set(PacketIO.PROTO_BYTE, varOffset, (byte)e.getKey().getValue());
-            varOffset = ++varOffset + e.getValue().serialize(mem, varOffset);
-         }
-      } else {
-         mem.set(PacketIO.PROTO_INT, offset + 13, -1);
-      }
-
-      return varOffset - offset;
-   }
-
-   public int computeSize() {
-      int size = 17;
-      if (this.id != null) {
-         size += PacketIO.stringSize(this.id);
-      }
-
-      if (this.base != null) {
-         int baseSize = 0;
-
-         for (String elem : this.base) {
-            baseSize += PacketIO.stringSize(elem);
-         }
-
-         size += VarInt.size(this.base.length) + baseSize;
-      }
-
-      if (this.serverEvents != null) {
-         int serverEventsSize = 0;
-
-         for (Entry<Integer, ItemReticle> kvp : this.serverEvents.entrySet()) {
-            serverEventsSize += 4 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.serverEvents.size()) + serverEventsSize;
-      }
-
-      if (this.clientEvents != null) {
-         int clientEventsSize = 0;
-
-         for (Entry<ItemReticleClientEvent, ItemReticle> kvp : this.clientEvents.entrySet()) {
-            clientEventsSize += 1 + kvp.getValue().computeSize();
-         }
-
-         size += VarInt.size(this.clientEvents.size()) + clientEventsSize;
-      }
-
-      return size;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 17) {
-         return ValidationResult.error("Buffer too small: expected at least 17 bytes");
-      }
-
-      byte nullBits = buffer.getByte(offset);
-      if ((nullBits & 1) != 0) {
-         int idOffset = buffer.getIntLE(offset + 1);
-         if (idOffset < 0 || idOffset > buffer.writerIndex() - offset - 17) {
-            return ValidationResult.error("Invalid offset for Id");
-         }
-
-         int pos = offset + 17 + idOffset;
-         int idLen = VarInt.peek(buffer, pos);
-         if (idLen < 0) {
-            return ValidationResult.error("Invalid string length for Id");
-         }
-
-         if (idLen > 4096000) {
-            return ValidationResult.error("Id exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(idLen);
-         pos += idLen;
-         if (pos > buffer.writerIndex()) {
-            return ValidationResult.error("Buffer overflow reading Id");
-         }
-      }
-
-      if ((nullBits & 2) != 0) {
-         int baseOffset = buffer.getIntLE(offset + 5);
-         if (baseOffset < 0 || baseOffset > buffer.writerIndex() - offset - 17) {
-            return ValidationResult.error("Invalid offset for Base");
-         }
-
-         int pos = offset + 17 + baseOffset;
-         int baseCount = VarInt.peek(buffer, pos);
-         if (baseCount < 0) {
-            return ValidationResult.error("Invalid array count for Base");
-         }
-
-         if (baseCount > 4096000) {
-            return ValidationResult.error("Base exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(baseCount);
-
-         for (int i = 0; i < baseCount; i++) {
-            int strLen = VarInt.peek(buffer, pos);
-            if (strLen < 0) {
-               return ValidationResult.error("Invalid string length in Base");
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 9, -1);
+        }
+        if (this.clientEvents != null) {
+            mem.set(PacketIO.PROTO_INT, offset + 13, varOffset - offset - 17);
+            if (this.clientEvents.size() > 4096000) throw ProtocolException.dictionaryTooLarge("ClientEvents", clientEvents.size(), 4096000);
+            varOffset += VarInt.set(mem, varOffset, this.clientEvents.size());
+            for (var e : this.clientEvents.entrySet()) {
+                mem.set(PacketIO.PROTO_BYTE, varOffset, (byte) e.getKey().getValue());
+                varOffset += 1;
+                varOffset += e.getValue().serialize(mem, varOffset);
             }
+        } else {
+            mem.set(PacketIO.PROTO_INT, offset + 13, -1);
+        }
+    
+       return varOffset - offset;
+    }
+    public int computeSize() {
+        int size = 17;
+        if (id != null) size += PacketIO.stringSize(id);
+    if (base != null) {
+        int baseSize = 0;
+for (var elem : base) baseSize += PacketIO.stringSize(elem);
+size += VarInt.size(base.length) + baseSize;
+    }
+    if (serverEvents != null) {
+        int serverEventsSize = 0;
+for (var kvp : serverEvents.entrySet()) serverEventsSize += 4 + kvp.getValue().computeSize();
+size += VarInt.size(serverEvents.size()) + serverEventsSize;
+    }
+    if (clientEvents != null) {
+        int clientEventsSize = 0;
+for (var kvp : clientEvents.entrySet()) clientEventsSize += 1 + kvp.getValue().computeSize();
+size += VarInt.size(clientEvents.size()) + clientEventsSize;
+    }
 
-            pos += VarInt.size(strLen);
-            pos += strLen;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading string in Base");
-            }
-         }
-      }
+        return size;
+    }
 
-      if ((nullBits & 4) != 0) {
-         int serverEventsOffset = buffer.getIntLE(offset + 9);
-         if (serverEventsOffset < 0 || serverEventsOffset > buffer.writerIndex() - offset - 17) {
-            return ValidationResult.error("Invalid offset for ServerEvents");
-         }
+    public ItemReticleConfig clone() {
+        ItemReticleConfig copy = new ItemReticleConfig();
+        copy.id = this.id;
+        copy.base = this.base != null ? java.util.Arrays.copyOf(this.base, this.base.length) : null;
+        if (this.serverEvents != null) {
+            java.util.Map<Integer, ItemReticle> m = new java.util.HashMap<>();
+            for (var e : this.serverEvents.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.serverEvents = m;
+        }
+        if (this.clientEvents != null) {
+            java.util.Map<ItemReticleClientEvent, ItemReticle> m = new java.util.HashMap<>();
+            for (var e : this.clientEvents.entrySet()) { m.put(e.getKey(), e.getValue().clone()); }
+            copy.clientEvents = m;
+        }
+        return copy;
+    }
 
-         int pos = offset + 17 + serverEventsOffset;
-         int serverEventsCount = VarInt.peek(buffer, pos);
-         if (serverEventsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for ServerEvents");
-         }
 
-         if (serverEventsCount > 4096000) {
-            return ValidationResult.error("ServerEvents exceeds max length 4096000");
-         }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ItemReticleConfig other)) return false;
+        return java.util.Objects.equals(this.id, other.id) && java.util.Arrays.equals(this.base, other.base) && java.util.Objects.equals(this.serverEvents, other.serverEvents) && java.util.Objects.equals(this.clientEvents, other.clientEvents);
+    }
 
-         pos += VarInt.size(serverEventsCount);
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + java.util.Objects.hashCode(id);
+        result = 31 * result + java.util.Arrays.hashCode(base);
+        result = 31 * result + java.util.Objects.hashCode(serverEvents);
+        result = 31 * result + java.util.Objects.hashCode(clientEvents);
+        return result;
+    }
 
-         for (int i = 0; i < serverEventsCount; i++) {
-            pos += 4;
-            if (pos > buffer.writerIndex()) {
-               return ValidationResult.error("Buffer overflow reading key");
-            }
-
-            pos += ItemReticle.computeBytesConsumed(buffer, pos);
-         }
-      }
-
-      if ((nullBits & 8) != 0) {
-         int clientEventsOffset = buffer.getIntLE(offset + 13);
-         if (clientEventsOffset < 0 || clientEventsOffset > buffer.writerIndex() - offset - 17) {
-            return ValidationResult.error("Invalid offset for ClientEvents");
-         }
-
-         int pos = offset + 17 + clientEventsOffset;
-         int clientEventsCount = VarInt.peek(buffer, pos);
-         if (clientEventsCount < 0) {
-            return ValidationResult.error("Invalid dictionary count for ClientEvents");
-         }
-
-         if (clientEventsCount > 4096000) {
-            return ValidationResult.error("ClientEvents exceeds max length 4096000");
-         }
-
-         pos += VarInt.size(clientEventsCount);
-
-         for (int i = 0; i < clientEventsCount; i++) {
-            int v = buffer.getByte(pos) & 255;
-            if (v >= 5) {
-               return ValidationResult.error("Invalid ItemReticleClientEvent value for key");
-            }
-
-            pos = ++pos + ItemReticle.computeBytesConsumed(buffer, pos);
-         }
-      }
-
-      return ValidationResult.OK;
-   }
-
-   public ItemReticleConfig clone() {
-      ItemReticleConfig copy = new ItemReticleConfig();
-      copy.id = this.id;
-      copy.base = this.base != null ? Arrays.copyOf(this.base, this.base.length) : null;
-      if (this.serverEvents != null) {
-         Map<Integer, ItemReticle> m = new HashMap<>();
-
-         for (Entry<Integer, ItemReticle> e : this.serverEvents.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
-
-         copy.serverEvents = m;
-      }
-
-      if (this.clientEvents != null) {
-         Map<ItemReticleClientEvent, ItemReticle> m = new HashMap<>();
-
-         for (Entry<ItemReticleClientEvent, ItemReticle> e : this.clientEvents.entrySet()) {
-            m.put(e.getKey(), e.getValue().clone());
-         }
-
-         copy.clientEvents = m;
-      }
-
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof ItemReticleConfig other)
-            ? false
-            : Objects.equals(this.id, other.id)
-               && Arrays.equals(this.base, other.base)
-               && Objects.equals(this.serverEvents, other.serverEvents)
-               && Objects.equals(this.clientEvents, other.clientEvents);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int result = 1;
-      result = 31 * result + Objects.hashCode(this.id);
-      result = 31 * result + Arrays.hashCode(this.base);
-      result = 31 * result + Objects.hashCode(this.serverEvents);
-      return 31 * result + Objects.hashCode(this.clientEvents);
-   }
-}
+}

@@ -1,144 +1,139 @@
+// Auto-generated - do not edit
 package meridian.protocol.packets.buildertools;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.foreign.MemorySegment;
 import meridian.protocol.NetworkChannel;
 import meridian.protocol.Packet;
 import meridian.protocol.ToServerPacket;
+import meridian.protocol.ToClientPacket;
 import meridian.protocol.io.PacketIO;
 import meridian.protocol.io.ProtocolException;
-import meridian.protocol.io.ValidationResult;
-import io.netty.buffer.ByteBuf;
-import java.lang.foreign.MemorySegment;
-import java.util.Objects;
-import javax.annotation.Nonnull;
+import meridian.protocol.io.ReadCursor;
+import meridian.protocol.io.VarInt;
+
 
 public class BuilderToolEntityAction implements Packet, ToServerPacket {
-   public static final int PACKET_ID = 401;
-   public static final boolean IS_COMPRESSED = false;
-   public static final int NULLABLE_BIT_FIELD_SIZE = 0;
-   public static final int FIXED_BLOCK_SIZE = 5;
-   public static final int VARIABLE_FIELD_COUNT = 0;
-   public static final int VARIABLE_BLOCK_START = 5;
-   public static final int MAX_SIZE = 5;
-   public int entityId;
-   @Nonnull
-   public EntityToolAction action = EntityToolAction.Remove;
+    public static final int PACKET_ID = 401;
+    public static final boolean IS_COMPRESSED = false;
+    public static final int NULLABLE_BIT_FIELD_SIZE = 0;
+    public static final int FIXED_BLOCK_SIZE = 5;
+    public static final int VARIABLE_FIELD_COUNT = 0;
+    public static final int VARIABLE_BLOCK_START = 5;
+    public static final int MAX_SIZE = 5;
 
-   @Override
-   public int getId() {
-      return 401;
-   }
+    @Override
+    public int getId() {
+        return PACKET_ID;
+    }
 
-   @Override
-   public NetworkChannel getChannel() {
-      return NetworkChannel.Default;
-   }
+    @Override
+    public NetworkChannel getChannel() {
+        return NetworkChannel.Default;
+    }
 
-   public BuilderToolEntityAction() {
-   }
+    public int entityId;
+    @Nonnull public EntityToolAction action = EntityToolAction.Remove;
 
-   public BuilderToolEntityAction(int entityId, @Nonnull EntityToolAction action) {
-      this.entityId = entityId;
-      this.action = action;
-   }
+    public BuilderToolEntityAction() {
+    }
 
-   public BuilderToolEntityAction(@Nonnull BuilderToolEntityAction other) {
-      this.entityId = other.entityId;
-      this.action = other.action;
-   }
+    public BuilderToolEntityAction(int entityId, @Nonnull EntityToolAction action) {
+        this.entityId = entityId;
+        this.action = action;
+    }
 
-   @Nonnull
-   public static BuilderToolEntityAction deserialize(@Nonnull ByteBuf buf, int offset) {
-      if (buf.readableBytes() - offset < 5) {
-         throw ProtocolException.bufferTooSmall("BuilderToolEntityAction", 5, buf.readableBytes() - offset);
-      }
+    public BuilderToolEntityAction(@Nonnull BuilderToolEntityAction other) {
+        this.entityId = other.entityId;
+        this.action = other.action;
+    }
 
-      BuilderToolEntityAction obj = new BuilderToolEntityAction();
-      obj.entityId = buf.getIntLE(offset + 0);
-      obj.action = EntityToolAction.fromValue(buf.getByte(offset + 4));
-      return obj;
-   }
+    /**
+     * Checks that the fixed block fits. The per-field getters read without their own bound
+     * check, so call this once before reading fields out of an untrusted segment.
+     */
+    public static void requireBounds(MemorySegment mem, int offset) {
+        if (offset < 0) throw ProtocolException.invalidOffset("BuilderToolEntityAction", offset, (int) mem.byteSize());
+        long needed = (long) offset + 5;
+        if (needed > mem.byteSize()) throw ProtocolException.bufferTooSmall("BuilderToolEntityAction", (int) java.lang.Math.min(needed, Integer.MAX_VALUE), (int) mem.byteSize());
+    }
+    
+    public static int getEntityId(MemorySegment mem) {
+        return getEntityId(mem, 0);
+    }
+    
+    public static int getEntityId(MemorySegment mem, int offset) {
+        return mem.get(PacketIO.PROTO_INT, offset + 0);
+    }
+    
+    public static EntityToolAction getAction(MemorySegment mem) {
+        return getAction(mem, 0);
+    }
+    
+    public static EntityToolAction getAction(MemorySegment mem, int offset) {
+        return EntityToolAction.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 4));
+    }
+    
+    
+    
+    
+    
+    public static BuilderToolEntityAction toObject(MemorySegment mem) {
+        return toObject(mem, 0, null);
+    }
+    
+    public static BuilderToolEntityAction toObject(MemorySegment mem, int offset) {
+        return toObject(mem, offset, null);
+    }
+    
+    /**
+     * Decodes one BuilderToolEntityAction and reports the end of its encoding through the cursor.
+     * The variable block is decoded in field order against a running position, and each
+     * offset slot must name that position, so the fields decoded are the bytes walked.
+     */
+    public static BuilderToolEntityAction toObject(MemorySegment mem, int offset, @Nullable ReadCursor cursor) {
+        // Checking the whole fixed block up front lets the JIT elide the per-field bound checks.
+        requireBounds(mem, offset);
+        var result = new BuilderToolEntityAction(
+            mem.get(PacketIO.PROTO_INT, offset + 0),
+            EntityToolAction.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 4))
+        );
+        if (cursor != null) cursor.position = offset + 5;
+        return result;
+    }
+    @Override
+    public int serialize(@Nonnull MemorySegment mem, int offset) {
+        
+        mem.set(PacketIO.PROTO_INT, offset + 0, this.entityId);
+        mem.set(PacketIO.PROTO_BYTE, offset + 4, (byte) this.action.getValue());
+        
+        
+    
+       return 5;
+    }
+    public int computeSize() {
+        return 5;
+    }
 
-   public static int computeBytesConsumed(@Nonnull ByteBuf buf, int offset) {
-      return 5;
-   }
+    public BuilderToolEntityAction clone() {
+        BuilderToolEntityAction copy = new BuilderToolEntityAction();
+        copy.entityId = this.entityId;
+        copy.action = this.action;
+        return copy;
+    }
 
-   public static boolean isBufferTooSmall(MemorySegment mem) {
-      return mem.byteSize() < 5L;
-   }
 
-   public static int getEntityId(MemorySegment mem) {
-      return getEntityId(mem, 0);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BuilderToolEntityAction other)) return false;
+        return this.entityId == other.entityId && java.util.Objects.equals(this.action, other.action);
+    }
 
-   public static int getEntityId(MemorySegment mem, int offset) {
-      return mem.get(PacketIO.PROTO_INT, offset + 0);
-   }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(entityId, action);
+    }
 
-   public static EntityToolAction getAction(MemorySegment mem) {
-      return getAction(mem, 0);
-   }
-
-   public static EntityToolAction getAction(MemorySegment mem, int offset) {
-      return EntityToolAction.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 4));
-   }
-
-   public static BuilderToolEntityAction toObject(MemorySegment mem) {
-      return toObject(mem, 0);
-   }
-
-   public static BuilderToolEntityAction toObject(MemorySegment mem, int offset) {
-      if (offset + 5 > mem.byteSize()) {
-         throw ProtocolException.bufferTooSmall("BuilderToolEntityAction", offset + 5, (int)mem.byteSize());
-      } else {
-         return new BuilderToolEntityAction(mem.get(PacketIO.PROTO_INT, offset + 0), EntityToolAction.fromValue(mem.get(PacketIO.PROTO_BYTE, offset + 4)));
-      }
-   }
-
-   @Override
-   public void serialize(@Nonnull ByteBuf buf) {
-      buf.writeIntLE(this.entityId);
-      buf.writeByte(this.action.getValue());
-   }
-
-   @Override
-   public int serialize(@Nonnull MemorySegment mem, int offset) {
-      mem.set(PacketIO.PROTO_INT, offset + 0, this.entityId);
-      mem.set(PacketIO.PROTO_BYTE, offset + 4, (byte)this.action.getValue());
-      return 5;
-   }
-
-   @Override
-   public int computeSize() {
-      return 5;
-   }
-
-   public static ValidationResult validateStructure(@Nonnull ByteBuf buffer, int offset) {
-      if (buffer.readableBytes() - offset < 5) {
-         return ValidationResult.error("Buffer too small: expected at least 5 bytes");
-      }
-
-      int v = buffer.getByte(offset + 4) & 255;
-      return v >= 3 ? ValidationResult.error("Invalid EntityToolAction value for Action") : ValidationResult.OK;
-   }
-
-   public BuilderToolEntityAction clone() {
-      BuilderToolEntityAction copy = new BuilderToolEntityAction();
-      copy.entityId = this.entityId;
-      copy.action = this.action;
-      return copy;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      } else {
-         return !(obj instanceof BuilderToolEntityAction other) ? false : this.entityId == other.entityId && Objects.equals(this.action, other.action);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.entityId, this.action);
-   }
-}
+}

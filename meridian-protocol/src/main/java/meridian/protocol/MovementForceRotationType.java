@@ -1,28 +1,29 @@
+// Auto-generated - do not edit
 package meridian.protocol;
 
 import meridian.protocol.io.ProtocolException;
 
 public enum MovementForceRotationType {
-   AttachedToHead(0),
-   CameraRotation(1),
-   Custom(2);
+    AttachedToHead(0),
+    CameraRotation(1),
+    Custom(2);
 
-   public static final MovementForceRotationType[] VALUES = values();
-   private final int value;
+    public static final MovementForceRotationType[] VALUES = values();
 
-   MovementForceRotationType(int value) {
-      this.value = value;
-   }
+    private final int value;
 
-   public int getValue() {
-      return this.value;
-   }
+    MovementForceRotationType(int value) {
+        this.value = value;
+    }
 
-   public static MovementForceRotationType fromValue(int value) {
-      if (value >= 0 && value < VALUES.length) {
-         return VALUES[value];
-      } else {
-         throw ProtocolException.invalidEnumValue("MovementForceRotationType", value);
-      }
-   }
-}
+    public int getValue() {
+        return value;
+    }
+
+    public static MovementForceRotationType fromValue(int value) {
+        if (value >= 0 && value < VALUES.length) {
+            return VALUES[value];
+        }
+        throw ProtocolException.invalidEnumValue("MovementForceRotationType", value);
+    }
+}
