@@ -29,6 +29,9 @@ public class ProxyServer {
             if (cmdLine.contains("--no-gui")) {
                 showGui = false;
             }
+            // Must precede LogWindow.install: it builds the window, and AWT reads the
+            // workaround this may re-exec us with only while the toolkit is starting.
+            X11Relaunch.applyIfNeeded();
             LogWindow.install(showGui);
             System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
             System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "HH:mm:ss.SSS");

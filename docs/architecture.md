@@ -400,7 +400,7 @@ meridian-proxy/                          # git root — parent (aggregator) POM
         ├── HytaleAuthState        # shared token/fingerprint state
         ├── HytaleSessionApi       # async REST client for sessions.hytale.com
         ├── LogWindow              # Swing window + standalone connection bar
-        ├── StandaloneState        # state.json — last host:port
+        ├── StandaloneState        # state.json — recently-connected host:port list
         ├── auth/                  # GameProcessSnooper, LauncherSessionMinter
         ├── core/                  # ProxyConfig, QuicConfig, LauncherBridge,
         │                          #   PacketCodec/Router/Forwarder/Frame, ProxySessionImpl

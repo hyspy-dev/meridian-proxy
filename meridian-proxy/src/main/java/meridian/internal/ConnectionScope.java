@@ -355,9 +355,7 @@ public final class ConnectionScope {
         if (config.launchedByLauncher()) {
             return Paths.get("modules");
         }
-        return ProxyConfig.jarDir()
-                .resolve(ProxyConfig.sanitizeHostPort(config.remoteHost(), config.remotePort()))
-                .resolve("modules");
+        return ProxyConfig.serverModulesDir(config.remoteHost(), config.remotePort());
     }
 
     private void logEnv(String name, String value) {

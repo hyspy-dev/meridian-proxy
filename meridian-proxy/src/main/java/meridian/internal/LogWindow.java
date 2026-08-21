@@ -15,8 +15,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import meridian.internal.auth.GameProcessSnooper;
+import meridian.internal.core.ProxyConfig;
 import meridian.internal.module.ModuleManager;
 import meridian.internal.module.ModuleManager.ModuleEntry;
 import meridian.internal.module.ModuleManager.SkippedModule;
@@ -49,13 +54,24 @@ public final class LogWindow {
     private static JLabel gameStatusDot;
     private static JLabel gameStatusText;
     private static JButton gameRefreshBtn;
-    private static JTextField remoteField;
+    private static JComboBox<String> remoteBox;
+    private static JTextField remoteEditor;
+    private static JLabel workspaceLabel;
+    private static JButton createFolderButton;
+    private static Timer workspaceCheckTimer;
     private static JTextField localPortField;
     private static JTextField sessionTokenField;
     private static JButton connectButton;
     private static JLabel connectedLabel;
     private static JButton disconnectButton;
     private static volatile boolean standaloneMode = false;
+    /** Look-and-feel actually installed; logged once the output tee is live. */
+    private static String lafName = "(none)";
+    /** The EDT, captured while building the window so the watchdog can dump its stack. */
+    private static volatile Thread edtThread;
+
+    /** Debounce before a typed remote is checked against the filesystem. */
+    private static final int WORKSPACE_CHECK_DELAY_MS = 400;
 
     /** Card names for the north area: the Connect form vs. the Connected status bar. */
     private static final String CARD_CONNECT = "CONNECT";
@@ -73,7 +89,7 @@ public final class LogWindow {
 
         // File logging: <jar-dir>/logs/meridian.log, rotated on each launch.
         try {
-            Path logDir = meridian.internal.core.ProxyConfig.jarDir().resolve("logs");
+            Path logDir = ProxyConfig.jarDir().resolve("logs");
             Files.createDirectories(logDir);
             Path logFile = logDir.resolve("meridian.log");
             rotateLogs(logFile);
@@ -98,6 +114,14 @@ public final class LogWindow {
         // Tee stdout/stderr
         System.setErr(new PrintStream(new TeeStream(System.err), true));
         System.setOut(new PrintStream(new TeeStream(System.out), true));
+
+        // Only now does printing reach the console, the log file and the window alike,
+        // so the look-and-feel chosen above is reported here rather than where it is set.
+        if (guiEnabled && frame != null) {
+            System.out.println("[LogWindow] Swing look-and-feel: " + lafName
+                    + " (override with -Dmeridian.laf=system|metal|nimbus)");
+            startEdtWatchdog();
+        }
 
         // Shutdown hook for clean exit (Ctrl+C, SIGTERM, etc.)
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -144,10 +168,69 @@ public final class LogWindow {
 
 
 
-    private static void buildWindow() {
+    /**
+     * Installs the look-and-feel, defaulting to the platform's own.
+     *
+     * <p>Verified to render this window correctly under both GTK and Metal on Linux, so
+     * the default is left alone; the override exists for the case where a platform
+     * look-and-feel misbehaves. Accepts {@code system}, {@code metal}, {@code nimbus},
+     * or a look-and-feel class name, via {@code -Dmeridian.laf=}.
+     */
+    private static void applyLookAndFeel() {
+        String raw = System.getProperty("meridian.laf", "system").trim();
+        String className = switch (raw.toLowerCase(Locale.ROOT)) {
+            case "metal", "cross" -> UIManager.getCrossPlatformLookAndFeelClassName();
+            case "nimbus" -> "javax.swing.plaf.nimbus.NimbusLookAndFeel";
+            case "system" -> UIManager.getSystemLookAndFeelClassName();
+            default -> raw.indexOf('.') > 0 ? raw : UIManager.getSystemLookAndFeelClassName();
+        };
+
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {}
+            UIManager.setLookAndFeel(className);
+        } catch (Throwable first) {
+            try {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            } catch (Throwable ignored) {
+            }
+        }
+        LookAndFeel active = UIManager.getLookAndFeel();
+        lafName = active == null ? "(none)" : active.getClass().getName();
+    }
+
+    /**
+     * Warns if the UI thread stops answering, dumping its stack so whatever is holding it
+     * is named. A wedged EDT is the other way this window can come up empty, and this is
+     * what tells it apart from the window-manager case above.
+     */
+    private static void startEdtWatchdog() {
+        Thread watchdog = new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                CountDownLatch pong = new CountDownLatch(1);
+                SwingUtilities.invokeLater(pong::countDown);
+                if (pong.await(5, TimeUnit.SECONDS)) return;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            StringBuilder sb = new StringBuilder(
+                    "[LogWindow] UI thread has not responded for 5s — the window will stay blank.");
+            Thread edt = edtThread;
+            if (edt != null) {
+                sb.append("\n[LogWindow] ").append(edt.getName()).append(" stack:");
+                for (StackTraceElement el : edt.getStackTrace()) {
+                    sb.append("\n\tat ").append(el);
+                }
+            }
+            System.err.println(sb);
+        }, "LogWindow-edt-watchdog");
+        watchdog.setDaemon(true);
+        watchdog.start();
+    }
+
+    private static void buildWindow() {
+        edtThread = Thread.currentThread();
+        applyLookAndFeel();
 
         frame = new JFrame("Meridian Proxy " + Version.VERSION + " — Management");
         frame.setSize(1200, 800);
@@ -301,6 +384,10 @@ public final class LogWindow {
         });
 
         frame.setVisible(true);
+        // The north card starts hidden, so the content pane is laid out once more here;
+        // without it a window shown before that pass can come up unpainted.
+        frame.revalidate();
+        frame.repaint();
         updateModuleList();
     }
 
@@ -328,17 +415,41 @@ public final class LogWindow {
         remoteLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
         row1.add(remoteLabel);
 
-        remoteField = new JTextField(20);
-        remoteField.setToolTipText("Target server, e.g. 1.2.3.4:5520 or play.example.com:5520");
-        remoteField.getDocument().addDocumentListener(docListener);
-        row1.add(remoteField);
+        // Editable combo: type a fresh address, or pick one already connected to.
+        remoteBox = new JComboBox<>();
+        remoteBox.setEditable(true);
+        remoteBox.setPrototypeDisplayValue("play.example.com:65535   ");
+        remoteBox.setToolTipText("Target server, e.g. play.example.com or 1.2.3.4:5520"
+                + " — the port is optional and defaults to " + ProxyConfig.DEFAULT_REMOTE_PORT);
+        remoteEditor = (JTextField) remoteBox.getEditor().getEditorComponent();
+        remoteEditor.setToolTipText(remoteBox.getToolTipText());
+        remoteEditor.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { onRemoteEdited(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { onRemoteEdited(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { onRemoteEdited(); }
+        });
+        // Picking from the dropdown replaces the editor text wholesale, which does not
+        // always surface as a document edit — re-check on selection too.
+        remoteBox.addActionListener(e -> onRemoteEdited());
+        row1.add(remoteBox);
+
+        workspaceLabel = new JLabel(" ");
+        workspaceLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        row1.add(workspaceLabel);
+
+        createFolderButton = new JButton("Create folder");
+        createFolderButton.setFocusPainted(false);
+        createFolderButton.setMargin(new Insets(2, 8, 2, 8));
+        createFolderButton.setVisible(false);
+        createFolderButton.addActionListener(e -> createWorkspaceFolder());
+        row1.add(createFolderButton);
 
         JLabel localLabel = new JLabel("Local port:");
         localLabel.setForeground(new Color(200, 200, 200));
         localLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
         row1.add(localLabel);
 
-        localPortField = new JTextField(String.valueOf(meridian.internal.core.ProxyConfig.STANDALONE_LOCAL_PORT), 5);
+        localPortField = new JTextField(String.valueOf(ProxyConfig.STANDALONE_LOCAL_PORT), 5);
         localPortField.setToolTipText("Local bind port; default 5520 matches Hytale's expected server port");
         localPortField.getDocument().addDocumentListener(docListener);
         row1.add(localPortField);
@@ -372,6 +483,125 @@ public final class LogWindow {
         return bar;
     }
 
+    /** Current text of the editable Remote combo, or "" when the GUI is off. */
+    private static String remoteText() {
+        return remoteEditor == null ? "" : remoteEditor.getText().trim();
+    }
+
+    private static void setRemoteText(String text) {
+        if (remoteEditor != null) remoteEditor.setText(text);
+    }
+
+    /** Re-fills the dropdown from persisted state without disturbing the typed text. */
+    private static void loadRemoteRecents() {
+        if (remoteBox == null) return;
+        String typed = remoteText();
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        for (String s : StandaloneState.load().recents()) {
+            model.addElement(s);
+        }
+        remoteBox.setModel(model);
+        // setModel selects the first element and pushes it into the editor; restore
+        // whatever the user had typed so refreshing the list never rewrites their input.
+        setRemoteText(typed);
+    }
+
+    private static void onRemoteEdited() {
+        updateConnectEnabled();
+        scheduleWorkspaceCheck();
+    }
+
+    /** Restarts the debounce so the filesystem is only probed once typing settles. */
+    private static void scheduleWorkspaceCheck() {
+        if (createFolderButton == null) return;
+        if (workspaceCheckTimer == null) {
+            workspaceCheckTimer = new Timer(WORKSPACE_CHECK_DELAY_MS, e -> runWorkspaceCheck());
+            workspaceCheckTimer.setRepeats(false);
+        }
+        workspaceCheckTimer.restart();
+    }
+
+    /**
+     * Reports whether the typed remote already has a modules folder, offering to create
+     * one when it does not. The stat runs off the EDT — a remote can name a path on a
+     * slow or unreachable filesystem — and its result is discarded if the address moved
+     * on while it was in flight.
+     */
+    private static void runWorkspaceCheck() {
+        if (createFolderButton == null) return;
+        RemoteAddress addr = RemoteAddress.tryParse(remoteText());
+        if (addr == null) {
+            showWorkspaceState(null, false);
+            return;
+        }
+        Thread.startVirtualThread(() -> {
+            Path dir;
+            boolean exists;
+            try {
+                dir = ProxyConfig.serverModulesDir(addr.host(), addr.port());
+                exists = Files.isDirectory(dir);
+            } catch (Exception e) {
+                return;
+            }
+            SwingUtilities.invokeLater(() -> {
+                if (!addr.equals(RemoteAddress.tryParse(remoteText()))) return;
+                showWorkspaceState(dir, exists);
+            });
+        });
+    }
+
+    private static void showWorkspaceState(Path modulesDir, boolean exists) {
+        if (createFolderButton == null || workspaceLabel == null) return;
+        if (modulesDir == null) {
+            workspaceLabel.setText(" ");
+            workspaceLabel.setToolTipText(null);
+            createFolderButton.setVisible(false);
+        } else if (exists) {
+            workspaceLabel.setText("modules ✓");
+            workspaceLabel.setForeground(new Color(111, 207, 151));
+            workspaceLabel.setToolTipText(modulesDir.toAbsolutePath().toString());
+            createFolderButton.setVisible(false);
+        } else {
+            workspaceLabel.setText("no modules folder");
+            workspaceLabel.setForeground(new Color(220, 180, 40));
+            workspaceLabel.setToolTipText(modulesDir.toAbsolutePath().toString());
+            createFolderButton.setToolTipText("Create " + modulesDir.toAbsolutePath()
+                    + " so module jars can be added before connecting");
+            createFolderButton.setVisible(true);
+        }
+        if (authBar != null) {
+            authBar.revalidate();
+            authBar.repaint();
+        }
+    }
+
+    /** Creates the per-server modules folder and opens it, so jars can be dropped in. */
+    private static void createWorkspaceFolder() {
+        RemoteAddress addr = RemoteAddress.tryParse(remoteText());
+        if (addr == null) return;
+        Path dir = ProxyConfig.serverModulesDir(addr.host(), addr.port());
+        try {
+            Files.createDirectories(dir);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frame,
+                    "Could not create " + dir.toAbsolutePath() + "\n" + e,
+                    "Create folder", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        System.out.println("[LogWindow] Created module folder " + dir.toAbsolutePath());
+        showWorkspaceState(dir, true);
+        // Best-effort reveal; the desktop handler can be absent or slow, so never on the EDT.
+        Thread.startVirtualThread(() -> {
+            try {
+                if (Desktop.isDesktopSupported()
+                        && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(dir.toFile());
+                }
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
     private static JLabel verticalSeparator() {
         JLabel sep = new JLabel("│");
         sep.setForeground(new Color(60, 60, 60));
@@ -379,19 +609,18 @@ public final class LogWindow {
     }
 
     private static void performConnect() {
-        String text = remoteField.getText().trim();
-        String host;
-        int remotePort;
+        RemoteAddress remote;
         int localPort;
         try {
-            int idx = text.lastIndexOf(':');
-            if (idx <= 0 || idx >= text.length() - 1) throw new IllegalArgumentException("expected host:port");
-            host = text.substring(0, idx);
-            remotePort = Integer.parseInt(text.substring(idx + 1));
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Bad remote address. Use host:port.", "Connect", JOptionPane.ERROR_MESSAGE);
+            remote = RemoteAddress.parse(remoteText());
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(frame, ex.getMessage(), "Connect", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        String host = remote.host();
+        int remotePort = remote.port();
+        // Echo back the address actually used, so a defaulted port is visible rather than implied.
+        setRemoteText(remote.toWire());
         try {
             localPort = Integer.parseInt(localPortField.getText().trim());
             if (localPort < 1 || localPort > 65535) throw new IllegalArgumentException();
@@ -408,8 +637,9 @@ public final class LogWindow {
         }
         // Remember the remote for next launch (tokens are never persisted).
         StandaloneState state = StandaloneState.load();
-        state.lastHostPort = host + ":" + remotePort;
+        state.remember(remote.toWire());
         state.save();
+        loadRemoteRecents();
 
         connectButton.setEnabled(false);
         connectButton.setText("Deriving session…");
@@ -554,13 +784,14 @@ public final class LogWindow {
         standaloneMode = true;
         SwingUtilities.invokeLater(() -> {
             showCard(CARD_CONNECT);
-            if (remoteHint != null && !remoteHint.isBlank() && remoteField != null) {
-                remoteField.setText(remoteHint.trim());
-            } else if (remoteField != null && remoteField.getText().isBlank()) {
-                // No --remote override — pre-fill from the last session.
-                String last = StandaloneState.load().lastHostPort;
-                if (last != null && !last.isBlank()) {
-                    remoteField.setText(last.trim());
+            loadRemoteRecents();
+            if (remoteHint != null && !remoteHint.isBlank()) {
+                setRemoteText(remoteHint.trim());
+            } else if (remoteText().isBlank()) {
+                // No --remote override — pre-fill from the most recent session.
+                List<String> recents = StandaloneState.load().recents();
+                if (!recents.isEmpty()) {
+                    setRemoteText(recents.get(0));
                 }
             }
             if (bindHint != null && !bindHint.isBlank() && localPortField != null) {
@@ -570,18 +801,20 @@ public final class LogWindow {
                 if (!port.isBlank()) localPortField.setText(port);
             }
             updateConnectEnabled();
+            scheduleWorkspaceCheck();
         });
     }
 
     private static void updateConnectEnabled() {
-        if (connectButton == null || remoteField == null || sessionTokenField == null) return;
-        boolean hostFilled = remoteField.getText().trim().contains(":");
+        if (connectButton == null || remoteEditor == null || sessionTokenField == null) return;
+        boolean hostFilled = RemoteAddress.tryParse(remoteText()) != null;
         boolean tokenPresent = !sessionTokenField.getText().trim().isEmpty();
         connectButton.setEnabled(tokenPresent && hostFilled);
         if (!tokenPresent) {
             connectButton.setToolTipText("Start the Hytale game and click Refresh, or paste a session token");
         } else if (!hostFilled) {
-            connectButton.setToolTipText("Enter remote host:port");
+            connectButton.setToolTipText("Enter the server address; the port is optional ("
+                    + ProxyConfig.DEFAULT_REMOTE_PORT + " by default)");
         } else {
             connectButton.setToolTipText(null);
         }
@@ -624,7 +857,11 @@ public final class LogWindow {
             gameStatusText.setText("scanning…");
         });
         Thread.startVirtualThread(() -> {
+            // Kept short: this cell shares one row with the whole connect form, and a
+            // sentence-long status pushes the controls to its right off the window.
+            // The guidance lives in the tooltip instead.
             String text;
+            String detail;
             Color dot;
             String foundToken = null;
             try {
@@ -634,25 +871,32 @@ public final class LogWindow {
                             ? creds.get().profileUuid().toString().substring(0, 8)
                             : "session detected";
                     text = "running — " + profile;
+                    detail = "Session token read from the running game";
                     dot = new Color(111, 207, 151);
                     foundToken = creds.get().sessionToken();
                 } else {
-                    text = "not running — paste a session token below, or open the launcher and Play";
+                    text = "not running";
+                    detail = "Open the launcher and Play, then click Refresh —"
+                            + " or paste a session token below";
                     dot = new Color(195, 25, 76);
                 }
             } catch (UnsupportedOperationException e) {
-                text = e.getMessage();
+                text = "unsupported here";
+                detail = e.getMessage();
                 dot = new Color(220, 180, 40);
             } catch (Exception e) {
-                text = "scan failed: " + e.getMessage();
+                text = "scan failed";
+                detail = e.toString();
                 dot = new Color(195, 25, 76);
             }
             String tt = text;
+            String td2 = detail;
             Color td = dot;
             String tokenToFill = foundToken;
             SwingUtilities.invokeLater(() -> {
                 gameStatusDot.setForeground(td);
                 gameStatusText.setText(tt);
+                gameStatusText.setToolTipText(td2);
                 // Auto-fill the token field when the snoop succeeds; leave a
                 // manually-typed token untouched when it doesn't.
                 if (tokenToFill != null && sessionTokenField != null) {

@@ -66,11 +66,18 @@ reads the live session straight out of the game process — nothing to copy.
 2. Double-click `meridian-proxy-*-all.jar`. A window opens with a connection bar.
 3. The **Hytale game** indicator turns green and the **Session token** field
    auto-fills. (If it stays red, click **Refresh** once the game is up.)
-4. Type the target server into **Remote** (e.g. `2o2t.org:5520`). Optionally change
-   the **Local port** (default `5520`).
-5. Click **Connect**. The bar switches to a **Connected to … — Disconnect** status
+4. Type the target server into **Remote** (e.g. `2o2t.org`). The port is optional and
+   defaults to `5520`, so only a server that moved off the stock port needs
+   `host:port`. **Remote** is also a dropdown of the servers already connected to —
+   pick one instead of retyping it. Optionally change the **Local port**
+   (default `5520`).
+5. Each server gets its own module folder, `<jar-dir>/<host>_<port>/modules`. The bar
+   shows whether the typed server has one; while it does not, a **Create folder**
+   button appears, which creates it and opens it so module jars can be dropped in
+   before the first connection.
+6. Click **Connect**. The bar switches to a **Connected to … — Disconnect** status
    and the proxy starts listening.
-6. In the Hytale client, **Direct Connect** to `localhost`.
+7. In the Hytale client, **Direct Connect** to `localhost`.
 
 To end the session or switch servers, click **Disconnect**: the proxy unloads the
 session (and its modules) and returns to the connection bar, ready to **Connect**
@@ -87,6 +94,39 @@ returns to the bar on its own if the client or the server drops the connection.
 
 If snooping is unavailable you can still use the GUI: obtain a player session token
 yourself and paste it into the **Session token** field. Connect then works normally.
+
+### Tiling window managers (handled automatically)
+
+On a **non-reparenting window manager** (dwm, i3, xmonad, awesome, …) AWT mis-handles
+the frame: it opens at the right size and stays completely empty. The cure is
+`_JAVA_AWT_WM_NONREPARENTING=1`, which AWT reads from the environment as the toolkit
+starts — too late for the process to set on itself.
+
+So the proxy sets it the only way it can: on X11 it asks the window manager its name
+(`_NET_SUPPORTING_WM_CHECK` → `_NET_WM_NAME`, via `xprop`), and if that name is one of
+the non-reparenting ones it re-executes itself once with the variable set, logging
+
+```
+[X11Relaunch] dwm does not reparent; restarting with _JAVA_AWT_WM_NONREPARENTING=1 so the window renders.
+```
+
+Nothing happens under an ordinary reparenting WM — the flag makes AWT ignore frame
+decorations, so applying it there would misplace windows. It is also skipped for
+`--no-gui` and under the Hytale launcher, whose parent process owns this one. If the WM
+cannot be identified (no `xprop`, or a WM that does not announce itself) the log says
+so, and starting it yourself still works:
+
+```bash
+_JAVA_AWT_WM_NONREPARENTING=1 java -jar meridian-proxy-*-all.jar   # or: wmname LG3D
+```
+
+Two other things the startup log tells you when the window looks wrong:
+
+- `Swing look-and-feel: …` — which one is active. Both GTK and Metal are verified to
+  render this window correctly on Linux; if a platform look-and-feel ever misbehaves,
+  override it with `-Dmeridian.laf=system|metal|nimbus` (or a look-and-feel class name).
+- `UI thread has not responded` — the *other* way the window can come up empty. The
+  line dumps the UI thread's stack, naming whatever is holding it.
 
 ---
 
@@ -125,7 +165,7 @@ Any valid `hytale:client` session token for your account works.
 | Arg | Description | Example |
 |-----|-------------|---------|
 | `--session-token` | Player session token (selects Mode 3) | `--session-token "eyJ…"` |
-| `--remote` | Target server `host:port` | `--remote 1.2.3.4:5520` |
+| `--remote` | Target server `host` or `host:port` (port defaults to `5520`) | `--remote 1.2.3.4` |
 | `--bind` | Local listen address / port | `--bind localhost:5520` |
 | `--backup-dir` | Launcher-supplied path (Mode 1 only) | — |
 | `--no-gui` | Disable the Swing window | `--no-gui` |

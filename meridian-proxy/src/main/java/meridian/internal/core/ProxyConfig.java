@@ -30,6 +30,9 @@ public record ProxyConfig(
     /** Default local bind port for standalone mode. Matches Hytale's stock server port so
      *  the user can type just "localhost" or "127.0.0.1" in Hytale's Direct Connect UI. */
     public static final int STANDALONE_LOCAL_PORT = 5520;
+    /** Default port of the remote server — Hytale's stock server port, so the Connect bar
+     *  only needs an explicit port for servers that moved off it. */
+    public static final int DEFAULT_REMOTE_PORT = 5520;
 
     /**
      * Prints the "magic" progress bars to stdout for launcher compatibility.
@@ -51,7 +54,7 @@ public record ProxyConfig(
     }
     public static ProxyConfig fromArgs(String[] args) {
         String remoteHost = "127.0.0.1";
-        int remotePort = 5520;
+        int remotePort = DEFAULT_REMOTE_PORT;
         int localPort = 5521;
         boolean showGui = true;
 
@@ -162,6 +165,15 @@ public record ProxyConfig(
     /** Filesystem-safe {@code host_port} token for namespacing per-server folders. */
     public static String sanitizeHostPort(String host, int port) {
         return (host + "_" + port).replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    /**
+     * The per-server module folder, {@code <jar-dir>/<host_port>/modules}. Connecting
+     * creates it, but the Connect bar offers it up front so module jars can be dropped
+     * in before the first connection rather than after it.
+     */
+    public static Path serverModulesDir(String host, int port) {
+        return jarDir().resolve(sanitizeHostPort(host, port)).resolve("modules");
     }
 
     /** Returns the value of {@code key} (as {@code key value} or {@code key=value}) or null. */
