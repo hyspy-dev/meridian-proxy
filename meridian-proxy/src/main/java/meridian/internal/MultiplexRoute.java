@@ -19,6 +19,9 @@ public final class MultiplexRoute implements FrontendScope {
     private static final Logger log = LoggerFactory.getLogger(MultiplexRoute.class);
 
     private final int localPort;
+    /** The server this port was assigned to — stable, used to pick the {@code host_port} module folder. */
+    private final String originalHost;
+    private final int originalPort;
     /** Backend target for the next client connection — repointed by {@link #beginRedirect}. */
     private volatile String currentRemoteHost;
     private volatile int currentRemotePort;
@@ -26,10 +29,14 @@ public final class MultiplexRoute implements FrontendScope {
 
     public MultiplexRoute(int localPort, String remoteHost, int remotePort) {
         this.localPort = localPort;
+        this.originalHost = remoteHost;
+        this.originalPort = remotePort;
         this.currentRemoteHost = remoteHost;
         this.currentRemotePort = remotePort;
     }
 
+    public String originalHost() { return originalHost; }
+    public int originalPort() { return originalPort; }
     public String currentRemoteHost() { return currentRemoteHost; }
     public int currentRemotePort() { return currentRemotePort; }
 

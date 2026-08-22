@@ -52,17 +52,11 @@ public class ProxyServer {
         log.info("Meridian Proxy {} — releases: {}", Version.VERSION, Version.RELEASES_URL);
 
         // Multiplex/range mode: bind many local ports (one per server) from a routes file,
-        // sharing one runtime. Used by the launcher to auto-redirect gameplay UDP.
+        // sharing one runtime. Used by the launcher to auto-redirect gameplay UDP. Token
+        // derivation and module loading are deferred to the first connection (inside
+        // MultiplexProxy), so starting it idle does no network/module work.
         String routesArg = ProxyConfig.findArg(args, "--routes");
         if (routesArg != null) {
-            ProxyConfig.printLauncherProgress();
-            if (config.clientToken() != null
-                    && (config.serverToken() == null || config.identityToken() == null)) {
-                log.info("Multiplex: deriving server tokens via /game-session/child from player session");
-                LauncherSessionMinter.ServerTokens server =
-                        new LauncherSessionMinter().deriveServerTokens(config.clientToken());
-                config = config.withServerTokens(server.sessionToken(), server.identityToken());
-            }
             new MultiplexProxy(config, java.nio.file.Paths.get(routesArg)).run();
             return;
         }
