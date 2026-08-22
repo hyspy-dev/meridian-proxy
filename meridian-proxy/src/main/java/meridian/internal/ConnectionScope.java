@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * All transitions are CAS-guarded, which makes connect/disconnect idempotent:
  * a second disconnect (or a disconnect after the peer already dropped) is a no-op.
  */
-public final class ConnectionScope {
+public final class ConnectionScope implements FrontendScope {
     private static final Logger log = LoggerFactory.getLogger(ConnectionScope.class);
 
     public enum State { DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING }

@@ -7,7 +7,7 @@ import meridian.protocol.packets.interface_.ServerInfo;
 import meridian.api.packet.Direction;
 import meridian.api.packet.PacketHandler;
 import meridian.api.session.ProxySession;
-import meridian.internal.ConnectionScope;
+import meridian.internal.FrontendScope;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 public class RouteGuard implements PacketHandler {
     private static final Logger log = LoggerFactory.getLogger(RouteGuard.class);
     private final Direction direction;
-    private final ConnectionScope scope;
+    private final FrontendScope scope;
 
-    public RouteGuard(Direction direction, ConnectionScope scope) {
+    public RouteGuard(Direction direction, FrontendScope scope) {
         this.direction = direction;
         this.scope = scope;
     }

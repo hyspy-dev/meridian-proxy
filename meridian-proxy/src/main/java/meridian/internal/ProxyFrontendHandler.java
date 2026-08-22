@@ -58,7 +58,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
     private final HytaleAuthState auth;
     private final HandlerRegistry handlerRegistry;
     private final EventBus eventBus;
-    private final ConnectionScope scope;
+    private final FrontendScope scope;
     private volatile QuicChannel backendConnection;
     private volatile String sniHostname;
     private boolean backendInitiated = false;
@@ -77,7 +77,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
 
     public ProxyFrontendHandler(String remoteHost, int remotePort, SelfSignedCertificate ssc,
             HytaleAuthState auth, HandlerRegistry handlerRegistry, EventBus eventBus,
-            ConnectionScope scope) {
+            FrontendScope scope) {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.ssc = ssc;
