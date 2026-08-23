@@ -51,13 +51,36 @@ public class ProxyServer {
 
         log.info("Meridian Proxy {} — releases: {}", Version.VERSION, Version.RELEASES_URL);
 
-        // Multiplex/range mode: bind many local ports (one per server) from a routes file,
-        // sharing one runtime. Used by the launcher to auto-redirect gameplay UDP. Token
-        // derivation and module loading are deferred to the first connection (inside
-        // MultiplexProxy), so starting it idle does no network/module work.
-        String routesArg = ProxyConfig.findArg(args, "--routes");
-        if (routesArg != null) {
-            new MultiplexProxy(config, java.nio.file.Paths.get(routesArg)).run();
+        // Multiplex/range mode: bind many local ports (one per server), sharing one runtime.
+        // Used by the launcher to auto-redirect gameplay UDP. The launcher drives it over this
+        // process's STDIN (a parent→child pipe — no files): ROUTE/TOKEN commands. Token
+        // derivation and module loading are deferred to the first connection.
+        //
+        // The UI is the SAME as standalone: multiplex runs in the background and the normal
+        // Connect bar is shown too, so a user can still manually connect to a server not in the
+        // browser (single-target, exactly like standalone) — no separate UI.
+        boolean multiplex = false;
+        for (String a : args) {
+            if (a.equals("--multiplex")) { multiplex = true; break; }
+        }
+        if (multiplex) {
+            MultiplexProxy mux = new MultiplexProxy(config);
+            if (config.showGui()) {
+                Thread t = new Thread(() -> {
+                    try {
+                        mux.run();
+                    } catch (Exception e) {
+                        log.error("Multiplex proxy failed", e);
+                    }
+                }, "Meridian-Multiplex");
+                t.setDaemon(true);
+                t.start();
+                LogWindow.enterStandaloneMode(
+                        ProxyConfig.findArg(args, "--remote"),
+                        ProxyConfig.findArg(args, "--bind"));
+            } else {
+                mux.run();   // headless: block on the multiplex itself
+            }
             return;
         }
 
