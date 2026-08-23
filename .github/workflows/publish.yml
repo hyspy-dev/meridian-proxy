@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write   # upload release assets
+  packages: read    # pull meridian-api / meridian-protocol from Packages
 
 jobs:
   publish:
