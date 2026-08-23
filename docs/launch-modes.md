@@ -17,10 +17,10 @@ identical. Pick the one that matches your setup.
 > already holds and derives a server-scope child session from it. This is why
 > modes 2 and 3 need the game (or at least its session token) to be available.
 
-> **Platforms.** The proxy runs on Windows x86_64, Linux x86_64, and macOS (Intel
-> natively; Apple Silicon through Rosetta 2). ARM64 is **not supported** — the
-> bundled QUIC codec has no aarch64 native. Full matrix in the
-> [README](../README.md#platform-support).
+> **Platforms.** The proxy runs natively on Windows x86_64, Linux (x86_64 and
+> **aarch64**), and macOS (Intel **and Apple Silicon**) — the QUIC codec ships a
+> native for each, all bundled in the uber-jar, so no Rosetta is needed on Apple
+> Silicon. Full matrix in the [README](../README.md#platform-support).
 
 ---
 

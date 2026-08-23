@@ -11,10 +11,25 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>meridian-api</module>
-        <module>meridian-protocol</module>
         <module>meridian-proxy</module>
     </modules>
+
+    <!-- meridian-api and meridian-protocol are now their own repos, consumed from GitHub Packages
+         (locally from ~/.m2 after building those repos). api -> protocol -> proxy, no cycles. -->
+    <repositories>
+        <repository>
+            <id>github-meridian-api</id>
+            <url>https://maven.pkg.github.com/hyspy-dev/meridian-api</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>github-meridian-protocol</id>
+            <url>https://maven.pkg.github.com/hyspy-dev/meridian-protocol</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
 
     <properties>
         <maven.compiler.source>22</maven.compiler.source>
@@ -22,6 +37,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netty.version>4.1.100.Final</netty.version>
         <slf4j.version>2.0.9</slf4j.version>
+        <meridian.api.version>1.0.0-SNAPSHOT</meridian.api.version>
+        <!-- meridian-protocol artifact version = its wire CRC (a game version resolves to this
+             CRC via the catalog). Keep in sync with ProtocolSettings.PROTOCOL_CRC. -->
+        <meridian.protocol.version>245610536</meridian.protocol.version>
     </properties>
 
     <build>
@@ -39,4 +58,5 @@
             </plugins>
         </pluginManagement>
     </build>
+
 </project>

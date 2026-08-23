@@ -86,12 +86,16 @@ supported OS. Java 22+ is required to run it.
 |----------|:--------------:|:---------------------------------:|
 | Windows x86_64 | ✅ | ✅ |
 | Linux x86_64 | ✅ | ✅ |
+| Linux aarch64 | ✅ | ✅ |
 | macOS Intel (x86_64) | ✅ | ❌ — paste the token, or use [Mode 3](docs/launch-modes.md#mode-3--standalone-cli) |
-| macOS Apple Silicon (arm64) | ⚠️ via x86_64 JVM under Rosetta 2 | ❌ |
+| macOS Apple Silicon (arm64) | ✅ natively | ❌ |
 
-**Not supported:** Linux arm64, Windows arm64 — the bundled QUIC codec
-(`netty-incubator-codec-native-quic 0.0.60.Final`) ships x86_64 natives only. There
-is no aarch64 build at this version, so ARM platforms have no working QUIC transport.
+The QUIC codec (`netty-incubator-codec-native-quic 0.0.60.Final`) ships **both x86_64
+and aarch64** natives (Netty spells the classifier `aarch_64`); the uber-jar bundles all
+five, so it runs natively on Apple Silicon and Linux ARM — **no Rosetta**.
+
+**Not supported:** Windows arm64 — no aarch64 native is published for Windows at this
+version (Windows-on-ARM runs the x86_64 build through its own emulation).
 
 > Game-session auto-detection (reading the running game's session in standalone GUI
 > mode) is implemented for Windows and Linux. On macOS the **Session token** field

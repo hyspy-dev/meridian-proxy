@@ -20,12 +20,12 @@
         <dependency>
             <groupId>meridian</groupId>
             <artifactId>meridian-api</artifactId>
-            <version>${project.version}</version>
+            <version>${meridian.api.version}</version>
         </dependency>
         <dependency>
             <groupId>meridian</groupId>
             <artifactId>meridian-protocol</artifactId>
-            <version>${project.version}</version>
+            <version>${meridian.protocol.version}</version>
         </dependency>
 
         <!-- Netty core -->
@@ -36,9 +36,10 @@
         </dependency>
 
         <!-- Netty QUIC Incubator — native codec, one classifier per platform.
-             0.0.60.Final ships x86_64 only; all three are bundled so a single
-             uber-jar runs on Windows / Linux / macOS (Intel). Apple Silicon runs
-             it through an x86_64 JVM under Rosetta 2. -->
+             0.0.60.Final ships both x86_64 and aarch64 natives (classifier uses
+             Netty's "aarch_64" spelling). Bundling all five lets one uber-jar run
+             natively on Windows / Linux / macOS, on both Intel and ARM (Apple
+             Silicon, Linux ARM) — no Rosetta needed. -->
         <dependency>
             <groupId>io.netty.incubator</groupId>
             <artifactId>netty-incubator-codec-native-quic</artifactId>
@@ -55,7 +56,19 @@
             <groupId>io.netty.incubator</groupId>
             <artifactId>netty-incubator-codec-native-quic</artifactId>
             <version>0.0.60.Final</version>
+            <classifier>linux-aarch_64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>io.netty.incubator</groupId>
+            <artifactId>netty-incubator-codec-native-quic</artifactId>
+            <version>0.0.60.Final</version>
             <classifier>osx-x86_64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>io.netty.incubator</groupId>
+            <artifactId>netty-incubator-codec-native-quic</artifactId>
+            <version>0.0.60.Final</version>
+            <classifier>osx-aarch_64</classifier>
         </dependency>
 
         <!-- Zstd compression -->
