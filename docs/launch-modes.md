@@ -1,14 +1,16 @@
 # Launch Modes
 
-Meridian Proxy can be started in three ways. They differ only in **how the proxy
-obtains a Hytale session** — the proxying itself is identical. Pick the one that
-matches your setup.
+Meridian Proxy can be started in four ways. Modes 1–3 proxy **one** server you name;
+Mode 4 proxies the **whole in-game server browser** at once. They differ in **how the
+proxy obtains a Hytale session** and how the target is chosen — the proxying itself is
+identical. Pick the one that matches your setup.
 
 | Mode | You run | Token source | Best for |
 |------|---------|--------------|----------|
 | [1 — Server-jar replacement](#mode-1--server-jar-replacement) | the Hytale launcher | env vars set by the launcher | playing through the launcher's single-player UI |
 | [2 — Standalone GUI](#mode-2--standalone-gui) | the proxy jar (double-click) | auto-read from the running game | most users, Windows / Linux |
 | [3 — Standalone CLI](#mode-3--standalone-cli) | the proxy jar from a terminal | `--session-token` argument | macOS, headless, automation |
+| [4 — Multiplex (launcher-driven)](#mode-4--multiplex-launcher-driven) | the Meridian launcher (**Use proxy**) | pushed over stdin by the launcher | routing the whole server browser through the proxy, no typing |
 
 > **One session per account.** Hytale allows a single active session per account.
 > The proxy therefore never mints its own — it reuses the session the Hytale game
@@ -160,6 +162,46 @@ Any valid `hytale:client` session token for your account works.
 
 ---
 
+## Mode 4 — Multiplex (launcher-driven)
+
+Modes 1–3 proxy **one** server at a time (you name the remote). Mode 4 proxies the
+**whole in-game server browser at once**: the Meridian launcher rewrites the server
+list so every entry points at the local proxy, and the proxy binds one local port per
+server and relays each to its real host. You just pick a server in the game — its
+gameplay UDP flows through the proxy automatically, with nothing to type.
+
+This mode is **driven by the launcher**, not run by hand. In the launcher, tick
+**Use proxy**, pick the proxy jar (it looks for a `*proxy*.jar` next to itself), and
+**Launch**. The launcher starts the proxy with `--multiplex` and drives it over the
+proxy's **stdin** — a parent→child pipe, *no files*:
+
+| Command | Effect |
+|---------|--------|
+| `TOKEN <jwt>` | set / replace the player session token (a re-mint is pushed live) |
+| `ROUTE <localPort> <host> <port>` | bind `127.0.0.1:<localPort>` and relay it to `host:port` |
+
+The launcher sends `TOKEN` once at start, then a `ROUTE` for each server as it rewrites
+the browser listing (local ports allocated from `16000`).
+
+**Same UI as standalone.** The proxy window is identical to Mode 2 — the multiplex runs
+in the background and the normal **Connect bar** is still there, so you can also connect
+**manually** to a server that is *not* in the browser: type it in the bar and Direct-
+Connect to `localhost`, exactly like Mode 2.
+
+**Lazy.** Binding a port is cheap; a port does nothing until a client connects to it. On
+the first connection to a port the proxy does the real work — derives the server tokens
+(re-derived later only when the token changes or nears expiry) and loads that server's own
+`<jar-dir>/<host_port>/modules`, fresh per connection (see [modules.md](modules.md)).
+Starting the proxy idle costs nothing (no token mint, no module load, no folders created).
+
+**Default modules.** If a server has no folder yet and a `modules/` folder sits next to the
+proxy jar, it is copied into the new server's folder as a starting set — then customise per
+server.
+
+The launcher owns the proxy process and kills it when the game exits.
+
+---
+
 ## Connection arguments
 
 | Arg | Description | Example |
@@ -168,15 +210,17 @@ Any valid `hytale:client` session token for your account works.
 | `--remote` | Target server `host` or `host:port` (port defaults to `5520`) | `--remote 1.2.3.4` |
 | `--bind` | Local listen address / port | `--bind localhost:5520` |
 | `--backup-dir` | Launcher-supplied path (Mode 1 only) | — |
+| `--multiplex` | Launcher-driven multiplex; ROUTE/TOKEN commands read from stdin (Mode 4) | `--multiplex` |
 | `--no-gui` | Disable the Swing window | `--no-gui` |
 
-`--remote` and `--bind` are optional. In standalone mode, if they are present they
-pre-fill the GUI fields; if absent the GUI shows its defaults. Launching with **no**
+`--remote` and `--bind` are optional. In standalone / multiplex mode, if they are present
+they pre-fill the GUI fields; if absent the GUI shows its defaults. Launching with **no**
 tokens and **no** `--backup-dir` always opens the standalone GUI (Mode 2).
 
 ## How a mode is selected
 
 ```
+--multiplex present                   → Mode 4 (launcher multiplex, stdin-driven)
 env tokens present, or --backup-dir   → Mode 1 (launcher)
 --session-token present               → Mode 3 (CLI)
 neither                               → Mode 2 (standalone GUI)

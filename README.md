@@ -21,7 +21,7 @@ diagnostics, research utilities.
    to turn green, type the target server into **Remote**, and click **Connect**.
 4. In the Hytale client, **Direct Connect** to `localhost`.
 
-That's the standalone flow. There are three launch modes in total — see
+That's the standalone flow. There are four launch modes in total — see
 **[docs/launch-modes.md](docs/launch-modes.md)**.
 
 ## Launch Modes
@@ -31,10 +31,14 @@ That's the standalone flow. There are three launch modes in total — see
 | **1 — Server-jar replacement** | the Hytale launcher (it starts the proxy for you) | playing through the launcher's single-player UI |
 | **2 — Standalone GUI** | the proxy jar directly (double-click) | most users — Windows / Linux |
 | **3 — Standalone CLI** | the jar from a terminal (`--session-token`) | macOS, headless, automation |
+| **4 — Multiplex** | the Meridian launcher (**Use proxy**) drives it via `--multiplex` | routing the whole in-game server browser through the proxy at once |
 
-Mode 1 replaces the game's bundled server file (`HytaleServer.jar` in the Hytale
-install directory) — the launcher then runs the proxy in its place. Modes 2 and 3
-run the proxy jar on its own, alongside an unmodified game install.
+Modes 1–3 proxy **one** server you name. Mode 1 replaces the game's bundled server file
+(`HytaleServer.jar` in the Hytale install directory) — the launcher then runs the proxy in
+its place; Modes 2 and 3 run the proxy jar on its own, alongside an unmodified game install.
+**Mode 4** is launcher-driven: the launcher rewrites the in-game server list onto local
+ports and drives the proxy over its stdin (`ROUTE`/`TOKEN`), so binding is one port per
+server — same window as Mode 2 (its Connect bar still handles manual servers).
 
 The proxy never mints its own Hytale session — Hytale allows one active session per
 account, so it reuses the running game's session. Full setup for each mode:

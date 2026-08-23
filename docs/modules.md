@@ -24,8 +24,17 @@ break them. Only build Layer 1 when you genuinely need raw packets. See
 Modules are **per-server** — isolated so one server's modules cannot run for
 another. The directory depends on the launch mode:
 
-- **Launcher mode:** `…\Saves\<world>\modules\`
-- **Standalone:** `<jar-dir>\<host_port>\modules\` (e.g. `…\45.12.34.56_5520\modules\`)
+- **Launcher (Mode 1):** `…\Saves\<world>\modules\`
+- **Standalone / Multiplex (Modes 2–4):** `<jar-dir>\<host_port>\modules\`
+  (e.g. `…\45.12.34.56_5520\modules\`)
+
+In [multiplex mode](launch-modes.md#mode-4--multiplex-launcher-driven) every routed
+server uses this same `<jar-dir>\<host_port>\modules\` folder, so a server has the same
+module set whether you reach it manually (Mode 2) or through the browser (Mode 4). If a
+server has **no folder yet** and a shared `modules\` folder sits next to the proxy jar,
+that default set is copied into the server's new folder on first use — a convenient way
+to give every new server a baseline, then tune it per server (an existing folder is never
+overwritten).
 
 All module JARs load into one shared class loader. Load order is the topological
 sort of `dependsOn` (a module always loads after its dependencies); `order.json`
