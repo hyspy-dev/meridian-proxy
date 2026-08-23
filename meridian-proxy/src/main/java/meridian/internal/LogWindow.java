@@ -347,7 +347,8 @@ public final class LogWindow {
 
         settingsContent = new JPanel(new BorderLayout());
         settingsContent.setBackground(new Color(20, 20, 20));
-        settingsContent.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // No outer padding here — the scroll pane reaches the edges (scrollbar hugs the right);
+        // a small inset lives inside the scrolled content instead (see WidthTrackingColumn).
 
         settingsContainer.add(settingsHeader, BorderLayout.NORTH);
         settingsContainer.add(settingsContent, BorderLayout.CENTER);
@@ -1009,10 +1010,40 @@ public final class LogWindow {
             panel.add(noLink);
         }
 
-        settingsContent.add(panel, BorderLayout.NORTH);
+        settingsContent.add(scrollSettings(panel), BorderLayout.CENTER);
         settingsContent.revalidate();
         settingsContent.repaint();
         cardLayout.show(mainContainer, "SETTINGS");
+    }
+
+    /**
+     * Wraps a settings panel in a vertical scroll pane that fills the viewport width, so a
+     * module with more settings than the window is tall scrolls instead of being clipped.
+     */
+    private static JScrollPane scrollSettings(javax.swing.JComponent content) {
+        JScrollPane sp = new JScrollPane(new WidthTrackingColumn(content),
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sp.setBorder(null);
+        sp.getViewport().setBackground(new Color(20, 20, 20));
+        sp.getVerticalScrollBar().setUnitIncrement(16);
+        return sp;
+    }
+
+    /** Holds the settings panel, stretching it to the viewport width but keeping its own height. */
+    private static final class WidthTrackingColumn extends JPanel implements javax.swing.Scrollable {
+        WidthTrackingColumn(javax.swing.JComponent content) {
+            super(new BorderLayout());
+            setOpaque(false);
+            setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 8));   // small inset, not the old 20px
+            add(content, BorderLayout.NORTH);
+        }
+
+        @Override public java.awt.Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+        @Override public int getScrollableUnitIncrement(java.awt.Rectangle r, int orient, int dir) { return 16; }
+        @Override public int getScrollableBlockIncrement(java.awt.Rectangle r, int orient, int dir) { return 100; }
+        @Override public boolean getScrollableTracksViewportWidth() { return true; }
+        @Override public boolean getScrollableTracksViewportHeight() { return false; }
     }
 
     private static void openSettings(ModuleEntry entry) {
@@ -1024,7 +1055,7 @@ public final class LogWindow {
 
         settingsTitle.setText(" Settings: " + entry.name);
         settingsContent.removeAll();
-        settingsContent.add(entry.settingsPanel, BorderLayout.NORTH);
+        settingsContent.add(scrollSettings(entry.settingsPanel), BorderLayout.CENTER);
         settingsContent.revalidate();
         settingsContent.repaint();
 
