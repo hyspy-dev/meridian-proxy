@@ -62,6 +62,30 @@ public final class MultiplexProxy {
 
     private final ProxyConfig config;
     private final Map<Integer, Channel> bound = new ConcurrentHashMap<>();
+    /** Live client connections across all routes — drives the shared Connect/Disconnect UI. */
+    private final java.util.concurrent.atomic.AtomicInteger liveClients =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * Drives the same Connect-bar state the standalone path uses: the first client connection
+     * flips the window to the Connected bar (hiding Connect), and the last disconnect flips it
+     * back — reusing {@link LogWindow#onProxyStarted}/{@link LogWindow#onProxyStopped}, not a
+     * duplicate of that behaviour.
+     */
+    private final MultiplexRoute.Listener routeListener = new MultiplexRoute.Listener() {
+        @Override
+        public void onConnected(MultiplexRoute route) {
+            liveClients.incrementAndGet();
+            LogWindow.onProxyStarted(route.originalHost(), route.originalPort(), route.localPort());
+        }
+
+        @Override
+        public void onClosed(MultiplexRoute route) {
+            if (liveClients.decrementAndGet() <= 0) {
+                LogWindow.onProxyStopped();
+            }
+        }
+    };
 
     // Built eagerly (cheap, needed to bind a QUIC listener).
     private NioEventLoopGroup group;
@@ -264,7 +288,7 @@ public final class MultiplexProxy {
         if (bound.containsKey(localPort)) {
             return;
         }
-        final MultiplexRoute route = new MultiplexRoute(localPort, host, remotePort);
+        final MultiplexRoute route = new MultiplexRoute(localPort, host, remotePort, routeListener);
         try {
             Bootstrap b = new Bootstrap();
             b.group(group)

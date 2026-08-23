@@ -18,6 +18,14 @@ public final class MultiplexRoute implements FrontendScope {
 
     private static final Logger log = LoggerFactory.getLogger(MultiplexRoute.class);
 
+    /** Notified on this route's first client connect / last client close, so the owner can drive
+     *  the shared UI (reusing {@code LogWindow.onProxyStarted/onProxyStopped}) instead of the
+     *  route touching the window itself. */
+    public interface Listener {
+        void onConnected(MultiplexRoute route);
+        void onClosed(MultiplexRoute route);
+    }
+
     private final int localPort;
     /** The server this port was assigned to — stable, used to pick the {@code host_port} module folder. */
     private final String originalHost;
@@ -26,13 +34,15 @@ public final class MultiplexRoute implements FrontendScope {
     private volatile String currentRemoteHost;
     private volatile int currentRemotePort;
     private final Set<QuicChannel> liveClients = ConcurrentHashMap.newKeySet();
+    private final Listener listener;
 
-    public MultiplexRoute(int localPort, String remoteHost, int remotePort) {
+    public MultiplexRoute(int localPort, String remoteHost, int remotePort, Listener listener) {
         this.localPort = localPort;
         this.originalHost = remoteHost;
         this.originalPort = remotePort;
         this.currentRemoteHost = remoteHost;
         this.currentRemotePort = remotePort;
+        this.listener = listener;
     }
 
     public String originalHost() { return originalHost; }
@@ -45,6 +55,9 @@ public final class MultiplexRoute implements FrontendScope {
         liveClients.add(ch);
         log.info("multiplex :{} client connected → {}:{} ({} live)",
                 localPort, currentRemoteHost, currentRemotePort, liveClients.size());
+        if (listener != null) {
+            listener.onConnected(this);
+        }
     }
 
     @Override
@@ -52,6 +65,9 @@ public final class MultiplexRoute implements FrontendScope {
         liveClients.remove(ch);
         log.info("multiplex :{} client closed ({} live)", localPort, liveClients.size());
         // Keep the port bound — the multiplex serves the whole range for the session.
+        if (listener != null) {
+            listener.onClosed(this);
+        }
     }
 
     @Override
