@@ -14,35 +14,10 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
-    <finalName>meridian-proxy-${git.commit.id.describe}</finalName>
+    <finalName>meridian-proxy-${project.version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>io.github.git-commit-id</groupId>
-        <artifactId>git-commit-id-maven-plugin</artifactId>
-        <version>9.0.1</version>
-        <executions>
-          <execution>
-            <id>get-git-info</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>revision</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <dotGitDirectory>${project.parent.basedir}/.git</dotGitDirectory>
-          <generateGitPropertiesFile>false</generateGitPropertiesFile>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory>
-          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-          <gitDescribe>
-            <always>true</always>
-            <dirty>-dirty</dirty>
-            <tags>true</tags>
-          </gitDescribe>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
@@ -56,12 +31,11 @@
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>all</shadedClassifierName>
-              <finalName>meridian-proxy-${git.commit.id.describe}-all</finalName>
               <transformers>
                 <transformer>
                   <mainClass>meridian.internal.ProxyServer</mainClass>
                   <manifestEntries>
-                    <Implementation-Version>${git.commit.id.describe}</Implementation-Version>
+                    <Implementation-Version>${project.version}</Implementation-Version>
                   </manifestEntries>
                 </transformer>
               </transformers>

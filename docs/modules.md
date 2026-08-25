@@ -62,7 +62,7 @@ Every module JAR **must** contain `module.json` in its archive root:
 ```json
 {
   "name": "Meridian Minimap",
-  "version": "0.1.0",
+  "version": "${project.version}",
   "main": "meridian.minimap.MinimapModule",
   "priority": 100,
   "minProxyVersion": "1.0.0",
@@ -76,10 +76,15 @@ Every module JAR **must** contain `module.json` in its archive root:
 }
 ```
 
+Keep `version` as the literal `${project.version}` and let Maven filter it (a
+`<resource>` block with `<filtering>true</filtering>` limited to `module.json`), so the
+released jar always states the version it was released as — the tag. A hand-kept copy
+drifts from the pom and misleads `dependsOn` resolution.
+
 | Field | Required | Meaning |
 |-------|----------|---------|
 | `name` | yes | Unique module id; used as the key in other modules' `dependsOn` |
-| `version` | yes | Module SemVer |
+| `version` | yes | Module SemVer — filter it from the pom rather than typing it |
 | `main` | yes | FQCN of the `ProxyModule` implementation (no-args constructor) |
 | `priority` | no (100) | Lower loads earlier, within one `dependsOn` level |
 | `minProxyVersion` / `maxProxyVersion` | no | Proxy SemVer range; checked **before** classloading. Legacy aliases: `minCoreVersion` / `maxCoreVersion` |
@@ -89,6 +94,37 @@ Every module JAR **must** contain `module.json` in its archive root:
 | `requires.services` | no | Service FQCNs a **Layer-2** module expects in the `ServiceRegistry` |
 
 Every incompatibility is a WARN + skip — nothing crashes the proxy.
+
+### Fields the build writes (never you)
+
+Two more fields appear in the `module.json` of a **built** jar. The build writes them —
+the umbrella `build.sh` and the release workflow alike — so do not put them in your
+sources:
+
+| Field | Meaning |
+|-------|---------|
+| `builtFor` | Wire CRC of the protocol the jar was built against |
+| `requiresProtocol` | Whether the module's pom really depends on `meridian-protocol` |
+
+They are separate on purpose: being built *by* the 0.5.9 recipe is not the same as
+*needing* the 0.5.9 protocol. The proxy loads a jar when `requiresProtocol` is false
+(any protocol will do) or when `builtFor` equals the CRC it speaks; otherwise it skips
+it with a log line. That is what lets one module ship a jar per game line, side by
+side, with the right one picked automatically. A jar built by some other pipeline
+carries neither field and is loaded unconditionally, as before.
+
+## Where module jars come from
+
+The proxy loads every `*.jar` in a modules folder — that folder is yours (and the
+standalone user's) to fill.
+
+The launcher does **not** put jars there. It keeps everything it installs in its own
+`store/`, and writes a generated `modules.json` into the folder listing the store jars
+the proxy should also load, each entry stating what the launcher believes that build
+to be. The proxy checks every entry against the jar itself (name, version, `builtFor`)
+and ignores an entry that no longer matches. If a hand-placed jar in the folder and an
+offered one declare the same module `name`, **the jar in the folder wins** — so
+dropping a build in by hand always overrides the launcher.
 
 ## `ProxyModule` and `ModuleContext`
 

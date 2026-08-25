@@ -26,35 +26,45 @@ Rules:
 
 ## Tag conventions
 
-Each artifact prefixes its own tag, so a multi-module repo can carry several:
+Each artifact lives in its own repo now, so a plain `v<semver>` tag is enough:
 
 ```
-api-v1.2.0
-protocol-v-0.6.0-pre.13-1
-proxy-v1.5.0
-core-api-v0.2.0
-core-v0.1.0
+v1.2.0
+v1.2.0-beta.1     # a '-' in the version publishes a GitHub prerelease
 ```
 
-The build reads its artifact-specific tag via `git describe` (the proxy already
-does this for the uber-jar's version string).
+The tag is the only version authority: the release workflow stamps it into the
+pom(s) before building, so the artifact's own version string (the uber-jar's
+`version.properties`, a module's `module.json`) always matches the release. Nothing
+is read from `git describe` any more, and no pom is bumped by hand.
 
-## Cutting a release (manual)
-
-CI is not wired yet (the repos are not on a shared remote). Until then:
+## Cutting a release
 
 ```sh
-# from the meridian-proxy repo root
-mvn clean install                 # builds api + protocol + proxy + uber-jar
-git tag proxy-v1.5.0
-# the uber-jar is meridian-proxy/target/meridian-proxy-<describe>-all.jar
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
-`meridian-core` is its own repo — release it the same way (`core-v…`, `core-api-v…`).
+That is the whole procedure. The repo's `.github/workflows/release.yml` delegates to
+the shared workflow in `hyspy-dev/meridian`, which:
 
-Publish targets, once wired: `meridian-api` / `meridian-protocol` / `meridian-core-api`
-to a Maven repository (GitHub Packages to start) so third-party modules can depend
-on them with `<scope>provided</scope>`; the uber-jar to a GitHub Release.
+1. decides whether this component is game-bound (does its pom depend on
+   `meridian-protocol`?) and, if so, builds one jar per protocol `line/*` branch —
+   each against that line's protocol, with its own `line/<game>` branch as the source
+   when the code diverges there;
+2. stamps `builtFor` (wire CRC) and `requiresProtocol` into every module jar's
+   `module.json`, so a jar always states which protocol it needs;
+3. publishes one GitHub Release with every jar (`<name>-<version>+<game>[-all].jar`)
+   plus a generated `meridian.json` manifest (sha256, size, game line per asset);
+4. pokes the umbrella catalog, which redeploys the launcher's `catalog.json` to
+   GitHub Pages within seconds.
+
+A line that fails to compile is skipped with a warning and listed in the release
+notes — it simply does not appear in the catalog for that game version.
+
+Build-time SDKs (`meridian-api`, `meridian-protocol`, `meridian-core-api`) are not
+published to a Maven repository: every build compiles them from source out of their
+own repos, so a third-party module only needs the umbrella recipe to build.
 
 ## Reacting to a Hytale update
 

@@ -121,15 +121,15 @@ meridian-proxy/target/meridian-proxy-<version>-all.jar
 
 Run that one — the thin jars alongside it are not runnable standalone.
 
-`<version>` comes from `git describe --tags` at build time: `proxy-v1.5.0` on a tag,
-`…-3-gabc1234` between tags, `-dirty` with uncommitted changes. The same string
+`<version>` is the pom version: `1.0.0-SNAPSHOT` for a local build, and the tag's
+version for a release (the release workflow stamps it into the pom). The same string
 appears in the window title and the `Implementation-Version` manifest entry.
 
 ### Releasing
 
-Meridian's artifacts are versioned and tagged independently
-(`api-v…`, `protocol-v…`, `proxy-v…`). The full scheme, tag conventions and the
-Hytale-update workflow are in **[docs/releasing.md](docs/releasing.md)**.
+A release is `git tag v1.2.0 && git push origin v1.2.0`: the shared workflow builds
+one jar per protocol line and publishes them all in a single GitHub Release. See
+**[docs/releasing.md](docs/releasing.md)**.
 
 ## License
 

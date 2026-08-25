@@ -94,21 +94,59 @@ public class ModuleManager {
             }
 
             File[] files = pluginsDir.toFile().listFiles((dir, name) -> name.endsWith(".jar"));
-            if (files == null || files.length == 0) {
+            List<LauncherEntry> offered = readModulesJson(pluginsDir);
+            if ((files == null || files.length == 0) && offered.isEmpty()) {
                 log.warn("No .jar files found in the modules folder!");
                 return;
             }
 
-            // 1. Scan all JARs for metadata.
+            // 1. Scan for metadata, from two sources:
+            //    a) every .jar in this folder — the user's own, exactly as always;
+            //    b) jars offered by modules.json, which the launcher writes to point at its own
+            //       store (it never puts jars in this folder). Each entry declares what the
+            //       launcher believes that build is; we verify it against the jar before use.
+            // A jar is self-describing: the build stamps into its module.json which protocol it
+            // was built for and whether it needs one at all, so several builds of a
+            // protocol-bound module may be offered (one per game line) and only the one this
+            // proxy speaks survives the scan. A hand-placed jar always wins over an offered one.
             Map<String, ModuleMetadataWrapper> discovered = new HashMap<>();
-            for (File file : files) {
+            for (File file : files == null ? new File[0] : files) {
                 try {
                     ModuleMetadataWrapper wrapper = readMetadata(file);
-                    if (wrapper != null) {
-                        discovered.put(wrapper.meta.name, wrapper);
-                    }
+                    if (wrapper == null || !speaksOurProtocol(wrapper.meta, file.getName())) continue;
+                    discovered.put(wrapper.meta.name, wrapper);
                 } catch (Exception e) {
                     log.error("Failed to read metadata from {}: {}", file.getName(), e.toString());
+                }
+            }
+            for (LauncherEntry entry : offered) {
+                try {
+                    if (!entry.file.isFile()) {
+                        log.warn("modules.json offers {}, which is missing — skipped.", entry.file);
+                        continue;
+                    }
+                    ModuleMetadataWrapper wrapper = readMetadata(entry.file);
+                    if (wrapper == null) {
+                        log.warn("modules.json offers {}, which carries no module.json — skipped.", entry.file);
+                        continue;
+                    }
+                    if (!entry.matches(wrapper.meta)) {
+                        log.warn("Skipping {} — modules.json describes it as {} v{} (protocol {}), "
+                                        + "but the jar says {} v{} (protocol {}).",
+                                entry.file.getName(), entry.module, entry.version, entry.builtFor,
+                                wrapper.meta.name, wrapper.meta.version, wrapper.meta.builtFor);
+                        continue;
+                    }
+                    if (!speaksOurProtocol(wrapper.meta, entry.file.getName())) continue;
+                    ModuleMetadataWrapper handPlaced = discovered.get(wrapper.meta.name);
+                    if (handPlaced != null) {
+                        log.info("Ignoring the launcher's {} — {} in the modules folder wins.",
+                                wrapper.meta.name, handPlaced.file.getName());
+                        continue;
+                    }
+                    discovered.put(wrapper.meta.name, wrapper);
+                } catch (Exception e) {
+                    log.error("Failed to read metadata from {}: {}", entry.file, e.toString());
                 }
             }
 
@@ -166,6 +204,76 @@ public class ModuleManager {
         } catch (Exception e) {
             log.error("Error during module scanning: {}", e.toString());
         }
+    }
+
+    /**
+     * A jar offered by the launcher's {@code modules.json}: where it is, plus what the launcher
+     * believes it to be. The jar itself stays the source of truth — {@link #matches} rejects an
+     * entry that no longer describes its file (moved, replaced, rebuilt).
+     */
+    private static class LauncherEntry {
+        final File file;
+        final String module;
+        final String version;
+        final Long builtFor;
+
+        LauncherEntry(File file, String module, String version, Long builtFor) {
+            this.file = file;
+            this.module = module;
+            this.version = version;
+            this.builtFor = builtFor;
+        }
+
+        boolean matches(ModuleMetadata meta) {
+            return (module == null || module.equals(meta.name))
+                    && (version == null || version.equals(meta.version))
+                    && (builtFor == null ? meta.builtFor == null : builtFor.equals(meta.builtFor));
+        }
+    }
+
+    /**
+     * Reads {@code modules.json} — the launcher's offer of jars from its own store, so it never
+     * has to copy anything into the user's modules folder. Absent (the standalone case) or
+     * unreadable = no offers, and the folder scan alone decides what loads.
+     */
+    private static List<LauncherEntry> readModulesJson(Path pluginsDir) {
+        Path file = pluginsDir.resolve("modules.json");
+        if (!Files.isRegularFile(file)) return Collections.emptyList();
+        List<LauncherEntry> out = new ArrayList<>();
+        try (Reader r = Files.newBufferedReader(file)) {
+            com.google.gson.JsonObject root = com.google.gson.JsonParser.parseReader(r).getAsJsonObject();
+            if (!root.has("modules") || !root.get("modules").isJsonArray()) return out;
+            for (com.google.gson.JsonElement el : root.getAsJsonArray("modules")) {
+                if (!el.isJsonObject()) continue;
+                com.google.gson.JsonObject o = el.getAsJsonObject();
+                if (!o.has("path")) continue;
+                Path p = Path.of(o.get("path").getAsString());
+                if (!p.isAbsolute()) p = pluginsDir.resolve(p);
+                out.add(new LauncherEntry(p.toFile(),
+                        o.has("module") ? o.get("module").getAsString() : null,
+                        o.has("version") ? o.get("version").getAsString() : null,
+                        o.has("builtFor") && o.get("builtFor").isJsonPrimitive()
+                                ? o.get("builtFor").getAsLong() : null));
+            }
+            log.info("modules.json offers {} jar(s) from the launcher's store.", out.size());
+        } catch (Exception e) {
+            log.warn("Couldn't read {}: {}", file, e.toString());
+        }
+        return out;
+    }
+
+    /**
+     * Whether a jar's build stamp allows it on this proxy: a module that declares
+     * {@code requiresProtocol} must have been built for the CRC we speak. Unstamped jars, and
+     * modules that don't need the protocol, always pass (the recipe that produced them is
+     * irrelevant). Skips are logged, never fatal.
+     */
+    private static boolean speaksOurProtocol(ModuleMetadata meta, String jarName) {
+        if (!Boolean.TRUE.equals(meta.requiresProtocol) || meta.builtFor == null) return true;
+        if (meta.builtFor == meridian.protocol.ProtocolSettings.PROTOCOL_CRC) return true;
+        log.info("Skipping {} — built for protocol {} (this proxy speaks {}).",
+                jarName, meta.builtFor, meridian.protocol.ProtocolSettings.PROTOCOL_CRC);
+        return false;
     }
 
     // ------------------------------------------------------------------
@@ -532,6 +640,17 @@ public class ModuleManager {
 
         Map<String, String> dependsOn;
         Requires requires;
+
+        /**
+         * Build stamp, written into module.json by the build (umbrella build.sh / release CI),
+         * never by hand: {@code builtFor} is the wire CRC of the build, {@code requiresProtocol}
+         * whether the module's pom really depends on meridian-protocol. Being built BY a recipe
+         * is not the same as depending on its protocol — a module with
+         * {@code requiresProtocol=false} loads on any proxy. Both absent = jar from some other
+         * build; loaded unconditionally, as before.
+         */
+        Long builtFor;
+        Boolean requiresProtocol;
 
         String effectiveMinVersion() {
             return minProxyVersion != null ? minProxyVersion : minCoreVersion;

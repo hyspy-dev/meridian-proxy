@@ -4,10 +4,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Build-time version metadata. Populated by Maven resource filtering from
- * {@code git describe --tags}, so the displayed version always tracks the
- * latest git tag (e.g. "v1.0.0" exactly on a tag, "v1.0.0-3-gabc1234-dirty"
- * in between).
+ * Build-time version metadata, filtered by Maven from the pom version — which the release
+ * workflow sets from the tag, so a released build reports exactly its release version and a
+ * local build reports the development version ("1.0.0-SNAPSHOT").
  */
 public final class Version {
     public static final String VERSION;
