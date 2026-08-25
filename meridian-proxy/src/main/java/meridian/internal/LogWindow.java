@@ -582,7 +582,8 @@ public final class LogWindow {
         if (addr == null) return;
         Path dir = ProxyConfig.serverModulesDir(addr.host(), addr.port());
         try {
-            Files.createDirectories(dir);
+            // Seeds a brand-new folder from the default module set, exactly like connecting does.
+            ProxyConfig.createServerModulesDir(dir);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame,
                     "Could not create " + dir.toAbsolutePath() + "\n" + e,

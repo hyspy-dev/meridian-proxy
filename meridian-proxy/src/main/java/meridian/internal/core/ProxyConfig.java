@@ -1,13 +1,16 @@
 package meridian.internal.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Encapsulates all configuration parameters for the Hytale Proxy.
@@ -174,6 +177,41 @@ public record ProxyConfig(
      */
     public static Path serverModulesDir(String host, int port) {
         return jarDir().resolve(sanitizeHostPort(host, port)).resolve("modules");
+    }
+
+    /** The shared default module set, {@code <jar-dir>/modules}, new servers are seeded from. */
+    public static Path defaultModulesDir() {
+        return jarDir().resolve("modules");
+    }
+
+    /**
+     * Creates a per-server modules folder, seeding a brand-new one from
+     * {@link #defaultModulesDir()} — the <b>whole folder</b>, not just the jars: {@code
+     * disabled/}, the launcher's {@code modules.json} offer, any per-module settings a user
+     * keeps there. An existing folder is never touched, so per-server customisation survives.
+     *
+     * @return true when the folder was created and seeded from the defaults
+     */
+    public static boolean createServerModulesDir(Path serverModulesDir) throws IOException {
+        if (serverModulesDir == null || Files.exists(serverModulesDir)) return false;
+        Files.createDirectories(serverModulesDir);
+        Path defaults = defaultModulesDir();
+        if (!Files.isDirectory(defaults) || defaults.toAbsolutePath().normalize()
+                .equals(serverModulesDir.toAbsolutePath().normalize())) {
+            return false;   // nothing to seed from (or this IS the default folder)
+        }
+        try (Stream<Path> tree = Files.walk(defaults)) {
+            for (Path src : (Iterable<Path>) tree::iterator) {
+                Path dst = serverModulesDir.resolve(defaults.relativize(src).toString());
+                if (Files.isDirectory(src)) {
+                    Files.createDirectories(dst);
+                } else {
+                    Files.createDirectories(dst.getParent());
+                    Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
+        return true;
     }
 
     /** Returns the value of {@code key} (as {@code key value} or {@code key=value}) or null. */

@@ -26,16 +26,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 /**
  * Range/multiplex mode: bind <b>many</b> local ports (one per server) — all sharing a single
@@ -234,31 +231,15 @@ public final class MultiplexProxy {
 
     /**
      * First time a server is seen (its {@code <host_port>/modules} folder doesn't exist yet),
-     * seed it from a shared default {@code <jar>/modules} folder if the user dropped one there —
-     * so a new server starts with the default module set, then can be customised per server.
+     * seed it from the shared default {@code <jar>/modules} folder — so a new server starts
+     * with the default module set, then can be customised per server.
      */
     private void seedFromDefaultModules(Path serverModulesDir) {
-        if (Files.exists(serverModulesDir)) {
-            return;   // server already has its own folder — never overwrite it
-        }
-        Path defaults = ProxyConfig.jarDir().resolve("modules");
-        if (!Files.isDirectory(defaults)) {
-            return;   // no default modules folder next to the jar
-        }
         try {
-            Files.createDirectories(serverModulesDir);
-            try (Stream<Path> tree = Files.walk(defaults)) {
-                for (Path src : (Iterable<Path>) tree::iterator) {
-                    Path dst = serverModulesDir.resolve(defaults.relativize(src).toString());
-                    if (Files.isDirectory(src)) {
-                        Files.createDirectories(dst);
-                    } else {
-                        Files.createDirectories(dst.getParent());
-                        Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }
+            if (ProxyConfig.createServerModulesDir(serverModulesDir)) {
+                log.info("Multiplex: seeded {} from default modules {}",
+                        serverModulesDir, ProxyConfig.defaultModulesDir());
             }
-            log.info("Multiplex: seeded {} from default modules {}", serverModulesDir, defaults);
         } catch (IOException e) {
             log.warn("Multiplex: failed to seed modules for {}: {}", serverModulesDir, e.toString());
         }

@@ -118,6 +118,12 @@ carries neither field and is loaded unconditionally, as before.
 The proxy loads every `*.jar` in a modules folder — that folder is yours (and the
 standalone user's) to fill.
 
+A server connected to for the first time gets its `<host_port>/modules` folder seeded from
+the shared default `<jar-dir>/modules` — the **whole folder**: jars, `disabled/`, any
+settings files, and the launcher's `modules.json`. That happens however the folder comes
+into being (launcher multiplex, a manual connect, or the "Create folder" button). An
+existing folder is never overwritten, so per-server customisation is safe.
+
 The launcher does **not** put jars there. It keeps everything it installs in its own
 `store/`, and writes a generated `modules.json` into the folder listing the store jars
 the proxy should also load, each entry stating what the launcher believes that build
