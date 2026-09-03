@@ -270,9 +270,12 @@ public class ModuleManager {
      */
     private static boolean speaksOurProtocol(ModuleMetadata meta, String jarName) {
         if (!Boolean.TRUE.equals(meta.requiresProtocol) || meta.builtFor == null) return true;
-        if (meta.builtFor == meridian.protocol.ProtocolSettings.PROTOCOL_CRC) return true;
+        // builtFor carries the CRC as the unsigned uint32 every textual form uses (pom versions,
+        // module.json, the catalog); PROTOCOL_CRC holds the same bits as a signed int.
+        long ours = meridian.protocol.ProtocolSettings.PROTOCOL_CRC & 0xFFFFFFFFL;
+        if (meta.builtFor == ours) return true;
         log.info("Skipping {} — built for protocol {} (this proxy speaks {}).",
-                jarName, meta.builtFor, meridian.protocol.ProtocolSettings.PROTOCOL_CRC);
+                jarName, meta.builtFor, ours);
         return false;
     }
 

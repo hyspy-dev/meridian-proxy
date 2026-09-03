@@ -45,6 +45,8 @@ for FROM in "$SRC/target/generated-sources/java/com/hypixel/hytale/protocol" \
         -e 's/\r$//' -e 's/$/\r/' "$FROM/$f" > "$DST/$f"
   done)
 done
+# Hytale's own version stamp (crc as uint32 + buildNumber); the pom guard checks against it
+cp "$SRC/../../Protocol/protocol-version.json" "$DST/../../../resources/protocol-version.json"
 ```
 
 ### The one local patch
@@ -74,6 +76,23 @@ generated files; they are overwritten on the next sync.
    only logs on mismatch, so a wrong sync point shows up as misparsed packets
    rather than a refused connection.
 
+## The CRC in text is unsigned
+
+`ProtocolSettings.PROTOCOL_CRC` is a signed Java int, but everywhere the CRC is written
+down it is the unsigned uint32 of the same bits: Hytale's own `Protocol/protocol-version.json`
+and its discovery heartbeat, the `meridian-protocol` pom version, `meridian.protocol.version`
+in consumer poms, `crc` in the umbrella `versions/*.conf`, `builtFor` in module.json, and the
+catalog (whose builder only accepts `\d+` versions). The first negative CRC was build 209
+(0.6.3): -423274174 signed = 3871693122 unsigned. `ModuleManager.speaksOurProtocol` and the
+launcher's `ProxyBuild.crcOf` mask to uint32 before comparing; the pom guard checks the
+version against the json copy (and the json's buildNumber against `ProtocolSettings`), so it
+never has to convert.
+
+Bump checklist: the `meridian-protocol` pom version; the `meridian.protocol.version` property
+in meridian-proxy, meridian-core, meridian-blueprint, meridian-client-control and
+meridian-dupe-test; a `versions/<game>.conf` in the umbrella (an exact file wins over the
+`X.Y.X` wildcard, which matters once two builds of one minor differ, as 0.6.0-pre.13 and 0.6.3 do).
+
 ## `PROTOCOL_VERSION` is the QUIC ALPN
 
 Separate from the CRC and the build number, `ProtocolSettings.PROTOCOL_VERSION`
@@ -95,8 +114,18 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **208**, CRC **245610536**, protocol version 3 — 367 packets, 423 structs,
-169 enums. Taken from the `pre-release` branch (`0.6.0-pre.13`, 2026-08-20).
+Build **209**, CRC **3871693122** (signed -423274174), protocol version 3 - 368 packets,
+423 structs, 169 enums. Taken from the `release` branch (`0.6.3`, Sync 2026-08-28).
+
+Changes from build 208 (`0.6.0-pre.13`, CRC 245610536, the previous sync point): one new
+packet, `ConfigureIcePeer` (254, ToServer, ICE relay credentials), and `ServerListener`
+gained `wireBytesReceived` / `wireBytesSent` defaults. No struct, enum or id changed.
+
+Next up is `0.7.0-pre.1` = pre-release build 227 / CRC 636045167 (Sync 2026-09-03): four
+new packets (93 UpdateBeamConfigs, 123 SelfGrantEntitlement, 185 WorldGameplayConfig, 254),
+`InteractionType` renumbered (Ability4 = 5 inserted), `ShowEventTitle.isMajor` -> `style`,
+`UpdatePlayerInventory` + `abilitySlots`/`runeBag`, `ItemBase.ability`, and a codegen-wide
+nesting-depth guard (`ReadCursor.MAX_NESTING_DEPTH = 32`) on polymorphic decodes.
 
 Notable changes from the previous sync point (build 100, CRC 1316766548, the
 `release-14` decompile):
