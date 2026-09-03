@@ -131,8 +131,12 @@ Changes from build 209 to 227:
   `ConfigureIcePeer` (254, ToServer, already in 209).
 - `InteractionType` renumbered: `Ability4 = 5` inserted, everything from `Use` on shifted by
   one. The proxy only ever names the constants, so a regen is enough.
-- `UpdatePlayerInventory` gained `abilitySlots` and `runeBag` sections. `InventoryTracker`,
-  `PlayerStateHandler` and dupe-test enumerate sections by hand and do not know them yet.
+- `UpdatePlayerInventory` gained `abilitySlots` and `runeBag` sections (server section ids
+  -11 and -12). `PlayerStateHandler` exposes them as the `AbilitySlots` / `RuneBag` panels and
+  dupe-test counts them; `InventoryTracker` still mirrors only hotbar / utility / tools (all a
+  forge needs). Same sync fixed `PlayerStateHandler.panel()`, which mapped `SetActiveSlot` ids
+  as 0..4 while the server sends `InventoryComponent.*_SECTION_ID` (-1 hotbar, -5 utility,
+  -8 tools, ...), so every active-slot update had landed on `Backpack`.
 - `ShowEventTitle.isMajor` (boolean) became `style` (`EventTitleStyle`: Default / Major /
   GoblinBreach). `UpdateLanguage.language` is non-null now, max 105 bytes (Connect too).
 - `ItemBase.ability` (`ItemAbility`: slot, cooldown, cost, `AbilityCostType`, tags,
