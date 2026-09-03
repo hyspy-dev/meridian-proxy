@@ -114,18 +114,38 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **209**, CRC **3871693122** (signed -423274174), protocol version 3 - 368 packets,
-423 structs, 169 enums. Taken from the `release` branch (`0.6.3`, Sync 2026-08-28).
+Build **227**, CRC **636045167**, protocol version 3 - 371 packets, 431 structs, 173 enums.
+Taken from the `pre-release` branch (`0.7.0-pre.1`, Sync 2026-09-03). The umbrella recipe is
+the `versions/0.7.X.conf` wildcard.
 
-Changes from build 208 (`0.6.0-pre.13`, CRC 245610536, the previous sync point): one new
-packet, `ConfigureIcePeer` (254, ToServer, ICE relay credentials), and `ServerListener`
-gained `wireBytesReceived` / `wireBytesSent` defaults. No struct, enum or id changed.
+The 0.6 line stays on build **209** / CRC **3871693122** (signed -423274174): every live 0.6
+build shares it - `0.6.0-pre.13.1` (the hotfix that moved it off 245610536) and `0.6.0`..`0.6.3`
+on `release`. Its recipe is the `versions/0.6.X.conf` wildcard; build 208 (`0.6.0-pre.13`,
+CRC 245610536) matches no installed game any more. 208 -> 209 only added `ConfigureIcePeer`
+(254, ToServer) and two default methods on `ServerListener`.
 
-Next up is `0.7.0-pre.1` = pre-release build 227 / CRC 636045167 (Sync 2026-09-03): four
-new packets (93 UpdateBeamConfigs, 123 SelfGrantEntitlement, 185 WorldGameplayConfig, 254),
-`InteractionType` renumbered (Ability4 = 5 inserted), `ShowEventTitle.isMajor` -> `style`,
-`UpdatePlayerInventory` + `abilitySlots`/`runeBag`, `ItemBase.ability`, and a codegen-wide
-nesting-depth guard (`ReadCursor.MAX_NESTING_DEPTH = 32`) on polymorphic decodes.
+Changes from build 209 to 227:
+
+- Four new packets, no renumbering of existing ids: `UpdateBeamConfigs` (93, ToClient),
+  `SelfGrantEntitlement` (123, ToClient), `WorldGameplayConfig` (185, ToClient),
+  `ConfigureIcePeer` (254, ToServer, already in 209).
+- `InteractionType` renumbered: `Ability4 = 5` inserted, everything from `Use` on shifted by
+  one. The proxy only ever names the constants, so a regen is enough.
+- `UpdatePlayerInventory` gained `abilitySlots` and `runeBag` sections. `InventoryTracker`,
+  `PlayerStateHandler` and dupe-test enumerate sections by hand and do not know them yet.
+- `ShowEventTitle.isMajor` (boolean) became `style` (`EventTitleStyle`: Default / Major /
+  GoblinBreach). `UpdateLanguage.language` is non-null now, max 105 bytes (Connect too).
+- `ItemBase.ability` (`ItemAbility`: slot, cooldown, cost, `AbilityCostType`, tags,
+  attributes); `ChangeStatInteraction` / `StatsConditionInteraction.useAbilityCost`,
+  `TriggerCooldownInteraction.useAbilityCooldown`, `ChangeStateInteraction.requireBlockPlacement`,
+  new `GroundedConditionInteraction`; `DurabilityOperator` renamed `ComparisonOperator`.
+- `ClientFeature` lost `DisplayHealthBars` / `DisplayCombatText` / `CanHide*`; they moved
+  into `CombatConfig` / `PlayerConfig` / `WorldConfig` inside `WorldGameplayConfig`.
+- Smaller: `ItemGlider` dive fields, `ModelVFX.opacity`, `CombatTextUpdate.color`,
+  `AOECircleSelector` / `StabSelector.sizeAttribute`, `ComponentUpdateType.PreventEmotes`,
+  `WindowType.Memories`, `SwitchTo.Transparency`, `SyncPlayerPreferences.activateTriggerVolumes`.
+- Codegen: every polymorphic `toObject` counts nesting through `ReadCursor.enterNested`
+  (`MAX_NESTING_DEPTH = 32`, in the handwritten io tree); `ProtocolException.nestingTooDeep`.
 
 Notable changes from the previous sync point (build 100, CRC 1316766548, the
 `release-14` decompile):
