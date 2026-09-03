@@ -53,6 +53,15 @@ public class RouteGuard implements PacketHandler {
             log.info("[S2C] Pkt 18 ClientReferral to {}:{} — following: backend retargeted, "
                     + "rewriting hostTo to the proxy ({}:{}).",
                     realHost, realPort, scope.selfHost(), scope.localPort());
+            if (scope.localPort() > 0x7FFF) {
+                // The field is a signed 16-bit port: anything above 32767 reaches the client as a
+                // negative number and the redirect dies there ("port out of range"). Better to let
+                // the player through to the server directly than to send them nowhere.
+                log.error("[S2C] Pkt 18 ClientReferral: this proxy is on port {}, which a referral "
+                        + "cannot carry (the field is a signed 16-bit port) — forwarding the real "
+                        + "address, so this hop bypasses the proxy", scope.localPort());
+                return Action.FORWARD;
+            }
             scope.beginRedirect(realHost, realPort);
             // Point the client back at the proxy; leave the referral data blob intact —
             // the client replays it to the new server as Connect.referralData.
