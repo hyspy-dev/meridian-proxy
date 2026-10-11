@@ -42,12 +42,16 @@ for FROM in "$SRC/target/generated-sources/java/com/hypixel/hytale/protocol" \
     case "$f" in ./io/netty/*) continue ;; esac
     mkdir -p "$DST/$(dirname "$f")"
     sed -e 's/com\.hypixel\.hytale\.protocol/meridian.protocol/g' \
-        -e 's/\r$//' -e 's/$/\r/' "$FROM/$f" > "$DST/$f"
+        -e 's/\r$//' -e '$!s/$/\r/' "$FROM/$f" > "$DST/$f"
   done)
 done
 # Hytale's own version stamp (crc as uint32 + buildNumber); the pom guard checks against it
 cp "$SRC/../../Protocol/protocol-version.json" "$DST/../../../resources/protocol-version.json"
 ```
+
+The `$!` matters: the generated files end without a final newline, and a plain
+`s/$/\r/` leaves a lone `\r` after the closing brace. Git's CRLF normalisation
+only touches `\r\n` pairs, so every file in the tree then shows up as modified.
 
 ### The one local patch
 
@@ -63,16 +67,23 @@ generated files; they are overwritten on the next sync.
 
 ## After regenerating
 
-1. `mvn -o -DskipTests install` in `meridian-proxy`, then `build-releases.ps1`.
-   The script cleans each module, so a stale `target/` cannot hide a break —
-   plain `mvn package` without `clean` silently skips recompilation when only
-   the dependency jar changed, and reports a false success.
-2. The compiler finds renamed and removed fields. It does **not** find fields
+1. Check the file list against the upstream diff. `git status` in
+   `meridian-protocol` should name exactly the files that
+   `git diff --name-status <old-sync> <new-sync>` names under the two roots in
+   the shared source, plus the pom and `protocol-version.json`. An extra file
+   means the tree had drifted: `io/PacketIO.java` changed upstream in build 232,
+   but the 242 sync missed it, and it was only caught at 251.
+2. Build the whole chain with `clean` (`protocol → core → proxy → launcher →
+   modules`). To build working trees before anything is pushed, point an umbrella
+   recipe at local paths with no branch column. Plain `mvn package` without
+   `clean` silently skips recompilation when only the dependency jar changed,
+   and reports a false success.
+3. The compiler finds renamed and removed fields. It does **not** find fields
    that were *added*: a packet the proxy builds with a no-arg constructor now
    carries new fields at their defaults. Diff the field lists of every protocol
    type the proxy constructs and confirm each new field's default is the
    behaviour you want.
-3. Check `ProtocolSettings` moved to the expected CRC/build. `ConnectObserver`
+4. Check `ProtocolSettings` moved to the expected CRC/build. `ConnectObserver`
    only logs on mismatch, so a wrong sync point shows up as misparsed packets
    rather than a refused connection.
 
@@ -89,9 +100,11 @@ version against the json copy (and the json's buildNumber against `ProtocolSetti
 never has to convert.
 
 Bump checklist: the `meridian-protocol` pom version; the `meridian.protocol.version` property
-in meridian-proxy, meridian-core, meridian-blueprint, meridian-client-control and
-meridian-dupe-test; a `versions/<game>.conf` in the umbrella (an exact file wins over the
-`X.Y.X` wildcard, which matters once two builds of one minor differ, as 0.6.0-pre.13 and 0.6.3 do).
+in the poms that depend on the protocol — meridian-proxy, meridian-core and
+meridian-client-control (the umbrella and CI override it with `-D`, but a plain local `mvn` build
+reads the pin and can pull a stale protocol out of `~/.m2`); the `crc` in the umbrella's
+`versions/<game>.conf` (an exact file wins over the `X.Y.X` wildcard, which matters once two
+builds of one minor differ, as 0.6.0-pre.13 and 0.6.3 do).
 
 ## `PROTOCOL_VERSION` is the QUIC ALPN
 
@@ -114,15 +127,75 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **227**, CRC **636045167**, protocol version 3 - 371 packets, 431 structs, 173 enums.
-Taken from the `pre-release` branch (`0.7.0-pre.1`, Sync 2026-09-03). The umbrella recipe is
-the `versions/0.7.X.conf` wildcard.
+Build **251**, CRC **2982205573** (signed -1312761723), protocol version 3 - 384 packets,
+444 structs, 177 enums. Taken from the `pre-release` branch (`0.7.0-pre.5.1`, Sync 2026-10-02;
+Sync 2026-10-01 is the same build). The umbrella recipe is the `versions/0.7.X.conf` wildcard.
+Builds in between: 232 (`0.7.0-pre.2`, CRC 322808978), 242 (`0.7.0-pre.3`, CRC 3666756532),
+245 (`0.7.0-pre.4`, CRC 1902590056).
 
 The 0.6 line stays on build **209** / CRC **3871693122** (signed -423274174): every live 0.6
 build shares it - `0.6.0-pre.13.1` (the hotfix that moved it off 245610536) and `0.6.0`..`0.6.3`
 on `release`. Its recipe is the `versions/0.6.X.conf` wildcard; build 208 (`0.6.0-pre.13`,
 CRC 245610536) matches no installed game any more. 208 -> 209 only added `ConfigureIcePeer`
 (254, ToServer) and two default methods on `ServerListener`.
+
+Changes from build 242 to 251 (nothing the proxy, core or a module touches; no code changes):
+
+- Handshake untouched: `Connect` / auth / `ClientReferral` / `ServerInfo` unchanged, ALPN still 3,
+  the handwritten root (`Packet`, `io/*`) has no upstream diff.
+- Seven new packets: `UpdateAbilityKeywords` (94, ToClient, compressed; arrives before
+  `UpdateItems` during setup), `ExecuteServersideHudCommand` (207, ToServer), `InitViewModelTypes`
+  (208, ToClient), `UpdateServersideHud` (209, ToClient), `OpenChapterRewardsPage` (220, ToClient),
+  `ChapterRewardsPageResult` (221, ToServer), `DismissServersidePage` (527, ToServer).
+- Renumbered: `UpdateServersideUIPage` 1200 -> 205, `ExecuteServersidePageCommand` 1202 -> 206
+  (`InitViewModelTypes` was 1203 in build 245). No other id moved.
+- `WorldGameplayConfig` (185) is variable-size now: `WorldConfig` gained a nullable-bits byte and
+  `blockedRootInteractionTagIndexes`, so its fixed fields shifted by one byte.
+- `UpdateBossBar.hardMode`, bit-packed with `hide` into the byte at offset 5.
+- `ItemAbility` (inside `ItemBase`): the tag / applies-to arrays became four ability-keyword
+  index arrays; `AbilitySlot.Primary` renamed `Core` (same value 0); new `AbilityKeyword`.
+- `StateDelta` gained a nullable `StateFade fade` (13 -> 40 bytes), which changes the wire form
+  of every sound event, audio category, ambience FX and music container that embeds it.
+- Serverside UI reworked: `UpdateServersideUIPage.id`, `ExecuteServersidePageCommand.pageId` ->
+  `id`, `InitServersideUICommand` lost `id` and gained `HudWidgetSlot` / `order` /
+  `ServersidePageLifetime`; the three `...ServersideUIProperty` commands renamed
+  `...ServersideUICommand`, plus `RemoveServersideUICommand` (5) and
+  `SetVisibilityServersideUICommand` (6); `UIDataValue` gained `UIFormattedMessageDataValue` (16)
+  and `UIColorDataValue` (17); `Page.ChapterRewards` (10) appended.
+- No server-side change to the blobs core and world-downloader parse by hand (`SetChunk`
+  palettes, light octree, `SetFluids`, environments, heightmap, tintmap, `MapImage`), nor to the
+  region-file formats the downloader writes.
+
+Changes from build 227 to 242 (synced as one step at 242; `meridian-core` `WorldChunks` and
+`meridian-world-downloader` were adapted to the new chunk packets in the same step):
+
+- Six new packets, no renumbering: `UpdateBlockDamages` (117, ToClient, Chunks), `ServerSetHeight`
+  (183, ToClient, Chunks), `ServerSetHeights` (184, ToClient, Chunks), `UpdateRecurringWorldEvents`
+  (255, ToClient), `RemoveRecurringWorldEvents` (256, ToClient), `AssetEditorUpdateAssetPackManifest`
+  (359, ToServer). Id 315 changed meaning: `AssetEditorUpdateAssetPack` (Both) became
+  `AssetEditorAssetPackUpdated` (ToClient); the client->server half moved to 359.
+- No enum renumbering. Appended: `ComponentUpdateType.PreventDebugScreens` (31, empty
+  `PreventDebugScreensUpdate`), `Page.Chapters` (9). New: `SectionEnvironmentsMode`
+  (`Uniform` / `Columns`), `MapMarkerIconSize` (`Default` / `Major`).
+- `SetColumn` (138): `heightmap` is a fixed `int[1024]` inline at offset 8 (was a palette-encoded
+  `byte[]`), `environments` removed, `tintmap` follows at 4104. `SetChunkHeightmap` (132) is a
+  fixed 4104 bytes (`x`, `z`, `int[1024]`).
+- `SetChunkEnvironments` (134) is per section now (`y` added). Payload: a `SectionEnvironmentsMode`
+  byte, then one varint id (`Uniform`) or 1024 per-column run lists (`Columns`).
+- Heightmap deltas: `ServerSetHeight` (world-block `x`, `z`, `height`) for one changed column,
+  `ServerSetHeights` (column `x`, `z` + `SetHeightCmd{short index, int height}[]`, `index = z<<5 | x`)
+  for 2..511, a full `SetChunkHeightmap` above that.
+- `MapMarker`: `iconSize` (byte at 38) and nullable `compassImage`; fixed block 38 -> 39, every
+  offset slot shifted by one, so the `UpdateWorldMap` marker stride is 63.
+- `PortalDef.explorationSeconds` + `breachSeconds` -> `durationSeconds`; `PortalState.breaching`
+  -> `bonusSeconds` (int). Music timing: `BarBeatDuration.beats` is a float, fades and
+  `StateTransition.duration` / `delay` are `BarBeatDuration`, `syncTo` is `MusicSync`.
+- Asset editor: `AssetEditorAssetPackSetup.packs` is `Map<String, AssetPack>`; `isReadOnly` on the
+  fetch replies and `AssetInheritanceTreeNode`. Smaller: `ItemMovementSettings.extraJumpLocalSoundEventIndex`.
+- Handwritten root: `io/PacketIO` (changed at 232) records the wire size of uncompressed packets in
+  its stats; no wire-format effect. This file was missed by the 242 sync and only came in at 251.
+- Unchanged: `SetChunk`, `SetChunkTintmap`, `SetFluids`, `UnloadChunks`, `ClearChunks`, `JoinWorld`,
+  `EntityUpdates`, `MapMarkerComponent`.
 
 Changes from build 209 to 227:
 

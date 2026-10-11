@@ -362,7 +362,7 @@ original raw frame unchanged — the stream is never corrupted.
 | `initialMaxStreamsBidi` | 128 | Bidirectional stream limit |
 | `initialMaxStreamsUni` | 128 | Unidirectional stream limit |
 | `congestionControl` | BBR | Bandwidth-optimized algorithm |
-| `applicationProtocols` | `hytale/2`, `hytale/1` | ALPN negotiation |
+| `applicationProtocols` | `hytale/3`, `hytale/2` | ALPN negotiation; `HytaleAlpn` derives both from `ProtocolSettings.PROTOCOL_VERSION` |
 | `SO_RCVBUF` / `SO_SNDBUF` | 8 MB / 4 MB | UDP socket buffers, set on both datagram channels |
 
 The flow-control windows and UDP socket buffers are kept generous on purpose:
