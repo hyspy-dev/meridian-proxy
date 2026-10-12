@@ -47,6 +47,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *       no restart); server-scope tokens are re-derived from it on the next connection.</li>
  *   <li>{@code ROUTE <localPort> <host> <port>} — bind a local port that relays to that
  *       server.</li>
+ *   <li>{@code SCOPE <localPort> <name>} — load that port's modules from
+ *       {@code <jar>/<name>/modules} instead of the server's own {@code <host_port>} folder. Sent
+ *       before the ROUTE, for servers that are a new address every time (a matchmade minigame
+ *       is a new server per match, but one module set per game type).</li>
  * </ul>
  *
  * <p>Lazy by design: binding an idle port is cheap; the heavy work — deriving tokens and loading
@@ -59,6 +63,8 @@ public final class MultiplexProxy {
 
     private final ProxyConfig config;
     private final Map<Integer, Channel> bound = new ConcurrentHashMap<>();
+    /** Local port → module folder name, for routes whose modules are not kept per address. */
+    private final Map<Integer, String> scopes = new ConcurrentHashMap<>();
     /** Live client connections across all routes — drives the shared Connect/Disconnect UI. */
     private final java.util.concurrent.atomic.AtomicInteger liveClients =
             new java.util.concurrent.atomic.AtomicInteger();
@@ -166,6 +172,13 @@ public final class MultiplexProxy {
                         log.warn("Multiplex: bad ROUTE command: {}", line);
                     }
                 }
+                case "SCOPE" -> {
+                    if (p.length >= 3) {
+                        scopes.put(Integer.parseInt(p[1]), p[2]);
+                    } else {
+                        log.warn("Multiplex: bad SCOPE command: {}", line);
+                    }
+                }
                 default -> log.warn("Multiplex: unknown control command: {}", cmd);
             }
         } catch (RuntimeException e) {
@@ -213,12 +226,16 @@ public final class MultiplexProxy {
 
     /**
      * A FRESH module runtime for one connection, loaded from that server's
-     * {@code <jar>/<host_port>/modules} folder — exactly like {@link ConnectionScope}, which
-     * loads on connect and shuts down on disconnect. Loading fresh each time means module jars
-     * dropped in between sessions are picked up, and each connection gets a clean lifecycle.
+     * {@code <jar>/<host_port>/modules} folder — or, for a route the launcher gave a scope, from
+     * {@code <jar>/<scope>/modules} — exactly like {@link ConnectionScope}, which loads on connect
+     * and shuts down on disconnect. Loading fresh each time means module jars dropped in between
+     * sessions are picked up, and each connection gets a clean lifecycle.
      */
     private ModuleManager loadModulesFor(MultiplexRoute route) {
-        Path dir = ProxyConfig.serverModulesDir(route.originalHost(), route.originalPort());
+        String scope = scopes.get(route.localPort());
+        Path dir = scope != null
+                ? ProxyConfig.scopeModulesDir(scope)
+                : ProxyConfig.serverModulesDir(route.originalHost(), route.originalPort());
         seedFromDefaultModules(dir);
         log.info("Multiplex: loading modules for {}:{} from {}",
                 route.originalHost(), route.originalPort(), dir);

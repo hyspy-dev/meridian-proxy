@@ -127,17 +127,38 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **251**, CRC **2982205573** (signed -1312761723), protocol version 3 - 384 packets,
-444 structs, 177 enums. Taken from the `pre-release` branch (`0.7.0-pre.5.1`, Sync 2026-10-02;
-Sync 2026-10-01 is the same build). The umbrella recipe is the `versions/0.7.X.conf` wildcard.
-Builds in between: 232 (`0.7.0-pre.2`, CRC 322808978), 242 (`0.7.0-pre.3`, CRC 3666756532),
-245 (`0.7.0-pre.4`, CRC 1902590056).
+Build **258**, CRC **3908406161** (signed -386561135), protocol version 3 - 389 packets,
+445 structs, 177 enums. Taken from the `release` branch (`0.7.0`, Sync 2026-10-12) onto
+`line/0.7.X`. The umbrella recipe is the `versions/0.7.X.conf` wildcard.
+
+The last pre-release, `0.7.0-pre.5.1`, is frozen on build **251** / CRC **2982205573** (signed
+-1312761723; `pre-release` Sync 2026-10-02): `line/0.7.0-pre.5.1` in `meridian-protocol` and the
+exact recipe `versions/0.7.0-pre.5.1.conf`, which wins over the wildcard. Everything else builds
+from the same sources for both lines - nothing the components use differs between 251 and 258.
+The launcher prefers a build named for exactly the game over the `0.7.X` one, both when it picks
+module builds and when it picks the proxy. Builds before 251: 232 (`0.7.0-pre.2`, CRC 322808978),
+242 (`0.7.0-pre.3`, CRC 3666756532), 245 (`0.7.0-pre.4`, CRC 1902590056).
 
 The 0.6 line stays on build **209** / CRC **3871693122** (signed -423274174): every live 0.6
 build shares it - `0.6.0-pre.13.1` (the hotfix that moved it off 245610536) and `0.6.0`..`0.6.3`
 on `release`. Its recipe is the `versions/0.6.X.conf` wildcard; build 208 (`0.6.0-pre.13`,
 CRC 245610536) matches no installed game any more. 208 -> 209 only added `ConfigureIcePeer`
 (254, ToServer) and two default methods on `ServerListener`.
+
+Changes from build 251 to 258 (nothing the proxy, core or a module touches; no code changes):
+
+- Handshake, `io/*`, ALPN (3), chunk/map blob formats and the world-switch packet order are
+  unchanged. No id or enum value moved; nothing was removed or renamed.
+- Five portal UI packets on Default: `OpenPortalSummonPage` (257, ToClient), `PortalSummonPageResult`
+  (258, ToServer), `OpenPortalActivePage` (259, ToClient), `PortalActivePageResult` (263, ToServer),
+  `OpenPortalErrorPage` (264, ToClient); `Page` gains `PortalSummon` (11), `PortalActive` (12),
+  `PortalError` (13).
+- `MapMarkerComponent` subtype 4, `CompassAlertComponent` (`image`, `durationSeconds`,
+  `timeoutSeconds`, `tint`) - a 251 decoder throws on a marker carrying one.
+- `ConditionInteraction.gliding` (constructor +1; fixed block 29 -> 30, every slot and null bit
+  after `flying` shifted - its wire form inside `UpdateInteractions` differs from 251).
+- `RaycastSelector.distanceAttribute` (nullable string, now variable-size).
+- Server side, not protocol: datagrams to a non-loopback peer are capped at 1200 bytes.
 
 Changes from build 242 to 251 (nothing the proxy, core or a module touches; no code changes):
 

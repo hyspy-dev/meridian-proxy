@@ -40,7 +40,7 @@
         <meridian.api.version>1.0.0-SNAPSHOT</meridian.api.version>
         <!-- meridian-protocol artifact version = its wire CRC (a game version resolves to this
              CRC via the catalog). Keep in sync with ProtocolSettings.PROTOCOL_CRC. -->
-        <meridian.protocol.version>2982205573</meridian.protocol.version>
+        <meridian.protocol.version>3908406161</meridian.protocol.version>
     </properties>
 
     <build>

@@ -179,6 +179,15 @@ public record ProxyConfig(
         return jarDir().resolve(sanitizeHostPort(host, port)).resolve("modules");
     }
 
+    /**
+     * A named module folder, {@code <jar-dir>/<scope>/modules}, for servers whose modules are not
+     * kept per address - a matchmade minigame is a new server every match, but one module set
+     * per game type.
+     */
+    public static Path scopeModulesDir(String scope) {
+        return jarDir().resolve(scope.replaceAll("[^a-zA-Z0-9._-]", "_")).resolve("modules");
+    }
+
     /** The shared default module set, {@code <jar-dir>/modules}, new servers are seeded from. */
     public static Path defaultModulesDir() {
         return jarDir().resolve("modules");

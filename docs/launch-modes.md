@@ -179,9 +179,21 @@ proxy's **stdin** — a parent→child pipe, *no files*:
 |---------|--------|
 | `TOKEN <jwt>` | set / replace the player session token (a re-mint is pushed live) |
 | `ROUTE <localPort> <host> <port>` | bind `127.0.0.1:<localPort>` and relay it to `host:port` |
+| `SCOPE <localPort> <name>` | load that port's modules from `<jar-dir>/<name>/modules` instead of `<host>_<port>/modules`; sent just before its `ROUTE` |
 
 The launcher sends `TOKEN` once at start, then a `ROUTE` for each server as it rewrites
 the browser listing (local ports allocated from `16000`).
+
+**Minigames.** Matchmade games are routed the same way. The game queues at
+`matchmaking.hytale.com`; once matched, the ticket carries the server's `assignment.address` /
+`assignment.port`, which the launcher rewrites to the local proxy. The ticket reaches the game
+two ways - polled from `matchmaking.hytale.com/tickets/<id>`, and pushed down the
+`socket-gateway.hytale.com` WebSocket the moment it is assigned (the game then connects and stops
+polling) - so the launcher carries that WebSocket through its MITM and rewrites the pushed
+ticket too. A
+matchmade server is a new address every match, so its route comes with a `SCOPE`: modules for
+a minigame live in `<jar-dir>/matchmaking_<gameType>/modules` (e.g. `matchmaking_prophunt`),
+seeded from the default `modules/` on the first match, one folder per game type.
 
 **Same UI as standalone.** The proxy window is identical to Mode 2 — the multiplex runs
 in the background and the normal **Connect bar** is still there, so you can also connect
