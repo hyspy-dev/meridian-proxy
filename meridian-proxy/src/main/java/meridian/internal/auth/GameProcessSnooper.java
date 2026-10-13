@@ -9,6 +9,7 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Psapi;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -33,7 +35,7 @@ import java.util.UUID;
  * <ul>
  *   <li>Windows: PEB walking via {@code NtQueryInformationProcess} + {@code ReadProcessMemory}</li>
  *   <li>Linux: read {@code /proc/<pid>/environ}</li>
- *   <li>macOS: not yet implemented — needs {@code sysctl(KERN_PROCARGS2)} via libc</li>
+ *   <li>macOS: {@code proc_listallpids} + {@code sysctl(KERN_PROCARGS2)} via libc</li>
  * </ul>
  */
 public final class GameProcessSnooper {
@@ -48,11 +50,7 @@ public final class GameProcessSnooper {
         String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
         if (os.contains("win")) return WindowsBackend.find();
         if (os.contains("linux")) return LinuxBackend.find();
-        if (os.contains("mac") || os.contains("darwin")) {
-            throw new UnsupportedOperationException(
-                    "macOS support is pending — needs sysctl(KERN_PROCARGS2) via JNA libc binding. "
-                            + "PRs welcome.");
-        }
+        if (os.contains("mac") || os.contains("darwin")) return MacBackend.find();
         throw new UnsupportedOperationException("Unsupported OS: " + os);
     }
 
@@ -253,6 +251,110 @@ public final class GameProcessSnooper {
                     if (i > start) addEntry(env, new String(block, start, i - start, StandardCharsets.UTF_8));
                     start = i + 1;
                 }
+            }
+            return env;
+        }
+    }
+
+    // ============================================================
+    // macOS backend — sysctl(KERN_PROCARGS2) via JNA
+    // ============================================================
+
+    private static final class MacBackend {
+        private static final int CTL_KERN = 1;
+        private static final int KERN_ARGMAX = 8;
+        private static final int KERN_PROCARGS2 = 49;
+        /** Used when KERN_ARGMAX can't be read; macOS ships 1 MiB. */
+        private static final int ARGMAX_FALLBACK = 1024 * 1024;
+
+        /** size_t is 64-bit on every macOS JNA runs on (x86_64, arm64), hence the longs. */
+        public interface LibC extends Library {
+            LibC INSTANCE = Native.load("c", LibC.class);
+            int proc_listallpids(int[] buffer, int buffersize);
+            int sysctl(int[] name, int namelen, Pointer oldp, LongByReference oldlenp,
+                       Pointer newp, long newlen);
+        }
+
+        static Optional<GameCreds> find() {
+            try {
+                return scan();
+            } catch (LinkageError e) {
+                throw new UnsupportedOperationException("libc not reachable via JNA: " + e);
+            }
+        }
+
+        private static Optional<GameCreds> scan() {
+            int[] pids = listPids();
+            if (pids.length == 0) {
+                log.warn("proc_listallpids returned no PIDs");
+                return Optional.empty();
+            }
+            long selfPid = ProcessHandle.current().pid();
+            Memory buf = new Memory(argMax());
+            int scanned = 0, read = 0;
+            for (int pid : pids) {
+                if (pid <= 0 || pid == selfPid) continue;
+                scanned++;
+                Map<String, String> env = readProcessEnvironment(pid, buf);
+                if (env == null) continue;
+                read++;
+                Optional<GameCreds> creds = credsFromEnv(env, "macOS pid=" + pid);
+                if (creds.isPresent()) return creds;
+            }
+            log.info("No Hytale game process found (scanned {} PIDs, read env from {})", scanned, read);
+            return Optional.empty();
+        }
+
+        private static int[] listPids() {
+            // A null buffer asks for the current count; headroom for processes spawned since.
+            int count = LibC.INSTANCE.proc_listallpids(null, 0);
+            if (count <= 0) return new int[0];
+            int[] buffer = new int[count + 64];
+            int n = LibC.INSTANCE.proc_listallpids(buffer, buffer.length * 4);
+            if (n <= 0) return new int[0];
+            return Arrays.copyOf(buffer, Math.min(n, buffer.length));
+        }
+
+        private static int argMax() {
+            int[] mib = {CTL_KERN, KERN_ARGMAX};
+            Memory out = new Memory(4);
+            LongByReference size = new LongByReference(4);
+            if (LibC.INSTANCE.sysctl(mib, mib.length, out, size, null, 0) == 0) {
+                int v = out.getInt(0);
+                if (v > 0) return v;
+            }
+            return ARGMAX_FALLBACK;
+        }
+
+        private static Map<String, String> readProcessEnvironment(int pid, Memory buf) {
+            int[] mib = {CTL_KERN, KERN_PROCARGS2, pid};
+            LongByReference size = new LongByReference(buf.size());
+            // Fails for other users' processes and some system ones — skip those.
+            if (LibC.INSTANCE.sysctl(mib, mib.length, buf, size, null, 0) != 0) return null;
+            int len = (int) Math.min(size.getValue(), buf.size());
+            if (len <= 4) return null;
+            return parseProcArgs2(buf.getByteArray(0, len));
+        }
+
+        /**
+         * int argc, exec path\0 + \0 padding, argc × arg\0, then KEY=VALUE\0 entries up to an
+         * empty string (the kernel's "apple" strings follow it).
+         */
+        private static Map<String, String> parseProcArgs2(byte[] block) {
+            Map<String, String> env = new HashMap<>();
+            int argc = ByteBuffer.wrap(block).order(ByteOrder.nativeOrder()).getInt();
+            int i = 4;
+            while (i < block.length && block[i] != 0) i++;   // exec path
+            while (i < block.length && block[i] == 0) i++;   // its padding
+            for (int a = 0; a < argc && i < block.length; a++) {
+                while (i < block.length && block[i] != 0) i++;
+                i++;
+            }
+            while (i < block.length && block[i] != 0) {
+                int start = i;
+                while (i < block.length && block[i] != 0) i++;
+                addEntry(env, new String(block, start, i - start, StandardCharsets.UTF_8));
+                i++;
             }
             return env;
         }

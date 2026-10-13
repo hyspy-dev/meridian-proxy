@@ -163,6 +163,7 @@ public final class MultiplexProxy {
                     if (p.length >= 2) {
                         playerToken = p[1];
                         log.info("Multiplex: player token updated via control channel.");
+                        LogWindow.onLauncherToken(p[1]);
                     }
                 }
                 case "ROUTE" -> {

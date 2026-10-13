@@ -61,6 +61,8 @@ public final class LogWindow {
     private static Timer workspaceCheckTimer;
     private static JTextField localPortField;
     private static JTextField sessionTokenField;
+    /** Player session the launcher handed a multiplex proxy over stdin; null when not launched so. */
+    private static volatile String launcherToken;
     private static JButton connectButton;
     private static JLabel connectedLabel;
     private static JButton disconnectButton;
@@ -896,6 +898,13 @@ public final class LogWindow {
             Color td = dot;
             String tokenToFill = foundToken;
             SwingUtilities.invokeLater(() -> {
+                // A scan that came up empty (or can't run on this OS) must not hide the
+                // session the launcher already handed over.
+                String fromLauncher = launcherToken;
+                if (tokenToFill == null && fromLauncher != null) {
+                    showLauncherToken(fromLauncher);
+                    return;
+                }
                 gameStatusDot.setForeground(td);
                 gameStatusText.setText(tt);
                 gameStatusText.setToolTipText(td2);
@@ -907,6 +916,28 @@ public final class LogWindow {
                 updateConnectEnabled();
             });
         });
+    }
+
+    /**
+     * The launcher handed this multiplex proxy the player session ({@code TOKEN} on stdin). Fills
+     * the token field so the manual Connect works too, without depending on the process scan.
+     */
+    public static void onLauncherToken(String token) {
+        launcherToken = token;
+        if (!guiEnabled) return;
+        SwingUtilities.invokeLater(() -> showLauncherToken(token));
+    }
+
+    /** EDT only. */
+    private static void showLauncherToken(String token) {
+        if (gameStatusDot == null) return;
+        gameStatusDot.setForeground(new Color(111, 207, 151));
+        gameStatusText.setText("from launcher");
+        gameStatusText.setToolTipText("Session token handed over by the Meridian launcher");
+        if (sessionTokenField != null) {
+            sessionTokenField.setText(token);
+        }
+        updateConnectEnabled();
     }
 
     private static JPanel buildStatusBar() {
