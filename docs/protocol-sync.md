@@ -127,17 +127,36 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **258**, CRC **3908406161** (signed -386561135), protocol version 3 - 389 packets,
-445 structs, 177 enums. Taken from the `release` branch (`0.7.0`, Sync 2026-10-12) onto
-`line/0.7.X`. The umbrella recipe is the `versions/0.7.X.conf` wildcard.
+Build **264**, CRC **240795988** (positive, signed and unsigned coincide), protocol version 3 -
+389 packets, 448 structs, 178 enums. Taken from the `pre-release` branch (`0.8.0-pre.2`, Sync
+2026-10-22) onto `main` / `line/0.8.X`. The umbrella recipe is the `versions/0.8.X.conf` wildcard.
 
-The last pre-release, `0.7.0-pre.5.1`, is frozen on build **251** / CRC **2982205573** (signed
--1312761723; `pre-release` Sync 2026-10-02): `line/0.7.0-pre.5.1` in `meridian-protocol` and the
-exact recipe `versions/0.7.0-pre.5.1.conf`, which wins over the wildcard. Everything else builds
-from the same sources for both lines - nothing the components use differs between 251 and 258.
-The launcher prefers a build named for exactly the game over the `0.7.X` one, both when it picks
-module builds and when it picks the proxy. Builds before 251: 232 (`0.7.0-pre.2`, CRC 322808978),
-242 (`0.7.0-pre.3`, CRC 3666756532), 245 (`0.7.0-pre.4`, CRC 1902590056).
+The 0.7 release stays on build **258** / CRC **3908406161** (signed -386561135; `release` Sync
+2026-10-12, unchanged through Sync 2026-10-21): `line/0.7.X` in `meridian-protocol` and
+`meridian-core`, recipe `versions/0.7.X.conf`. `meridian-world-downloader` carries the 242 chunk
+adaptation only on its `line/0.7.X` (its `main` is still the 0.6 code), so 0.8.X needs that branch
+as `line/0.8.X` too.
+
+The `0.7.0-pre.5.1` freeze (build 251 / CRC 2982205573, `line/0.7.0-pre.5.1`) is dropped: the
+pre-release patchline moved on to 0.8. Builds before 251: 232 (`0.7.0-pre.2`, CRC 322808978), 242
+(`0.7.0-pre.3`, CRC 3666756532), 245 (`0.7.0-pre.4`, CRC 1902590056).
+
+Changes from build 258 to 264 (nothing the proxy, core or a module needs to adapt to; no code changes):
+
+- Handshake, `io/*`, ALPN (3), packet ids and compression flags are unchanged; no packet was added,
+  removed or renumbered; chunk/map blobs untouched.
+- `ItemBase.effectsTooltip` (nullable `ItemEffectsTooltip`: `FormattedMessage[] effects`,
+  `cooldownS`) - 32 variable fields, variable block at 298 (was 294), so `UpdateItems` differs on the
+  wire. Core's `BuilderSelectionImpl` builds a look-only `ItemBase`; the new field stays null there,
+  which is what it wants.
+- `ItemAbility.descriptionValues` (`Map<String, AbilityDescriptionValue>`: `attribute`, `value`,
+  `scaling`), new enum `AbilityDescriptionScaling` (`Replace` / `Multiply`).
+- `ProjectileConfig`: nullable `hitSphere` (`HitSphere.radius`), `hitBoxScale`,
+  `minimumHitBoxDimension`; fixed block 174 -> 190.
+- `AssetEditorRequestDataset` / `AssetEditorRequestDatasetReply`: `name` is non-null now (no
+  nullable-bits byte).
+- Server side, not protocol: the default transport is `QUICHE`, which skips inbound
+  `PacketAdapters` filters (server plugins only; the proxy is a plain QUIC peer).
 
 The 0.6 line stays on build **209** / CRC **3871693122** (signed -423274174): every live 0.6
 build shares it - `0.6.0-pre.13.1` (the hotfix that moved it off 245610536) and `0.6.0`..`0.6.3`
