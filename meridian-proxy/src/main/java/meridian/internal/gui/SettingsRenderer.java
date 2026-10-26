@@ -217,6 +217,9 @@ public final class SettingsRenderer {
                 commit.run();
             }
         });
+        // Enter applies too - a search box that only answers once you click somewhere else
+        // looks like it takes forever.
+        field.addActionListener(e -> commit.run());
         if (t.binding() != null) {
             // The setter must touch the JTextField only on the EDT — hop if
             // a caller invokes binding.set() from a scheduler thread or a
