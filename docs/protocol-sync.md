@@ -133,9 +133,10 @@ Build **264**, CRC **240795988** (positive, signed and unsigned coincide), proto
 
 The 0.7 release stays on build **258** / CRC **3908406161** (signed -386561135; `release` Sync
 2026-10-12, unchanged through Sync 2026-10-21): `line/0.7.X` in `meridian-protocol` and
-`meridian-core`, recipe `versions/0.7.X.conf`. `meridian-world-downloader` carries the 242 chunk
-adaptation only on its `line/0.7.X` (its `main` is still the 0.6 code), so 0.8.X needs that branch
-as `line/0.8.X` too.
+`meridian-core`, recipe `versions/0.7.X.conf`. `meridian-world-downloader` is Layer 2 (api +
+core-api only), so CI builds it once from the tag and ignores its `line/*` branches; its 242 chunk
+adaptation sits only on `line/0.7.X` (its `main` is still the 0.6 code), which has to be sorted out
+before its first release.
 
 The `0.7.0-pre.5.1` freeze (build 251 / CRC 2982205573, `line/0.7.0-pre.5.1`) is dropped: the
 pre-release patchline moved on to 0.8. Builds before 251: 232 (`0.7.0-pre.2`, CRC 322808978), 242
