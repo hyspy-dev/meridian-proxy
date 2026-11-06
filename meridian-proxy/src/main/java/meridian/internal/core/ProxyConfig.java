@@ -26,7 +26,9 @@ public record ProxyConfig(
         boolean autoWrap,
         boolean standalone,
         String backendJarPath,
-        String[] originalArgs
+        String[] originalArgs,
+        /** Load modules from {@code <jar-dir>/<scope>/modules} instead of the server's own folder; null = per server. */
+        String modulesScope
 ) {
     public static final String BACKEND_JAR = "_HytaleServer.jar";
     public static final String READY_SIGNAL = ">> Singleplayer Ready <<";
@@ -129,7 +131,7 @@ public record ProxyConfig(
         boolean launchedByLauncher = findArg(args, "--backup-dir") != null;
         boolean standalone = !hasAnyToken && !launchedByLauncher;
 
-        return new ProxyConfig(remoteHost, remotePort, localPort, clientToken, serverToken, identityToken, showGui, autoWrap, standalone, backendJar.getAbsolutePath(), args);
+        return new ProxyConfig(remoteHost, remotePort, localPort, clientToken, serverToken, identityToken, showGui, autoWrap, standalone, backendJar.getAbsolutePath(), args, null);
     }
 
     /** Build a config for a GUI-driven standalone session, using session tokens
@@ -138,15 +140,31 @@ public record ProxyConfig(
                                                     String clientToken, String serverToken, String identityToken) {
         return new ProxyConfig(remoteHost, remotePort, localPort,
                 clientToken, serverToken, identityToken,
-                true, false, false, null, new String[0]);
+                true, false, false, null, new String[0], null);
     }
+
+    /**
+     * The proxy in front of a single-player world's local server: the client's port in front, the
+     * server moved to {@code serverPort} behind, the tokens the client gave the server (they reach
+     * us in the same environment), and the {@code singleplayer} module set.
+     */
+    public static ProxyConfig forSingleplayer(int clientPort, int serverPort, String[] args, boolean showGui) {
+        return new ProxyConfig("127.0.0.1", serverPort, clientPort,
+                System.getenv("HYTALE_SESSION_TOKEN"),
+                System.getenv("HYTALE_SERVER_SESSION_TOKEN"),
+                System.getenv("HYTALE_SERVER_IDENTITY_TOKEN"),
+                showGui, false, false, null, args, SINGLEPLAYER_SCOPE);
+    }
+
+    /** The module folder name single-player worlds load from: {@code <jar-dir>/singleplayer/modules}. */
+    public static final String SINGLEPLAYER_SCOPE = "singleplayer";
 
     /** Returns a copy with the server-scope tokens replaced — used when they were
      *  derived via /game-session/child rather than supplied directly. */
     public ProxyConfig withServerTokens(String serverToken, String identityToken) {
         return new ProxyConfig(remoteHost, remotePort, localPort,
                 clientToken, serverToken, identityToken,
-                showGui, autoWrap, standalone, backendJarPath, originalArgs);
+                showGui, autoWrap, standalone, backendJarPath, originalArgs, modulesScope);
     }
 
     /** True when launched as the launcher's server jar ({@code --backup-dir} present). */

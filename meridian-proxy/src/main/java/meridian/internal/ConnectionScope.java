@@ -357,7 +357,9 @@ public final class ConnectionScope implements FrontendScope {
         }
         // A server connected to for the first time starts from the shared default set (jars,
         // disabled/, the launcher's modules.json offer) — same seeding the multiplex path does.
-        Path dir = ProxyConfig.serverModulesDir(config.remoteHost(), config.remotePort());
+        Path dir = config.modulesScope() != null
+                ? ProxyConfig.scopeModulesDir(config.modulesScope())
+                : ProxyConfig.serverModulesDir(config.remoteHost(), config.remotePort());
         try {
             if (ProxyConfig.createServerModulesDir(dir)) {
                 log.info("Seeded {} from default modules {}", dir, ProxyConfig.defaultModulesDir());

@@ -11,6 +11,7 @@ identical. Pick the one that matches your setup.
 | [2 — Standalone GUI](#mode-2--standalone-gui) | the proxy jar (double-click) | auto-read from the running game | most users, Windows / Linux |
 | [3 — Standalone CLI](#mode-3--standalone-cli) | the proxy jar from a terminal | `--session-token` argument | macOS, headless, automation |
 | [4 — Multiplex (launcher-driven)](#mode-4--multiplex-launcher-driven) | the Meridian launcher (**Use proxy**) | pushed over stdin by the launcher | routing the whole server browser through the proxy, no typing |
+| [5 — Single-player worlds (launcher-driven)](#mode-5--single-player-worlds-launcher-driven) | the Meridian launcher (**Use proxy** + **Single player support**) | the environment the game gives its local server | single-player worlds in the same proxy window, install untouched |
 
 > **One session per account.** Hytale allows a single active session per account.
 > The proxy therefore never mints its own — it reuses the session the Hytale game
@@ -213,6 +214,34 @@ server.
 The launcher owns the proxy process and kills it when the game exits.
 
 ---
+
+## Mode 5 — Single-player worlds (launcher-driven)
+
+Tick **Single player support** in the Meridian launcher (it needs **Use proxy**; off by default).
+Single-player worlds then play through the same multiplex proxy window as the servers, with the
+module set in `<launcher dir>/singleplayer/modules` (seeded from `<launcher dir>/modules`). Nothing
+in the Hytale install changes.
+
+How it works:
+
+1. The launcher starts the multiplex proxy with `--sp-control <port>` (loopback only) and a secret
+   in `MERIDIAN_SP_SECRET`, and gives the game, as `--java-exec`,
+   `meridian/singleplayer/meridian-sp-java.cmd` (`.sh` on Linux/macOS), with the port, the secret,
+   the proxy jar and both javas in the environment.
+2. The game starts a world's server through that script, which runs the proxy jar headless:
+   `--singleplayer-wrap --no-gui --real-java <game java> -- <the game's command>`.
+3. The wrapper (`SingleplayerWrap`) moves the server from the client's port P to a free port Q,
+   starts it with the game's java and flags, and passes its output on - holding back
+   `>> Singleplayer Ready <<`.
+4. Once the server is ready it asks the running proxy (`SingleplayerControl`): `OPEN P Q <tokens>`.
+   The proxy listens on P with the tokens the game gave its server and the `singleplayer` modules,
+   answers `OK`, and only then does the client see the ready line and connect.
+5. When the server exits, the wrapper exits and its control connection closes; the proxy drops
+   the route. The wrapper logs to `logs/singleplayer.log`.
+
+Without a running proxy to join, the wrapper stands in front of the server itself.
+A proxy jar without this mode is detected by the launcher; worlds then run as before.
+Mode 1 (renaming `HytaleServer.jar`) predates this and no longer matches the game's arguments.
 
 ## Connection arguments
 

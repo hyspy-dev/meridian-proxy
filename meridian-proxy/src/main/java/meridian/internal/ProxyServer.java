@@ -32,7 +32,8 @@ public class ProxyServer {
             // Must precede LogWindow.install: it builds the window, and AWT reads the
             // workaround this may re-exec us with only while the toolkit is starting.
             X11Relaunch.applyIfNeeded();
-            LogWindow.install(showGui);
+            // A single-player world's wrapper is a process of its own; it keeps its own log.
+            LogWindow.install(showGui, cmdLine.contains("--singleplayer-wrap") ? "singleplayer.log" : "meridian.log");
             System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
             System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "HH:mm:ss.SSS");
             System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
@@ -47,6 +48,13 @@ public class ProxyServer {
     private static final AtomicReference<ConnectionScope> current = new AtomicReference<>();
 
     public static void main(String[] args) throws Exception {
+        // A single-player world: the launcher's java-exec script hands us the client's server
+        // command. Our own mode, decided before anything reads the args as a proxy command line.
+        if (SingleplayerWrap.requested(args)) {
+            log.info("Meridian Proxy {} - single-player world", Version.VERSION);
+            SingleplayerWrap.run(args, !java.util.Arrays.asList(args).contains("--no-gui"));
+            return;
+        }
         ProxyConfig config = ProxyConfig.fromArgs(args);
 
         log.info("Meridian Proxy {} — releases: {}", Version.VERSION, Version.RELEASES_URL);

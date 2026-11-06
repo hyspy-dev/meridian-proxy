@@ -87,13 +87,21 @@ public final class LogWindow {
      * @param showGui if false, runs in headless mode (no Swing window)
      */
     public static void install(boolean showGui) {
+        install(showGui, "meridian.log");
+    }
+
+    /**
+     * Install log tee (file + optional GUI), writing {@code <jar-dir>/logs/<logName>} - a process
+     * other than the main proxy keeps its own file, rather than rotating the proxy's away.
+     */
+    public static void install(boolean showGui, String logName) {
         guiEnabled = showGui;
 
-        // File logging: <jar-dir>/logs/meridian.log, rotated on each launch.
+        // File logging: <jar-dir>/logs/<logName>, rotated on each launch.
         try {
             Path logDir = ProxyConfig.jarDir().resolve("logs");
             Files.createDirectories(logDir);
-            Path logFile = logDir.resolve("meridian.log");
+            Path logFile = logDir.resolve(logName);
             rotateLogs(logFile);
             fileOut = new FileOutputStream(logFile.toFile(), false);
         } catch (Exception e) {
@@ -136,8 +144,8 @@ public final class LogWindow {
     /** Rotates {@code meridian.log} → {@code .1} → {@code .2} (keeps two history files). */
     private static void rotateLogs(Path log) {
         try {
-            Path l1 = log.resolveSibling("meridian.log.1");
-            Path l2 = log.resolveSibling("meridian.log.2");
+            Path l1 = log.resolveSibling(log.getFileName() + ".1");
+            Path l2 = log.resolveSibling(log.getFileName() + ".2");
             if (Files.exists(l1)) {
                 Files.move(l1, l2, StandardCopyOption.REPLACE_EXISTING);
             }

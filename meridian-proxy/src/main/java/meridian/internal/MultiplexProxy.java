@@ -65,6 +65,12 @@ public final class MultiplexProxy {
     private final Map<Integer, Channel> bound = new ConcurrentHashMap<>();
     /** Local port → module folder name, for routes whose modules are not kept per address. */
     private final Map<Integer, String> scopes = new ConcurrentHashMap<>();
+
+    /** Tokens a route brought with it: a single-player world's, which its game handed its server. */
+    private record RouteTokens(String player, String serverSession, String serverIdentity) {}
+
+    /** Local port → the tokens to stand there with, instead of the ones derived for every server. */
+    private final Map<Integer, RouteTokens> routeTokens = new ConcurrentHashMap<>();
     /** Live client connections across all routes — drives the shared Connect/Disconnect UI. */
     private final java.util.concurrent.atomic.AtomicInteger liveClients =
             new java.util.concurrent.atomic.AtomicInteger();
@@ -126,6 +132,8 @@ public final class MultiplexProxy {
         this.certFp = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256);
 
         this.group = new NioEventLoopGroup();
+
+        startSingleplayerControl();
 
         log.info("Multiplex idle — awaiting ROUTE/TOKEN commands on stdin. Modules & tokens load "
                 + "on the first connection (not now).");
@@ -282,6 +290,62 @@ public final class MultiplexProxy {
     // Binding
     // ------------------------------------------------------------------
 
+    /**
+     * The auth for a connection on {@code localPort}: the route's own tokens when it brought some
+     * (a single-player world), else the ones derived from the player session for every server.
+     */
+    private HytaleAuthState authFor(int localPort) {
+        RouteTokens own = routeTokens.get(localPort);
+        if (own != null) {
+            return new HytaleAuthState(certFp, certFp, own.serverIdentity(),
+                    new HytaleSessionApi(own.player() != null ? own.player() : ""),
+                    new HytaleSessionApi(own.serverSession() != null ? own.serverSession() : ""));
+        }
+        ensureTokens();
+        return new HytaleAuthState(certFp, certFp, serverIdent, clientApi, serverApi);
+    }
+
+    // ------------------------------------------------------------------
+    // Single-player worlds
+    // ------------------------------------------------------------------
+
+    /**
+     * Opens the single-player control port when the launcher asked for one ({@code --sp-control
+     * <port>}, the secret in the environment) - see {@link SingleplayerControl}.
+     */
+    private void startSingleplayerControl() {
+        String port = ProxyConfig.findArg(config.originalArgs(), "--sp-control");
+        String secret = System.getenv(SingleplayerControl.ENV_SECRET);
+        if (port == null || secret == null || secret.isBlank()) {
+            return;
+        }
+        new SingleplayerControl(Integer.parseInt(port.trim()), secret, new SingleplayerControl.Routes() {
+            @Override
+            public boolean open(int clientPort, int serverPort, String player, String serverSession,
+                                String serverIdentity) {
+                scopes.put(clientPort, ProxyConfig.SINGLEPLAYER_SCOPE);
+                routeTokens.put(clientPort, new RouteTokens(
+                        player != null ? player : playerToken, serverSession, serverIdentity));
+                bindRoute(clientPort, "127.0.0.1", serverPort);
+                boolean ok = bound.containsKey(clientPort);
+                log.info("Single-player world: 127.0.0.1:{} -> its server on :{} ({})",
+                        clientPort, serverPort, ok ? "listening" : "failed");
+                return ok;
+            }
+
+            @Override
+            public void close(int clientPort) {
+                Channel ch = bound.remove(clientPort);
+                if (ch != null) {
+                    ch.close();
+                }
+                scopes.remove(clientPort);
+                routeTokens.remove(clientPort);
+                log.info("Single-player world on :{} closed.", clientPort);
+            }
+        }).start();
+    }
+
     /** Binds one idle local port that will relay to {@code host:remotePort} when connected. */
     private void bindRoute(int localPort, String host, int remotePort) {
         if (bound.containsKey(localPort)) {
@@ -302,13 +366,12 @@ public final class MultiplexProxy {
                                 protected void initChannel(QuicChannel ch) {
                                     // Deferred pickup on each connection: fresh tokens (if changed)
                                     // + this server's own module runtime (torn down on close).
-                                    ensureTokens();
+                                    HytaleAuthState auth = authFor(route.localPort());
                                     ModuleManager mm = loadModulesFor(route);
                                     ch.closeFuture().addListener(f -> shutdownModules(mm));
                                     ch.pipeline().addLast(new ProxyFrontendHandler(
                                             route.currentRemoteHost(), route.currentRemotePort(), ssc,
-                                            new HytaleAuthState(certFp, certFp, serverIdent, clientApi, serverApi),
-                                            mm.handlerRegistry(), mm.eventBus(), route));
+                                            auth, mm.handlerRegistry(), mm.eventBus(), route));
                                 }
                             })
                             .streamHandler(new LoggingHandler("STREAM_RAW", LogLevel.DEBUG))
