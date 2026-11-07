@@ -127,9 +127,31 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **264**, CRC **240795988** (positive, signed and unsigned coincide), protocol version 3 -
-389 packets, 448 structs, 178 enums. Taken from the `pre-release` branch (`0.8.0-pre.2`, Sync
-2026-10-22) onto `main` / `line/0.8.X`. The umbrella recipe is the `versions/0.8.X.conf` wildcard.
+Build **272**, CRC **2583978903** (signed -1710988393), protocol version 3 - 390 packets, 181
+enums. Taken from the `pre-release` branch (`0.8.0-pre.4`, Sync 2026-11-05) onto `main` /
+`line/0.8.X`. The umbrella recipe is the `versions/0.8.X.conf` wildcard. Build 264 (`0.8.0-pre.2`,
+CRC 240795988) and 268 (Sync 2026-10-29) match no installed game any more.
+
+Changes from build 264 to 272 (core adapted in the same step):
+
+- Handshake, `io/*` wire format and ALPN (3) unchanged. `io/ConnectionHandler` changed upstream
+  (server-side bookkeeping).
+- Every `Update*` asset packet that carried `maxId` lost it (fixed block 4 bytes shorter):
+  `UpdateBlockTypes`, `UpdateEmotes`, `UpdateInteractions`, `UpdateRootInteractions`, sound /
+  audio / environment / weather / model-VFX and the rest. A 264 decoder misreads all of them -
+  core saw no root interactions and no block types. Core's `WorldStateImpl` no longer reads or
+  sends `maxId`.
+- `JoinWorld` lost `minSectionY` / `maxSectionY` (fixed 26 -> 17 bytes). `ClientTeleport` gained
+  `isMountedTeleport` (core's teleport sends `false`).
+- Removed: `ApplyKnockback` (164). Id 206 is `NotifyServersideUIPropertyChanged` now (was
+  `ExecuteServersidePageCommand`), 207 is `ExecuteServersideUICommand` (was
+  `ExecuteServersideHudCommand`). New: `RegisterServersideGlobalResources` (237) and
+  `UnregisterServersideGlobalResources` (265), both ToClient; `UISurfaceKind`.
+- Builder tools: only range checks (`BuilderToolRotateClipboard.angle` within +-360 and similar);
+  the layout is unchanged.
+- Mounts reworked (`BlockMountType` / `MountController` gone, `MovementControllerType` new);
+  trigger volumes gained `TriggerVolumeCooldownMode` (an enum now, default `PerEntity`) and
+  `TriggerVolumeEntityTargetType`; `ClientRuleVolume.rules`.
 
 The 0.7 release stays on build **258** / CRC **3908406161** (signed -386561135; `release` Sync
 2026-10-12, unchanged through Sync 2026-10-21): `line/0.7.X` in `meridian-protocol` and
