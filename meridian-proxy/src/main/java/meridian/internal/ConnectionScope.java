@@ -170,7 +170,8 @@ public final class ConnectionScope implements FrontendScope {
                                     // connection that arrives after a referral targets the new server.
                                     ch.pipeline().addLast(new ProxyFrontendHandler(currentRemoteHost, currentRemotePort, ssc,
                                             new HytaleAuthState(fp, fp, serverIdent, clientApi, serverApi),
-                                            handlerRegistry, eventBus, ConnectionScope.this));
+                                            handlerRegistry, eventBus, ConnectionScope.this)
+                                            .commands(moduleManager != null ? moduleManager.commandRegistry() : null));
                                 }
                             })
                             .streamHandler(new LoggingHandler("STREAM_RAW", LogLevel.INFO))

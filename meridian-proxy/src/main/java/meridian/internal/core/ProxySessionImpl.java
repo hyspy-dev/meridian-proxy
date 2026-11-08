@@ -39,6 +39,8 @@ public class ProxySessionImpl implements ProxySession {
     private volatile Channel serverChannel;
     private volatile SessionPhase phase = SessionPhase.PRE_AUTH;
     private final Map<Class<?>, Object> attachments = new ConcurrentHashMap<>();
+    /** Set when no game is behind this session - the proxy plays the client (headless). */
+    private volatile meridian.api.session.HeadlessClient headless;
 
     public ProxySessionImpl(HytaleAuthState authState) {
         this.authState = authState;
@@ -47,6 +49,10 @@ public class ProxySessionImpl implements ProxySession {
     public void setClientChannel(Channel ch) { this.clientChannel = ch; }
     public void setServerChannel(Channel ch) { this.serverChannel = ch; }
     public HytaleAuthState authState() { return authState; }
+    public void setHeadless(meridian.api.session.HeadlessClient client) { this.headless = client; }
+
+    @Override
+    public meridian.api.session.HeadlessClient headless() { return headless; }
     public SessionPhase phase() { return phase; }
 
     /**
@@ -86,6 +92,11 @@ public class ProxySessionImpl implements ProxySession {
 
     /** Pre-framed [len|id|payload] write to client. */
     public void sendRawToClient(ByteBuf framed) {
+        if (headless != null) {
+            // No game to show it to; the packet was made and seen (tapped), and ends here.
+            if (framed.refCnt() > 0) framed.release();
+            return;
+        }
         Channel ch = clientChannel;
         if (ch == null || !ch.isActive()) {
             log.warn("sendRawToClient failed — client channel not available");
@@ -122,13 +133,28 @@ public class ProxySessionImpl implements ProxySession {
     @Override
     public void sendToClient(Packet packet) {
         ByteBuf framed = frame(packet, false);
-        if (framed != null) sendRawToClient(framed);
+        if (framed != null) {
+            sendRawToClient(framed);
+            tapForged(packet, meridian.api.packet.Direction.S2C);
+        }
     }
 
     @Override
     public void sendToServer(Packet packet) {
         ByteBuf framed = frame(packet, true);
-        if (framed != null) sendRawToServer(framed);
+        if (framed != null) {
+            sendRawToServer(framed);
+            tapForged(packet, meridian.api.packet.Direction.C2S);
+        }
+    }
+
+    /** Lets the control channel see a packet the proxy made itself, not one it passed on. */
+    private void tapForged(Packet packet, meridian.api.packet.Direction direction) {
+        if (packet instanceof meridian.protocol.Packet p) {
+            Integer id = PacketRegistry.getId(p.getClass());
+            meridian.internal.control.PacketTap.offer(this, direction, id == null ? -1 : id, p,
+                    meridian.internal.control.PacketTap.Outcome.FORGED);
+        }
     }
 
     /**

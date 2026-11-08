@@ -133,7 +133,7 @@ public final class MultiplexProxy {
 
         this.group = new NioEventLoopGroup();
 
-        startSingleplayerControl();
+        takeWorlds();
 
         log.info("Multiplex idle — awaiting ROUTE/TOKEN commands on stdin. Modules & tokens load "
                 + "on the first connection (not now).");
@@ -310,16 +310,12 @@ public final class MultiplexProxy {
     // ------------------------------------------------------------------
 
     /**
-     * Opens the single-player control port when the launcher asked for one ({@code --sp-control
-     * <port>}, the secret in the environment) - see {@link SingleplayerControl}.
+     * Takes single-player worlds over the command channel: a world's wrapper asks there for a route
+     * on its client's port (see {@link SingleplayerWrap} and
+     * {@link meridian.internal.control.ControlServer}).
      */
-    private void startSingleplayerControl() {
-        String port = ProxyConfig.findArg(config.originalArgs(), "--sp-control");
-        String secret = System.getenv(SingleplayerControl.ENV_SECRET);
-        if (port == null || secret == null || secret.isBlank()) {
-            return;
-        }
-        new SingleplayerControl(Integer.parseInt(port.trim()), secret, new SingleplayerControl.Routes() {
+    private void takeWorlds() {
+        meridian.internal.control.ControlServer.setWorldRoutes(new meridian.internal.control.ControlServer.WorldRoutes() {
             @Override
             public boolean open(int clientPort, int serverPort, String player, String serverSession,
                                 String serverIdentity) {
@@ -343,7 +339,7 @@ public final class MultiplexProxy {
                 routeTokens.remove(clientPort);
                 log.info("Single-player world on :{} closed.", clientPort);
             }
-        }).start();
+        });
     }
 
     /** Binds one idle local port that will relay to {@code host:remotePort} when connected. */
@@ -371,7 +367,8 @@ public final class MultiplexProxy {
                                     ch.closeFuture().addListener(f -> shutdownModules(mm));
                                     ch.pipeline().addLast(new ProxyFrontendHandler(
                                             route.currentRemoteHost(), route.currentRemotePort(), ssc,
-                                            auth, mm.handlerRegistry(), mm.eventBus(), route));
+                                            auth, mm.handlerRegistry(), mm.eventBus(), route)
+                                            .commands(mm.commandRegistry()));
                                 }
                             })
                             .streamHandler(new LoggingHandler("STREAM_RAW", LogLevel.DEBUG))

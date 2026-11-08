@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * code; the server already exits with the client ({@code --client-pid}).
  *
  * <p>With the launcher's proxy running, this process does no proxying itself: it asks that proxy
- * ({@link SingleplayerControl}, found through the environment) to listen on the client's port
+ * ({@link meridian.internal.control.ControlServer}, found through the environment) to listen on the client's port
  * and relay to the moved server, and the world plays in the window already open. Without one it
  * stands in front of the server itself.
  */
@@ -198,8 +198,9 @@ public final class SingleplayerWrap {
             return;     // the watcher is on its way out with the server's code
         }
 
-        String control = System.getenv(SingleplayerControl.ENV_ADDRESS);
-        String secret = System.getenv(SingleplayerControl.ENV_SECRET);
+        // The launcher's proxy, through its command channel; the older launcher's names still work.
+        String control = firstEnv(meridian.internal.control.ControlServer.ENV_ADDRESS, "MERIDIAN_SP_CONTROL");
+        String secret = firstEnv(meridian.internal.control.ControlServer.ENV_TOKEN, "MERIDIAN_SP_SECRET");
         if (control != null && secret != null) {
             try {
                 joinRunningProxy(control, secret, plan.clientPort(), serverPort);
@@ -243,15 +244,15 @@ public final class SingleplayerWrap {
         java.io.PrintWriter out = new java.io.PrintWriter(s.getOutputStream(), true, StandardCharsets.UTF_8);
         out.println("HELLO " + secret);
         String hello = in.readLine();
-        if (!"OK".equals(hello)) {
+        if (hello == null || !hello.contains("\"hello\"")) {
             throw new IllegalStateException("the launcher's proxy refused us: " + hello);
         }
-        out.println("OPEN " + clientPort + " " + serverPort
+        out.println("open " + clientPort + " " + serverPort
                 + " " + orDash(System.getenv("HYTALE_SESSION_TOKEN"))
                 + " " + orDash(System.getenv("HYTALE_SERVER_SESSION_TOKEN"))
                 + " " + orDash(System.getenv("HYTALE_SERVER_IDENTITY_TOKEN")));
         String opened = in.readLine();
-        if (!"OK".equals(opened)) {
+        if (opened == null || !opened.contains("\"ok\":true")) {
             throw new IllegalStateException("the launcher's proxy could not take the world: " + opened);
         }
         log.info("World handed to the launcher's proxy on :{}.", clientPort);
@@ -264,6 +265,17 @@ public final class SingleplayerWrap {
             } catch (Exception ignored) {
             }
         }, "SingleplayerControlClose"));
+    }
+
+    /** The first of these environment variables that is set. */
+    private static String firstEnv(String... names) {
+        for (String n : names) {
+            String v = System.getenv(n);
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
+        }
+        return null;
     }
 
     private static String orDash(String v) {

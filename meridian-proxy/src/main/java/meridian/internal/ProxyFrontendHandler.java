@@ -63,6 +63,16 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
     private volatile String sniHostname;
     private boolean backendInitiated = false;
     private final Queue<QuicStreamChannel> pendingClientStreams = new ArrayDeque<>();
+    /** This connection as the control channel lists it; set when the client connects. */
+    private volatile meridian.internal.control.LiveConnections.Live live;
+    /** The module runtime's command-channel commands, when whoever made us gave them. */
+    private volatile meridian.internal.module.CommandRegistry commands;
+
+    /** Lets the command channel reach this connection's modules. */
+    public ProxyFrontendHandler commands(meridian.internal.module.CommandRegistry registry) {
+        this.commands = registry;
+        return this;
+    }
 
     // Stream IDs per QUIC: bidi 0,4,8,... uni 2,6,10,... (client-initiated) and
     // 1,5,... / 3,7,... (server).
@@ -100,6 +110,8 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.info("Client connected. Waiting for handshake...");
+        live = meridian.internal.control.LiveConnections.opened(remoteHost + ":" + remotePort, scope.localPort());
+        live.commands(commands);
         scope.onClientConnected((QuicChannel) ctx.channel());
     }
 
@@ -110,6 +122,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         if (backend != null && backend.isActive()) {
             backend.close();
         }
+        meridian.internal.control.LiveConnections.closed(live);
         scope.onClientClosed((QuicChannel) ctx.channel());
         ctx.fireChannelInactive();
     }
@@ -355,6 +368,7 @@ public class ProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         ProxySessionImpl session = new ProxySessionImpl(auth);
         session.setClientChannel(clientStream);
         session.setServerChannel(serverStream);
+        meridian.internal.control.LiveConnections.streamLinked(live, session);
 
         setupStreamPipeline(clientStream, Direction.C2S, serverStream, session);
         setupStreamPipeline(serverStream, Direction.S2C, clientStream, session);

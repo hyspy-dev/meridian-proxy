@@ -48,6 +48,11 @@ public class HytaleAuthState {
         }
     }
 
+    /** The identity token the client connected with, or {@code null} before its Connect. */
+    public String clientIdentityToken() {
+        return clientIdentityToken;
+    }
+
     public void setLastServerPasswordChallenge(byte[] c) {
         this.lastServerPasswordChallenge = c;
     }

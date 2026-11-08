@@ -44,6 +44,8 @@ final class ModuleContextImpl implements ModuleContext {
     private volatile boolean dataDirReady;
     /** Set by {@link #registerSettings}; read by the management UI. */
     volatile JPanel settingsPanel;
+    /** Where {@link #registerCommand} files commands; set by the manager that made this context. */
+    volatile CommandRegistry commands;
 
     ModuleContextImpl(String moduleName, Path dataDir, HandlerRegistry handlerRegistry,
                       EventBus eventBus, ServiceRegistry serviceRegistry,
@@ -135,6 +137,15 @@ final class ModuleContextImpl implements ModuleContext {
     @Override
     public EventBus events() {
         return eventBus;
+    }
+
+    @Override
+    public void registerCommand(String name, String usage, meridian.api.command.ControlCommand command) {
+        CommandRegistry r = commands;
+        if (r != null) {
+            r.register(moduleName, name, usage, command);
+            logger.info("Registered command-channel command '{}'.", name);
+        }
     }
 
     @Override

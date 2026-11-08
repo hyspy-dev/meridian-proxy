@@ -224,18 +224,20 @@ in the Hytale install changes.
 
 How it works:
 
-1. The launcher starts the multiplex proxy with `--sp-control <port>` (loopback only) and a secret
-   in `MERIDIAN_SP_SECRET`, and gives the game, as `--java-exec`,
-   `meridian/singleplayer/meridian-sp-java.cmd` (`.sh` on Linux/macOS), with the port, the secret,
-   the proxy jar and both javas in the environment.
+1. The launcher starts the multiplex proxy with its command channel on the first port of the
+   launch's route slot (`--control-port <port>`, loopback only, token in `MERIDIAN_CONTROL_TOKEN` -
+   see [control-channel.md](control-channel.md)), and gives the game, as `--java-exec`,
+   `meridian/singleplayer/meridian-sp-java.cmd` (`.sh` on Linux/macOS), with `MERIDIAN_CONTROL`,
+   the token, the proxy jar and both javas in the environment.
 2. The game starts a world's server through that script, which runs the proxy jar headless:
    `--singleplayer-wrap --no-gui --real-java <game java> -- <the game's command>`.
 3. The wrapper (`SingleplayerWrap`) moves the server from the client's port P to a free port Q,
    starts it with the game's java and flags, and passes its output on - holding back
    `>> Singleplayer Ready <<`.
-4. Once the server is ready it asks the running proxy (`SingleplayerControl`): `OPEN P Q <tokens>`.
-   The proxy listens on P with the tokens the game gave its server and the `singleplayer` modules,
-   answers `OK`, and only then does the client see the ready line and connect.
+4. Once the server is ready it asks the running proxy over the command channel:
+   `open P Q <tokens>`. The proxy listens on P with the tokens the game gave its server and the
+   `singleplayer` modules, answers `"ok":true`, and only then does the client see the ready line
+   and connect.
 5. When the server exits, the wrapper exits and its control connection closes; the proxy drops
    the route. The wrapper logs to `logs/singleplayer.log`.
 

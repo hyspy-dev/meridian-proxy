@@ -29,14 +29,23 @@ public class ProxyServer {
             if (cmdLine.contains("--no-gui")) {
                 showGui = false;
             }
-            // Must precede LogWindow.install: it builds the window, and AWT reads the
-            // workaround this may re-exec us with only while the toolkit is starting.
-            X11Relaunch.applyIfNeeded();
-            // A single-player world's wrapper is a process of its own; it keeps its own log.
-            LogWindow.install(showGui, cmdLine.contains("--singleplayer-wrap") ? "singleplayer.log" : "meridian.log");
+            // A command for a running proxy (--cmd) is a short-lived client: no window, and no
+            // log file of its own - installing one would rotate the running proxy's log away.
+            if (!cmdLine.contains("--cmd")) {
+                // Must precede LogWindow.install: it builds the window, and AWT reads the
+                // workaround this may re-exec us with only while the toolkit is starting.
+                X11Relaunch.applyIfNeeded();
+                // A single-player world's wrapper is a process of its own; it keeps its own log.
+                LogWindow.install(showGui, cmdLine.contains("--singleplayer-wrap") ? "singleplayer.log" : "meridian.log");
+            } else {
+                System.setProperty("org.slf4j.simpleLogger.logFile", "System.err");
+                System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
+            }
             System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
             System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "HH:mm:ss.SSS");
-            System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
+            if (!cmdLine.contains("--cmd")) {
+                System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
+            }
             System.setProperty("org.slf4j.simpleLogger.log.io.netty", "warn");
         } catch (Throwable ignored) {
         }
@@ -48,6 +57,11 @@ public class ProxyServer {
     private static final AtomicReference<ConnectionScope> current = new AtomicReference<>();
 
     public static void main(String[] args) throws Exception {
+        // A command for the running proxy, from a person or a script: a client, not a proxy.
+        if (meridian.internal.control.ControlClient.requested(args)) {
+            System.exit(meridian.internal.control.ControlClient.run(args));
+            return;
+        }
         // A single-player world: the launcher's java-exec script hands us the client's server
         // command. Our own mode, decided before anything reads the args as a proxy command line.
         if (SingleplayerWrap.requested(args)) {
@@ -71,6 +85,16 @@ public class ProxyServer {
         for (String a : args) {
             if (a.equals("--multiplex")) { multiplex = true; break; }
         }
+        // The command channel, one per process, on the number of our own UDP port (multiplex: the
+        // launcher's base port, --control-port; --sp-control is what older launchers pass).
+        String controlPort = ProxyConfig.findArg(args, "--control-port");
+        if (controlPort == null) {
+            controlPort = ProxyConfig.findArg(args, "--sp-control");
+        }
+        meridian.internal.control.ControlServer.start(
+                controlPort != null ? Integer.parseInt(controlPort.trim()) : config.localPort(),
+                multiplex ? "multiplex" : config.standalone() ? "standalone" : "single");
+
         if (multiplex) {
             MultiplexProxy mux = new MultiplexProxy(config);
             if (config.showGui()) {

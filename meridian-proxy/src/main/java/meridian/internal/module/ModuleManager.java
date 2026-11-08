@@ -56,6 +56,7 @@ public class ModuleManager {
     private static final Gson gson = new Gson();
 
     private final HandlerRegistry handlerRegistry = new HandlerRegistry();
+    private final CommandRegistry commandRegistry = new CommandRegistry();
     private final ExecutorService offloadExecutor = Executors.newVirtualThreadPerTaskExecutor();
     private final EventBus eventBus = new EventBusImpl(offloadExecutor);
     private final ServiceRegistry serviceRegistry = new ServiceRegistryImpl();
@@ -68,6 +69,11 @@ public class ModuleManager {
     /** Packet-handler factories registered by modules; consumed by the pipeline. */
     public HandlerRegistry handlerRegistry() {
         return handlerRegistry;
+    }
+
+    /** Command-channel commands registered by this runtime's modules. */
+    public CommandRegistry commandRegistry() {
+        return commandRegistry;
     }
 
     /** Modules found but not loaded (incompatible) — surfaced in the management UI. */
@@ -524,6 +530,7 @@ public class ModuleManager {
         SchedulerImpl scheduler = new SchedulerImpl(meta.name);
         ModuleContextImpl context = new ModuleContextImpl(meta.name, dataDir, handlerRegistry,
                 eventBus, serviceRegistry, offloadExecutor, scheduler, meta.updateUrl);
+        context.commands = commandRegistry;
         ModuleEntry entry = new ModuleEntry(meta.name, meta.version, module, context);
 
         module.onEnable(context);

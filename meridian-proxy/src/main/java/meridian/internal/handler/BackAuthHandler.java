@@ -41,10 +41,13 @@ public class BackAuthHandler implements PacketHandler {
             HytaleAuthState auth = impl.authState();
             auth.onBackAuthGrantReceived(pkt.authorizationGrant, pkt.serverIdentityToken);
 
-            forwarder.setBuffering(true);
-            log.info("[S2C] Buffering enabled");
-
-            kickOffFrontAuthGrant(impl);
+            if (impl.headless() == null) {
+                // A game behind us gets its own grant, and sees nothing until it has answered it.
+                // A headless session has no game: only the server leg authenticates.
+                forwarder.setBuffering(true);
+                log.info("[S2C] Buffering enabled");
+                kickOffFrontAuthGrant(impl);
+            }
 
             auth.backAccessToken().thenCombine(auth.backServerGrant(), (at, sg) -> new String[]{at, sg})
                     .whenComplete((arr, err) -> {

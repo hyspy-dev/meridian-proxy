@@ -80,11 +80,23 @@ public class PacketRouter extends ChannelInboundHandlerAdapter {
                             ? handler.handleC2S(ctx, packet, session)
                             : handler.handleS2C(ctx, packet, session);
 
-                    if (action == PacketHandler.Action.DROP) return;
-                    if (action == PacketHandler.Action.HANDLED) return;
+                    if (action == PacketHandler.Action.DROP) {
+                        meridian.internal.control.PacketTap.offer(session, direction, frame.packetId(), packet,
+                                meridian.internal.control.PacketTap.Outcome.DROPPED);
+                        return;
+                    }
+                    if (action == PacketHandler.Action.HANDLED) {
+                        meridian.internal.control.PacketTap.offer(session, direction, frame.packetId(), packet,
+                                meridian.internal.control.PacketTap.Outcome.HANDLED);
+                        return;
+                    }
                     if (action == PacketHandler.Action.MODIFIED) modified = true;
                 }
             }
+            meridian.internal.control.PacketTap.offer(session, direction, frame.packetId(), packet,
+                    packet == null ? meridian.internal.control.PacketTap.Outcome.UNDECODED
+                            : modified ? meridian.internal.control.PacketTap.Outcome.MODIFIED
+                            : meridian.internal.control.PacketTap.Outcome.FORWARDED);
 
             if (modified) {
                 ByteBuf reframed = reserialize(packet, frame);
