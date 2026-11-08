@@ -62,6 +62,8 @@ public class ProxyServer {
             System.exit(meridian.internal.control.ControlClient.run(args));
             return;
         }
+        // Where the game is, as far as we are told: a fact for modules (core reads its files).
+        GameLocation.fromArgs(args);
         // A single-player world: the launcher's java-exec script hands us the client's server
         // command. Our own mode, decided before anything reads the args as a proxy command line.
         if (SingleplayerWrap.requested(args)) {

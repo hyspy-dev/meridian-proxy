@@ -103,6 +103,16 @@ final class ModuleContextImpl implements ModuleContext {
     }
 
     @Override
+    public java.util.Optional<Path> gameDirectory() {
+        return meridian.internal.GameLocation.gameDirectory();
+    }
+
+    @Override
+    public java.util.Optional<Path> gameUserDirectory() {
+        return meridian.internal.GameLocation.userDirectory();
+    }
+
+    @Override
     public Path getDataDir() {
         if (!dataDirReady) {
             synchronized (this) {

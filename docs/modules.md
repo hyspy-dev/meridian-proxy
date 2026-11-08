@@ -132,6 +132,13 @@ and ignores an entry that no longer matches. If a hand-placed jar in the folder 
 offered one declare the same module `name`, **the jar in the folder wins** — so
 dropping a build in by hand always overrides the launcher.
 
+## The game's content stays out of module jars
+
+A module jar holds code, never Hytale's files: no textures, icons, models or copied tables. A
+module that needs one reads it at run time from the player's own game, through core's
+`GameAssets`. What it makes of a file goes to that player's own client only. For how core finds
+the installation, see the [assets design](../../docs/assets-design.md).
+
 ## `ProxyModule` and `ModuleContext`
 
 ```java

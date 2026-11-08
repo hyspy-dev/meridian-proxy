@@ -255,6 +255,8 @@ Mode 1 (renaming `HytaleServer.jar`) predates this and no longer matches the gam
 | `--backup-dir` | Launcher-supplied path (Mode 1 only) | — |
 | `--multiplex` | Launcher-driven multiplex; ROUTE/TOKEN commands read from stdin (Mode 4) | `--multiplex` |
 | `--no-gui` | Disable the Swing window | `--no-gui` |
+| `--game-dir` | The game build the proxy serves (`.../package/game/latest`); the launcher passes it. Core reads the game's own files from there (`GameAssets`) | `--game-dir "%APPDATA%/Hytale/install/pre-release/package/game/latest"` |
+| `--user-dir` | The game's `UserData` folder, where it keeps the files it downloaded from servers | `--user-dir "%APPDATA%/Hytale/UserData"` |
 
 `--remote` and `--bind` are optional. In standalone / multiplex mode, if they are present
 they pre-fill the GUI fields; if absent the GUI shows its defaults. Launching with **no**

@@ -139,6 +139,7 @@ public final class SingleplayerWrap {
 
     public static void run(String[] args, boolean showGui) throws Exception {
         Plan plan = parse(args);
+        GameLocation.fromServerJar(plan.serverJar());
         int serverPort = freeUdpPort();
         List<String> cmd = plan.serverCommand(serverPort);
         log.info("Single-player world through the proxy: client port {} -> server port {}",
