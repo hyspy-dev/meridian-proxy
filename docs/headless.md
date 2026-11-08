@@ -39,6 +39,7 @@ The work is split by who owns it:
 | `SetClientId` | `ClientReady(readyForGameplay)` |
 | `ClientTeleport` | `ClientMovement` with the teleport's id and the exact target position |
 | `Ping` | three `Pong`s, one per type: `Raw`, `Direct`, `Tick` |
+| `SyncInteractionChains` with a negative chain id (a chain the server started: a projectile's miss, a stat effect) | the client's side of it, played like core's own chains from the root the server names. Without it the server waits for the client's data and cancels the chain after a few seconds |
 
 Why three `Pong`s: the server queues every ping once per type and takes each type's pongs in order.
 A pong out of turn closes the connection. Without `Tick` pongs, the timeout for cancelling
@@ -113,7 +114,7 @@ A chain's own end says little about whether the action worked. A watering can on
 | `place <x y z> [face] [orient]` | place the held block against a face |
 | `attack <entity> [times]` | Primary on an entity: the swing reports it hit |
 | `useentity <entity>` | Use (F) on an entity |
-| `useitem [times]` / `swing` | Secondary / Primary aimed at nothing (eat, drink, shoot, guard) |
+| `useitem [times] [hold <s>]` / `swing [hold <s>]` | Secondary / Primary aimed at nothing (eat, drink, guard, draw a bow), the button held `<s>` seconds |
 
 `tp` is core's own teleport, not the server's: the client reports the new position, and the server
 takes any finite position without a distance check. With a game behind the session, core also moves
@@ -130,7 +131,10 @@ What the server decides, and what core therefore mirrors:
 - **Combos.** A `ChainingInteraction` step must be the next one, or 0 once the chain's allowance has
   run out. Core counts the steps the server was sent, the player's own included.
 - **Charges are held.** While held the client sends `chargeValue = -1`; on release, the time held.
-  The server checks that time against its own clock, with 0.25 s of grace.
+  The server checks that time against its own clock, with 0.25 s of grace, and takes the tier of the
+  highest key the hold reached. Without `hold`, core holds each charge just long enough for its
+  first tier. That is a tap for a bow, whose first key, `0.0`, puts the arrow back. `swing hold 0.5`
+  draws and shoots.
 - **Effects and stats.** Effect checks and stat checks see what the walk's own earlier steps applied
   and spent. They start from what the server last said. Stats arrive as changes, not values.
 
@@ -164,11 +168,16 @@ nothing after it depends on core's.
 ### Checking a forge against the server
 
 Everything the bot sends, the server walks again and echoes. Compare the two walks per chain and
-fork, over a `watch` of `SyncInteractionChains` both ways. A difference shows the operation and the
+fork, over a `watch ... received` of `SyncInteractionChains` both ways. With `received` the watch
+shows packets as the server sent them: core takes its own chains' echoes out of a packet that also
+carries other chains, so a plain `watch` misses them. The forge cases in `meridian-tests/forge`, next
+to the repos, run all of this end to end against a local server of their own. A difference shows the operation and the
 state where the two parted. Also watch:
 
-- `CancelInteractionChain` with a non-negative chain id. Negative ids are the server's own chains,
-  such as stat effects.
+- `CancelInteractionChain`, for core's chains and for the server-started ones (negative ids) the bot
+  answers. A server chain cancelled a few seconds after it started went unanswered.
+- `WARN` lines in the server's log while the bot acts: `Client failed to send client data`, a charge
+  `exceeds max allowed`, an `unexpected chainingIndex`.
 - After a replay, the operations sent before it still show as core's last word on their index. An
   operation the server decided as the chain's last one may differ too (`UseNPC` above). Neither is
   a fault.

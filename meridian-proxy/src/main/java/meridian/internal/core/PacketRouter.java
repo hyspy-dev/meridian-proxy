@@ -75,6 +75,7 @@ public class PacketRouter extends ChannelInboundHandlerAdapter {
                 if (direction == Direction.S2C) {
                     session.tryCompleteAwaits(packet);
                 }
+                meridian.internal.control.PacketTap.offerReceived(session, direction, frame.packetId(), packet);
                 for (PacketHandler handler : handlers) {
                     PacketHandler.Action action = (direction == Direction.C2S)
                             ? handler.handleC2S(ctx, packet, session)

@@ -26,7 +26,12 @@ public final class PacketTap {
         /** Could not be decoded; passed on as raw bytes. */
         UNDECODED,
         /** Not passed on: made by the proxy itself (a module, core, or a {@code send}). */
-        FORGED
+        FORGED,
+        /**
+         * As it came in, before any handler saw it - what a {@code watch ... received} shows. Every
+         * packet routed is offered once so, and once more with what became of it.
+         */
+        RECEIVED
     }
 
     /** Hears every packet; called on the connection's event loop, so it must not block. */
@@ -45,6 +50,20 @@ public final class PacketTap {
 
     static void remove(Listener l) {
         LISTENERS.remove(l);
+    }
+
+    /** Called by the router for each packet as it comes in, before its handlers; cheap when nobody listens. */
+    public static void offerReceived(ProxySessionImpl session, Direction direction, int packetId, Packet packet) {
+        if (LISTENERS.isEmpty() || packet == null) {
+            return;
+        }
+        for (Listener l : LISTENERS) {
+            try {
+                l.packet(session, direction, packetId, packet, Outcome.RECEIVED);
+            } catch (RuntimeException ignored) {
+                // a watcher's trouble is its own; the game's packet goes on regardless
+            }
+        }
     }
 
     /** Called by the router for each packet it routed; cheap when nobody listens. */

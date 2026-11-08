@@ -381,7 +381,8 @@ public final class ControlServer {
             a.add("sessions                                   - live game connections, numbered");
             a.add("packets [part-of-name]                     - packet names, ids, channels, directions");
             a.add("send <conn|-> <c2s|s2c> <Packet> [json]    - send a packet on a connection (- = the only one)");
-            a.add("watch [conn|*] [c2s|s2c|both] [A,B|*] [full] - stream packets as they pass; full = uncut");
+            a.add("watch [conn|*] [c2s|s2c|both] [A,B|*] [full] [received] - stream packets as they pass; "
+                    + "full = uncut; received = as each came in, before any handler (plus the proxy's own)");
             a.add("expect <conn|-> <c2s|s2c> <Packet> [secs] [json] - wait for the next packet that has these fields");
             a.add("stop <cmd>                                 - end a watch or an expect of this connection");
             a.add("open <clientPort> <serverPort> <player> <serverSession> <serverIdentity> - a single-player world");
@@ -454,10 +455,22 @@ public final class ControlServer {
             String conn = p.length > 1 ? p[1] : "*";
             Direction only = p.length > 2 ? direction(p[2]) : null;
             Set<String> names = p.length > 3 ? names(p[3]) : null;
-            boolean full = p.length > 4 && p[4].equalsIgnoreCase("full");
+            boolean full = false;
+            boolean received = false;
+            for (int i = 4; i < p.length; i++) {
+                full |= p[i].equalsIgnoreCase("full");
+                received |= p[i].equalsIgnoreCase("received");
+            }
+            boolean asReceived = received;
+            boolean uncut = full;
             Integer connId = conn.equals("*") || conn.equals("-") ? null : Integer.valueOf(conn);
             PacketTap.Listener l = (session, dir, id, packet, outcome) -> {
                 if (only != null && dir != only) {
+                    return;
+                }
+                // Either each packet as it came in (and the proxy's own), or each as it went on.
+                if (asReceived ? outcome != PacketTap.Outcome.RECEIVED && outcome != PacketTap.Outcome.FORGED
+                        : outcome == PacketTap.Outcome.RECEIVED) {
                     return;
                 }
                 LiveConnections.Live live = LiveConnections.of(session);
@@ -468,7 +481,7 @@ public final class ControlServer {
                 if (names != null && !names.contains(name.toLowerCase(Locale.ROOT))) {
                     return;
                 }
-                send(event(cmd, live, session, dir, id, name, packet, outcome, full));
+                send(event(cmd, live, session, dir, id, name, packet, outcome, uncut));
             };
             taps.put(cmd, l);
             PacketTap.add(l);

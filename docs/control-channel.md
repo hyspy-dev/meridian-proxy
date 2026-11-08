@@ -51,7 +51,7 @@ dropped and a `{"lost":<count>}` line says how many.
 | `sessions` | live game connections: `id`, `target`, `localPort`, `phase`, `player`, `uuid`, `streams` |
 | `packets [part]` | packet names with `id`, `channel` and direction (`c2s`, `s2c`, `both`) |
 | `send <conn\|-> <c2s\|s2c> <Packet> [json]` | builds the packet from JSON (fields as in `meridian-protocol`; missing fields keep their defaults) and sends it on the stream of its channel |
-| `watch [conn\|*] [c2s\|s2c\|both] [A,B\|*] [full]` | streams packets as they pass |
+| `watch [conn\|*] [c2s\|s2c\|both] [A,B\|*] [full] [received]` | streams packets as they pass |
 | `expect <conn\|-> <c2s\|s2c> <Packet> [secs] [json]` | waits for the next such packet whose fields include the JSON given; ends with it or with a timeout error |
 | `stop <n>` | ends watch or expect number `n` |
 | `open <clientPort> <serverPort> <player> <serverSession> <serverIdentity>` | a single-player world's route, `-` for a missing token; closed with the connection |
@@ -68,6 +68,11 @@ Notes on the arguments:
   `forwarded`, `modified`, `dropped`, `handled` or `undecoded`.
 - Packets are shown with long strings and arrays cut; `full` shows them uncut. A `byte[]` is
   base64; a number array is accepted when sending.
+- A `watch` shows each packet as it went on, after the handlers. With `received` it shows each one
+  as it came in, before any handler changed or dropped it (`"outcome":"received"`), plus the ones the
+  proxy made itself. Use it to see what the server really sent: core takes its own chains' echoes
+  out of a packet before the game gets it, so a plain `watch` misses them in a packet that also
+  carries other chains.
 - Arm an `expect` before the `send` it answers. Commands on one connection run in order, so sending
   both in one go does that.
 
