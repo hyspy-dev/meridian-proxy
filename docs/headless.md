@@ -104,6 +104,9 @@ A chain's own end says little about whether the action worked. A watering can on
 |---|---|
 | `pos`, `look`, `inv`, `stats` | where the player is and looks; inventory; stats (health, stamina, mana, signature energy) |
 | `tp <x y z>` | move the player there |
+| `movement` | the body: where its feet are, whether it stands, its capabilities (speeds, step, jump, pull-up, safe drop) |
+| `stand <x y z>` | where the feet are when the body stands in that cell, or that it cannot |
+| `move <walk\|jump\|mantle\|drop> <x y z> [walk\|run\|sprint]` | one move onto that cell, played tick by tick as the client plays it |
 | `block <x y z>` | a block as core sees it: type, rotation, filler, fluid |
 | `entities [range]` | entities around, nearest first: id, model, name, position, own interactions |
 | `chain <rootId>` | a root's flattened operations, as the forging simulator walks them |
@@ -115,6 +118,13 @@ A chain's own end says little about whether the action worked. A watering can on
 | `attack <entity> [times]` | Primary on an entity: the swing reports it hit |
 | `useentity <entity>` | Use (F) on an entity |
 | `useitem [times] [hold <s>]` / `swing [hold <s>]` | Secondary / Primary aimed at nothing (eat, drink, guard, draw a bow), the button held `<s>` seconds |
+
+The moves are core's `Movement` service: a body that walks, jumps, pulls itself up and drops
+with the client's numbers. Every tick of a move is checked against the blocks' collision shapes
+before it starts, and is sent as the client sends it (position, velocity, movement states). The
+server takes fall damage from the speed reported at landing. Finding a way is the
+`meridian-navigation` module's: `nav <conn> goto <x y z> [radius]`, `nav <conn> plan ...`,
+`nav <conn> cancel`. See [the movement design](../../docs/movement-design.md).
 
 `tp` is core's own teleport, not the server's: the client reports the new position, and the server
 takes any finite position without a distance check. With a game behind the session, core also moves
