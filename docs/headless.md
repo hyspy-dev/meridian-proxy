@@ -86,8 +86,18 @@ A headless connection stays up after the command connection that opened it close
 
 ## Acting through core
 
-Core puts its services on the channel as `core <conn> <what> ...`. Each action answers once its
-chain has played out, with the block or entity as core then sees it.
+Core puts its services on the channel as `core <conn> <what> ...`. Each action answers once the
+server has said how its chain went, with the block or entity as core then sees it. The `outcome`
+holds:
+
+- `status`: `FINISHED`, `FAILED` (the chain's last operation failed), `CANCELLED`, `TIMED_OUT`, or
+  `NOT_SENT`;
+- `failed`: the operations the server ran that failed, by index and kind;
+- `forks`: the chains the server forked, such as a swing's hits or an area dig's blocks;
+- `corrections`: how often the server ran an operation otherwise than core guessed.
+
+A chain's own end says little about whether the action worked. A watering can on grass plays its
+"nothing to water" branch and ends `FINISHED`; its watering step is in `failed`.
 
 | Command | Does |
 |---|---|
@@ -124,12 +134,32 @@ What the server decides, and what core therefore mirrors:
 - **Effects and stats.** Effect checks and stat checks see what the walk's own earlier steps applied
   and spent. They start from what the server last said. Stats arrive as changes, not values.
 
-Server-only operations arrive as plain `SimpleInteraction`s. Their outcome is the server's alone, and
-the forge does not wait for it: the client guesses, and so does core. Examples:
+### The server has the last word
 
-- an NPC's `UseNPC`;
-- `RefillContainer`, which fills the can and then reports Failed for a source;
-- `UseWateringCan` on something that is not tilled soil.
+Core plays a chain the way the client does, a packet a tick, and follows the server while it goes.
+The server echoes every chain operation by operation: the path it took (which operation of which
+root at each operation index) and how each ended. Core uses that echo in three ways:
+
+- **It takes the server's outcome when it has one.** An operation the walk has not resolved yet ends
+  the way the server says. On grass the server fails `UseWateringCan` at once, while core's walk is
+  still in the can's 0.2 s use. The walk takes the failure and goes down the same branch as the
+  server.
+- **It waits where the client waits.** An operation marked `waitForDataFrom = Server` (portals,
+  teleporters, fertilizer, learning a recipe, game flags) stays running until the server's outcome
+  comes in. A recipe learned a second time is refused, and core then sends no step that uses it up.
+- **It replays where the paths part.** Sometimes the server ran an operation at an index where the
+  walk ran a different one, or ran one the walk never did. That means the walk mispredicted an
+  operation before it. Core goes back to the first operation the server ended otherwise, replays
+  from there the server's way, and sends the replay flagged `desync`. This is the client's
+  revert-and-replay, as the server's `InteractionManager` describes it.
+
+  An empty can at a water source fills, but the server then fails `RefillContainer` and takes the
+  failed branch. Core replays that branch, and the server ends the chain cleanly. Without the
+  replay, the server would wait for the client and then cancel the chain.
+
+An outcome that differs while the path does not is left alone, as the client leaves it. For
+example, an NPC's `UseNPC` as the chain's last operation: the server keeps its own outcome, and
+nothing after it depends on core's.
 
 ### Checking a forge against the server
 
@@ -139,6 +169,9 @@ state where the two parted. Also watch:
 
 - `CancelInteractionChain` with a non-negative chain id. Negative ids are the server's own chains,
   such as stat effects.
+- After a replay, the operations sent before it still show as core's last word on their index. An
+  operation the server decided as the chain's last one may differ too (`UseNPC` above). Neither is
+  a fault.
 - what the server sent back: block, fluid, damage and inventory updates, and the target's
   `EntityUpdates` (a hit's `CombatText` and health change).
 
