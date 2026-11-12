@@ -127,10 +127,25 @@ packet is ever decoded. Version 2 → 3 happened between build 100 and build 208
 
 ## Current sync point
 
-Build **272**, CRC **2583978903** (signed -1710988393), protocol version 3 - 390 packets, 181
-enums. Taken from the `pre-release` branch (`0.8.0-pre.4`, Sync 2026-11-05) onto `main` /
-`line/0.8.X`. The umbrella recipe is the `versions/0.8.X.conf` wildcard. Build 264 (`0.8.0-pre.2`,
-CRC 240795988) and 268 (Sync 2026-10-29) match no installed game any more.
+Build **277**, CRC **2536706760** (signed -1758260536), protocol version 3 - 391 packets.
+Taken from the `pre-release` branch (`0.8.0-pre.5`, Sync 2026-11-12) onto `main` / `line/0.8.X`.
+The umbrella recipe is the `versions/0.8.X.conf` wildcard. Build 272 (`0.8.0-pre.4`, CRC
+2583978903) matches no live game any more (a kept copy of the install still runs it); 264
+(`0.8.0-pre.2`, CRC 240795988) and 268 (Sync 2026-10-29) neither.
+
+Changes from build 272 to 277 (nothing the proxy, core or a module needs to adapt to; no code
+changes - the tree's file list matched the upstream diff one to one):
+
+- Handshake, `io/*` wire format and ALPN (3) unchanged; no packet id moved or was removed.
+- New: `SpawnFluidParticleSystem` (186, ToClient, Default; fixed 30 bytes). `EmoteItemAttachment`
+  in `ProtocolEmote` (so `UpdateEmotes` differs on the wire, `MAX_SIZE` 65536038 -> 1677721600).
+  `BlockParticleEvent` gained `Physics(9)` as a non-last value. Asset editor workspace types
+  (`AssetEditorWorkspaceDefinition` and its windows / dock items).
+- `io/StreamPriority` (new) and a default `ChannelConnection.updateStreamPriority(StreamPriority)`;
+  `PacketStatsRecorder`'s channel key is deprecated (the Netty transport goes in 0.9.0). The proxy
+  only uses `PacketStatsRecorder.NOOP`.
+
+The previous sync point was build 272 (`0.8.0-pre.4`), changes from 264 below.
 
 Changes from build 264 to 272 (core adapted in the same step):
 
