@@ -620,6 +620,33 @@ public final class LogWindow {
         return sep;
     }
 
+    /** With no game (the launcher's Headless): the profile's identity token and name; null otherwise. */
+    private static volatile String headlessIdentity;
+    private static volatile String headlessName;
+
+    /**
+     * The launcher started this proxy with no game: Connect joins the server picked here as the
+     * profile itself - the proxy plays it - with that server's own modules in the panel; Disconnect
+     * leaves.
+     */
+    public static void enterHeadless(String identityToken, String name) {
+        headlessIdentity = identityToken;
+        headlessName = name;
+        SwingUtilities.invokeLater(() -> {
+            if (frame != null) {
+                frame.setTitle("Meridian Proxy " + Version.VERSION + " — no game, " + name);
+            }
+            if (connectButton != null) {
+                connectButton.setText("Connect (no game)");
+                connectButton.setToolTipText("Join the server as " + name + " with no game: the proxy plays it");
+            }
+            if (localPortField != null) {
+                localPortField.setEnabled(false);
+            }
+            updateConnectEnabled();
+        });
+    }
+
     private static void performConnect() {
         RemoteAddress remote;
         int localPort;
@@ -647,11 +674,25 @@ public final class LogWindow {
                     "Connect", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        // Remember the remote for next launch (tokens are never persisted).
-        StandaloneState state = StandaloneState.load();
-        state.remember(remote.toWire());
-        state.save();
-        loadRemoteRecents();
+        if (headlessIdentity != null) {
+            // No game: the same connection, with the proxy playing - Connect and Disconnect as ever.
+            String name = headlessName;
+            String identity = headlessIdentity;
+            connectButton.setEnabled(false);
+            connectButton.setText("Joining…");
+            Thread.startVirtualThread(() -> {
+                try {
+                    meridian.internal.ProxyServer.connectHeadless(host, remotePort, name, sessionToken, identity);
+                } catch (Throwable ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(frame, ex.getMessage(), "Connect failed", JOptionPane.ERROR_MESSAGE);
+                        connectButton.setText("Connect (no game)");
+                        updateConnectEnabled();
+                    });
+                }
+            });
+            return;
+        }
 
         connectButton.setEnabled(false);
         connectButton.setText("Deriving session…");
@@ -727,15 +768,29 @@ public final class LogWindow {
 
     /** Called from ConnectionScope once the listener is bound — show the Connected bar, log target. */
     public static void onProxyStarted(String remoteHost, int remotePort, int localPort) {
+        onProxyStarted(remoteHost, remotePort, "(listening on localhost:" + localPort + ")");
+    }
+
+    /** Connected to {@code remoteHost:remotePort}; {@code how} - the client side's own words. */
+    public static void onProxyStarted(String remoteHost, int remotePort, String how) {
+        // Every server played through this proxy goes on the Remote list - the game's join from its
+        // server list, a Connect here, one with no game alike (tokens are never kept).
+        try {
+            StandaloneState state = StandaloneState.load();
+            state.remember(remoteHost + ":" + remotePort);
+            state.save();
+        } catch (RuntimeException e) {
+            // the list stays as it was
+        }
         SwingUtilities.invokeLater(() -> {
+            loadRemoteRecents();
             if (frame != null) {
                 frame.setTitle("Meridian Proxy " + Version.VERSION + " — " + remoteHost + ":" + remotePort
-                        + " (listening on localhost:" + localPort + ")");
+                        + " " + how);
             }
             if (standaloneMode) {
                 if (connectedLabel != null) {
-                    connectedLabel.setText("Connected to " + remoteHost + ":" + remotePort
-                            + "   (listening on localhost:" + localPort + ")");
+                    connectedLabel.setText("Connected to " + remoteHost + ":" + remotePort + "   " + how);
                 }
                 if (disconnectButton != null) {
                     disconnectButton.setText("Disconnect");
@@ -773,7 +828,7 @@ public final class LogWindow {
     private static void showConnectCard() {
         showCard(CARD_CONNECT);
         if (connectButton != null) {
-            connectButton.setText("Connect");
+            connectButton.setText(headlessIdentity != null ? "Connect (no game)" : "Connect");
             updateConnectEnabled();
         }
     }

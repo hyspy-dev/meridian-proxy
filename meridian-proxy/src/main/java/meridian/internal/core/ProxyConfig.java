@@ -144,6 +144,17 @@ public record ProxyConfig(
     }
 
     /**
+     * A connection with no game ({@code HeadlessConnection}): to {@code host:port}, the player's
+     * session and identity, its modules the server's own folder's - or {@code <jar>/<scope>/modules}
+     * with a {@code modulesScope} (an insecure test bot's).
+     */
+    public static ProxyConfig forHeadless(String host, int port, String playerSession, String identityToken,
+                                          String modulesScope) {
+        return new ProxyConfig(host, port, 0, playerSession, null, identityToken,
+                true, false, false, null, new String[0], modulesScope);
+    }
+
+    /**
      * The proxy in front of a single-player world's local server: the client's port in front, the
      * server moved to {@code serverPort} behind, the tokens the client gave the server (they reach
      * us in the same environment), and the {@code singleplayer} module set.

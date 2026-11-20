@@ -174,6 +174,14 @@ public final class MultiplexProxy {
                         LogWindow.onLauncherToken(p[1]);
                     }
                 }
+                case "HEADLESS" -> {
+                    // The launcher started us with no game: Connect plays the profile itself.
+                    if (p.length >= 3) {
+                        LogWindow.enterHeadless(p[1], p[2]);
+                    } else {
+                        log.warn("Multiplex: bad HEADLESS command");
+                    }
+                }
                 case "ROUTE" -> {
                     if (p.length >= 4) {
                         bindRoute(Integer.parseInt(p[1]), p[2], Integer.parseInt(p[3]));

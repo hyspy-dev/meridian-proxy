@@ -76,14 +76,54 @@ public final class ConnectionScope implements FrontendScope {
     private static final int REDIRECT_TIMEOUT_SECONDS = 20;
 
     private volatile ModuleManager moduleManager;
+    /** The channel whose closing ends the connection: the game's listener, the bot's QUIC connection. */
     private volatile Channel listener;
-    private volatile NioEventLoopGroup group;
+    private final Front front;
+    private final boolean windowed;
+    private final java.util.concurrent.CompletableFuture<ConnectionScope> started =
+            new java.util.concurrent.CompletableFuture<>();
 
+    /** The game's connection: a local port the game connects to, shown in the window. */
     public ConnectionScope(ProxyConfig config, boolean guiLifecycle) {
+        this(config, guiLifecycle, new GameFront(config), true);
+    }
+
+    /**
+     * A connection with its own client side: the game's ({@link GameFront}) or none - the proxy
+     * playing ({@link HeadlessConnection}). {@code windowed}: the window shows it - its modules in
+     * the panel, its Connected bar; a bot a script started over the command channel is not.
+     */
+    ConnectionScope(ProxyConfig config, boolean guiLifecycle, Front front, boolean windowed) {
         this.config = config;
         this.guiLifecycle = guiLifecycle;
+        this.front = front;
+        this.windowed = windowed;
         this.currentRemoteHost = config.remoteHost();
         this.currentRemotePort = config.remotePort();
+    }
+
+    /** Completes once the client side is up - with the scope - or with why it failed. */
+    public java.util.concurrent.CompletableFuture<ConnectionScope> started() {
+        return started;
+    }
+
+    /** The client side. */
+    Front front() {
+        return front;
+    }
+
+    /** The client side when the proxy plays it (no game); {@code null} for the game's. */
+    public HeadlessConnection headless() {
+        return front instanceof HeadlessConnection h ? h : null;
+    }
+
+    /** The server the next client connection goes to (a referral moves it). */
+    String currentRemoteHost() {
+        return currentRemoteHost;
+    }
+
+    int currentRemotePort() {
+        return currentRemotePort;
     }
 
     public State state() { return state.get(); }
@@ -111,92 +151,36 @@ public final class ConnectionScope implements FrontendScope {
             log.warn("connect ignored — scope already {}", state.get());
             return;
         }
-        log.info("Starting Hytale MITM QUIC Proxy on port {} -> {}:{}",
-                config.localPort(), config.remoteHost(), config.remotePort());
+        log.info("Connecting to {}:{} {}", config.remoteHost(), config.remotePort(), front.how());
 
         Exception failure = null;
         try {
-            // 1. Fresh module runtime for this server's module set.
+            // 1. Fresh module runtime for this server's module set - whatever the client side.
             Path modulesDir = resolveModulesDir();
             moduleManager = new ModuleManager();
             moduleManager.loadModules(modulesDir);
-            LogWindow.setModuleManager(moduleManager);
-            LogWindow.updateModuleList();
+            if (windowed) {
+                LogWindow.setModuleManager(moduleManager);
+                LogWindow.updateModuleList();
+            }
 
-            // 2. Crypto: one self-signed cert for both legs; its fingerprint is the
-            //    x509Fingerprint used in every REST call (see architecture.md).
-            SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
-            QuicSslContext sslContext = QuicSslContextBuilder.forServer(ssc.key(), null, ssc.cert())
-                    .applicationProtocols(HytaleAlpn.CURRENT, HytaleAlpn.PREVIOUS)
-                    .clientAuth(ClientAuth.NONE)
-                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .build();
-
-            logEnv("HYTALE_SESSION_TOKEN", config.clientToken());
-            logEnv("HYTALE_SERVER_SESSION_TOKEN", config.serverToken());
-            logEnv("HYTALE_SERVER_IDENTITY_TOKEN", config.identityToken());
-            byte[] certDer = ssc.cert().getEncoded();
-            byte[] sha256 = MessageDigest.getInstance("SHA-256").digest(certDer);
-            final String fp = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256);
-            log.info("Proxy self-signed cert SHA-256 fingerprint (b64url): {}", fp);
-
-            final HytaleSessionApi clientApi =
-                    new HytaleSessionApi(config.clientToken() != null ? config.clientToken() : "");
-            final HytaleSessionApi serverApi =
-                    new HytaleSessionApi(config.serverToken() != null ? config.serverToken() : "");
-            final String serverIdent = config.identityToken();
-            final HandlerRegistry handlerRegistry = moduleManager.handlerRegistry();
-            final EventBus eventBus = moduleManager.eventBus();
-
-            // 3. Bind the QUIC listener. Large UDP socket buffers: the Hytale setup
-            //    payload arrives as a multi-megabyte burst (see architecture.md).
-            NioEventLoopGroup g = new NioEventLoopGroup();
-            group = g;
-            Bootstrap b = new Bootstrap();
-            b.group(g)
-                    .channel(NioDatagramChannel.class)
-                    .option(ChannelOption.SO_RCVBUF, 8 * 1024 * 1024)
-                    .option(ChannelOption.SO_SNDBUF, 4 * 1024 * 1024)
-                    .handler(new LoggingHandler("UDP_RAW", LogLevel.DEBUG))
-                    .handler(QuicConfig.configure(new QuicServerCodecBuilder()
-                            .sslContext(sslContext)
-                            .tokenHandler(null))
-                            .handler(new ChannelInitializer<QuicChannel>() {
-                                @Override
-                                protected void initChannel(QuicChannel ch) {
-                                    log.info("New QUIC connection from {}", ch.remoteAddress());
-                                    ch.pipeline().addFirst(new LoggingHandler("FRONTEND_CONN", LogLevel.INFO));
-                                    // Read the current backend target at connect time so a
-                                    // connection that arrives after a referral targets the new server.
-                                    ch.pipeline().addLast(new ProxyFrontendHandler(currentRemoteHost, currentRemotePort, ssc,
-                                            new HytaleAuthState(fp, fp, serverIdent, clientApi, serverApi),
-                                            handlerRegistry, eventBus, ConnectionScope.this)
-                                            .commands(moduleManager != null ? moduleManager.commandRegistry() : null));
-                                }
-                            })
-                            .streamHandler(new LoggingHandler("STREAM_RAW", LogLevel.INFO))
-                            .build());
-
-            ChannelFuture f = b.bind(config.localPort()).sync();
-            listener = f.channel();
-
-            // Magic prints for launcher compatibility.
-            System.out.println("Listening on /127.0.0.1:" + config.localPort());
-            System.out.println("Listening on /[0:0:0:0:0:0:0:1]:" + config.localPort());
-            System.out.println("-=|Enabled|0");
-            System.out.println(ProxyConfig.READY_SIGNAL);
-            System.out.flush();
+            // 2. The client side: the game's listener, or the proxy playing.
+            Channel ch = front.start(this, moduleManager);
+            listener = ch;
 
             state.set(State.CONNECTED);
-            log.info("QUIC Proxy is ready and listening.");
-            LogWindow.onProxyStarted(config.remoteHost(), config.remotePort(), config.localPort());
+            started.complete(this);
+            if (windowed) {
+                LogWindow.onProxyStarted(config.remoteHost(), config.remotePort(), front.how());
+            }
 
-            // 4. Block until the listener closes — disconnect from any origin lands here.
-            f.channel().closeFuture().sync();
+            // 3. Block until it closes - disconnect from any origin lands here.
+            ch.closeFuture().sync();
         } catch (Exception e) {
             failure = e;
             log.error("Connection scope error", e);
         } finally {
+            started.completeExceptionally(failure != null ? failure : new IllegalStateException("closed"));
             teardown();
         }
 
@@ -307,8 +291,7 @@ public final class ConnectionScope implements FrontendScope {
         for (QuicChannel c : liveClients) {
             if (c.isActive()) c.close();
         }
-        Channel l = listener;
-        if (l != null && l.isActive()) l.close();
+        front.close();
     }
 
     /** Full teardown — always runs on the {@link #run()} thread (never an event loop). */
@@ -316,28 +299,19 @@ public final class ConnectionScope implements FrontendScope {
         state.set(State.DISCONNECTING);
         closeClientsAndListener();
 
-        NioEventLoopGroup g = group;
-        if (g != null) {
-            try {
-                // Zero quiet period (vs the 2s default) so the UDP listen port is
-                // released quickly — a reconnect to the same local port must be able
-                // to re-bind without "address already in use".
-                g.shutdownGracefully(0, 2, TimeUnit.SECONDS).sync();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
+        front.release();
 
         ModuleManager mm = moduleManager;
         if (mm != null) mm.shutdown();
 
-        LogWindow.setModuleManager(null);
-        LogWindow.updateModuleList();
-        LogWindow.onProxyStopped();
+        if (windowed) {
+            LogWindow.setModuleManager(null);
+            LogWindow.updateModuleList();
+            LogWindow.onProxyStopped();
+        }
 
         moduleManager = null;
         listener = null;
-        group = null;
         liveClients.clear();
         state.set(State.DISCONNECTED);
         log.info("Connection scope torn down.");
@@ -369,14 +343,6 @@ public final class ConnectionScope implements FrontendScope {
             log.warn("Failed to seed modules for {}: {}", dir, e.toString());
         }
         return dir;
-    }
-
-    private void logEnv(String name, String value) {
-        if (value != null && !value.isEmpty()) {
-            log.info("  {} = {}... (len={})", name, value.substring(0, Math.min(value.length(), 10)), value.length());
-        } else {
-            log.warn("  {} is empty. Auth may fail.", name);
-        }
     }
 
     /** Turns a bind failure into a user-facing message (port-in-use gets a tailored hint). */

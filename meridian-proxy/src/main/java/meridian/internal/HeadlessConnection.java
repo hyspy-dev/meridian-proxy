@@ -28,7 +28,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import meridian.api.packet.Direction;
 import meridian.api.packet.PacketHandler;
 import meridian.api.packet.PacketHandlerFactory;
@@ -70,8 +69,12 @@ import org.slf4j.LoggerFactory;
  * an authenticated server, a name and a made-up account on an insecure one. Everything after that
  * a client says is game behaviour, answered by whoever handles {@link meridian.api.session.ProxySession#headless}
  * sessions (core).
+ *
+ * <p>It is the client side of a {@link ConnectionScope} like the game's ({@link GameFront}): the
+ * scope loads the server's modules, tells the window, disconnects and tears down - the same for a
+ * connection with no game as for one with it ({@link #open}).
  */
-public final class HeadlessConnection {
+public final class HeadlessConnection implements Front {
 
     private static final Logger log = LoggerFactory.getLogger(HeadlessConnection.class);
 
@@ -98,9 +101,9 @@ public final class HeadlessConnection {
     private final UUID uuid;
     private final Auth auth;
     private final String identityToken;
-    private final HytaleAuthState authState;
-    private final ModuleManager modules;
-    private final Consumer<HeadlessConnection> onClosed;
+    private final String playerSession;
+    private volatile HytaleAuthState authState;
+    private volatile ModuleManager modules;
 
     private volatile QuicChannel quic;
     private volatile LiveConnections.Live live;
@@ -108,9 +111,8 @@ public final class HeadlessConnection {
     private volatile EmbeddedChannel clientEnd;
     private final HeadlessClient client = new Client();
 
-    private HeadlessConnection(String host, int port, String username, Auth auth, String identityToken,
-                               HytaleAuthState authState, ModuleManager modules,
-                               Consumer<HeadlessConnection> onClosed) {
+    HeadlessConnection(String host, int port, String username, Auth auth, String playerSession,
+                       String identityToken) {
         this.host = host;
         this.port = port;
         // On an authenticated server the player is whoever the identity token says.
@@ -120,39 +122,45 @@ public final class HeadlessConnection {
                 : UUID.nameUUIDFromBytes(("MeridianHeadless:" + username).getBytes(StandardCharsets.UTF_8));
         this.auth = auth;
         this.identityToken = identityToken;
-        this.authState = authState;
-        this.modules = modules;
-        this.onClosed = onClosed;
+        this.playerSession = playerSession;
     }
 
     /**
-     * Connects to {@code host:port} as {@code username}. The future completes once the QUIC
-     * connection is up and {@code Connect} is on its way; how the server takes it shows in the
-     * packets that follow.
+     * A connection to {@code host:port} with no game, as {@code username}: a {@link ConnectionScope}
+     * whose client side the proxy plays, run on a thread of its own. Its modules are the server's
+     * own folder's for a player's own account (as the game's connection there), {@code <jar>/headless/modules}
+     * for an insecure test bot. The scope's {@link ConnectionScope#started} completes once the bot is
+     * in; {@link ConnectionScope#requestDisconnect} ends it.
      *
      * @param playerSession the player's session token (authenticated servers), else {@code null}
+     * @param windowed      the window shows it (its modules in the panel, its Connected bar)
      */
-    public static CompletableFuture<HeadlessConnection> connect(String host, int port, String username, Auth auth,
-                                                                String playerSession, String identityToken,
-                                                                Consumer<HeadlessConnection> onClosed) {
-        CompletableFuture<HeadlessConnection> done = new CompletableFuture<>();
-        try {
-            SelfSignedCertificate cert = new SelfSignedCertificate("localhost");
-            byte[] sha256 = MessageDigest.getInstance("SHA-256").digest(cert.cert().getEncoded());
-            String fp = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256);
-            // Only the server leg exists, so only its tokens matter; the front ones stay empty.
-            HytaleAuthState authState = new HytaleAuthState(fp, fp, null,
-                    new HytaleSessionApi(playerSession != null ? playerSession : ""),
-                    new HytaleSessionApi(""));
-            ModuleManager mm = loadModules();
-            HeadlessConnection hc = new HeadlessConnection(host, port, username, auth, identityToken,
-                    authState, mm, onClosed);
-            hc.open(cert, done);
-        } catch (Exception e) {
-            done.completeExceptionally(e);
-        }
-        return done;
+    public static ConnectionScope open(String host, int port, String username, Auth auth,
+                                                          String playerSession, String identityToken,
+                                                          boolean windowed) {
+        HeadlessConnection front = new HeadlessConnection(host, port, username, auth, playerSession, identityToken);
+        ProxyConfig config = ProxyConfig.forHeadless(host, port, playerSession, identityToken,
+                auth == Auth.AUTHENTICATED ? null : SCOPE);
+        // A failure comes back through started() (the window says it once); not as a bind error.
+        ConnectionScope scope = new ConnectionScope(config, false, front, windowed);
+        Thread t = new Thread(() -> {
+            try {
+                scope.run();
+            } catch (Exception e) {
+                log.warn("Headless {}: {}", username, e.toString());
+            }
+        }, "Headless-" + username);
+        t.setDaemon(true);
+        t.start();
+        return scope;
     }
+
+    /** Run when the connection closes - whoever keeps a list of the bots takes it off. */
+    public void whenClosed(Runnable r) {
+        closedHooks.add(r);
+    }
+
+    private final java.util.List<Runnable> closedHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     /** {@code username} and {@code sub} of a JWT, unverified; {@code null} when it is not one. */
     private static String[] claims(String jwt) {
@@ -174,18 +182,9 @@ public final class HeadlessConnection {
         }
     }
 
-    private static ModuleManager loadModules() {
-        java.nio.file.Path dir = ProxyConfig.scopeModulesDir(SCOPE);
-        try {
-            if (ProxyConfig.createServerModulesDir(dir)) {
-                log.info("Headless: seeded {} from the default modules", dir);
-            }
-        } catch (java.io.IOException e) {
-            log.warn("Headless: could not seed {}: {}", dir, e.toString());
-        }
-        ModuleManager mm = new ModuleManager();
-        mm.loadModules(dir);
-        return mm;
+    /** The modules this connection runs - the window's module panel shows them while it lives. */
+    public ModuleManager modules() {
+        return modules;
     }
 
     public int id() {
@@ -198,11 +197,36 @@ public final class HeadlessConnection {
     }
 
     /** Leaves the server. */
+    @Override
     public void close() {
         QuicChannel q = quic;
         if (q != null) {
             q.close();
         }
+    }
+
+    @Override
+    public io.netty.channel.Channel start(ConnectionScope scope, ModuleManager modules) throws Exception {
+        this.modules = modules;
+        SelfSignedCertificate cert = new SelfSignedCertificate("localhost");
+        byte[] sha256 = MessageDigest.getInstance("SHA-256").digest(cert.cert().getEncoded());
+        String fp = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256);
+        // Only the server leg exists, so only its tokens matter; the front ones stay empty.
+        authState = new HytaleAuthState(fp, fp, null,
+                new HytaleSessionApi(playerSession != null ? playerSession : ""), new HytaleSessionApi(""));
+        CompletableFuture<HeadlessConnection> done = new CompletableFuture<>();
+        open(cert, done);
+        try {
+            done.get(60, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (java.util.concurrent.ExecutionException e) {
+            throw e.getCause() instanceof Exception ex ? ex : e;
+        }
+        return quic;
+    }
+
+    @Override
+    public String how() {
+        return "(no game - the proxy plays as " + username + ")";
     }
 
     // ------------------------------------------------------------------
@@ -225,7 +249,6 @@ public final class HeadlessConnection {
         b.connect(new InetSocketAddress(host, port)).addListener(f -> {
             if (!f.isSuccess()) {
                 done.completeExceptionally(f.cause());
-                modules.shutdown();
                 return;
             }
             QuicChannel.newBootstrap(((io.netty.channel.ChannelFuture) f).channel())
@@ -241,7 +264,6 @@ public final class HeadlessConnection {
                     .addListener(qf -> {
                         if (!qf.isSuccess()) {
                             done.completeExceptionally(qf.cause());
-                            modules.shutdown();
                             return;
                         }
                         QuicChannel q = (QuicChannel) qf.getNow();
@@ -338,17 +360,13 @@ public final class HeadlessConnection {
         if (end != null) {
             end.finishAndReleaseAll();
         }
-        Thread t = new Thread(() -> {
+        // The scope, woken by the channel's close, unloads the modules and tells the window.
+        for (Runnable r : closedHooks) {
             try {
-                modules.shutdown();
-            } catch (Exception e) {
-                log.warn("Headless: module shutdown failed: {}", e.toString());
+                r.run();
+            } catch (RuntimeException e) {
+                log.warn("Headless: a close hook failed: {}", e.toString());
             }
-        }, "Headless-ModuleShutdown");
-        t.setDaemon(true);
-        t.start();
-        if (onClosed != null) {
-            onClosed.accept(this);
         }
     }
 

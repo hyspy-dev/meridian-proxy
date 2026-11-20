@@ -617,14 +617,19 @@ public final class ControlServer {
                         error(cmd, "headless connect <host:port> <name> insecure | auth <sessionToken> <identityToken>");
                         return;
                     }
-                    meridian.internal.HeadlessConnection.connect(host, port, name, auth, session, identity,
-                            gone -> HEADLESS.remove(gone.id())).whenComplete((hc, err) -> {
+                    // The same connection as any other - modules, teardown - with the proxy playing; a
+                    // script's bot stays out of the window.
+                    meridian.internal.HeadlessConnection.open(host, port, name, auth, session, identity, false)
+                            .started().whenComplete((scope, err) -> {
                                 JsonObject o = reply(cmd);
                                 if (err != null) {
                                     o.addProperty("error", "could not connect: " + err);
                                 } else {
-                                    HEADLESS.put(hc.id(), hc);
-                                    o.addProperty("conn", hc.id());
+                                    meridian.internal.HeadlessConnection hc = scope.headless();
+                                    int id = hc.id();
+                                    HEADLESS.put(id, hc);
+                                    hc.whenClosed(() -> HEADLESS.remove(id));
+                                    o.addProperty("conn", id);
                                     o.addProperty("headless", hc.describe());
                                 }
                                 end(o);

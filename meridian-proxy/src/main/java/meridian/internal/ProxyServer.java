@@ -212,6 +212,37 @@ public class ProxyServer {
         t.start();
     }
 
+    /**
+     * The window's Connect with no game (the launcher's): the same connection as the game's - the
+     * server's own modules, the Connected bar, Disconnect - with the proxy playing the profile.
+     * Returns once the bot is in.
+     *
+     * @throws IllegalStateException when it could not join
+     */
+    public static void connectHeadless(String remoteHost, int remotePort, String name, String playerSessionToken,
+                                       String identityToken) {
+        ConnectionScope scope;
+        synchronized (ProxyServer.class) {
+            ConnectionScope existing = current.get();
+            if (existing != null && existing.state() != ConnectionScope.State.DISCONNECTED) {
+                log.warn("connectHeadless: already connected; disconnect first.");
+                return;
+            }
+            scope = HeadlessConnection.open(remoteHost, remotePort, name, HeadlessConnection.Auth.AUTHENTICATED,
+                    playerSessionToken, identityToken, true);
+            current.set(scope);
+        }
+        try {
+            scope.started().get(90, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (Exception e) {
+            current.compareAndSet(scope, null);
+            Throwable c = e instanceof java.util.concurrent.ExecutionException && e.getCause() != null ? e.getCause() : e;
+            throw new IllegalStateException("Could not join " + remoteHost + ":" + remotePort + ": " + c.getMessage(), c);
+        }
+        // Off the list once it ends.
+        scope.headless().whenClosed(() -> current.compareAndSet(scope, null));
+    }
+
     /** Requests a clean disconnect of the active connection (UI Disconnect button). */
     public static synchronized void disconnectStandalone() {
         ConnectionScope scope = current.get();
