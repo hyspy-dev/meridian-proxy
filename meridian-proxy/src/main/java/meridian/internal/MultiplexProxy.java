@@ -287,8 +287,7 @@ public final class MultiplexProxy {
             } catch (Exception e) {
                 log.warn("module shutdown failed: {}", e.toString());
             }
-            LogWindow.setModuleManager(null);
-            LogWindow.updateModuleList();
+            LogWindow.moduleManagerGone(mm);
         }, "Multiplex-ModuleShutdown");
         t.setDaemon(true);
         t.start();

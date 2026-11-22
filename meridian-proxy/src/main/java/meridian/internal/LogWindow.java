@@ -157,21 +157,72 @@ public final class LogWindow {
         }
     }
 
+    /**
+     * The module whose settings the SETTINGS card shows; {@code null} when it shows none. A page's
+     * buttons and ticks belong to one connection's module runtime: when that goes the page is taken
+     * down ({@link #moduleManagerGone}), and put up again for the same module with the next one's
+     * ({@link #updateModuleList}) - the page a player left open goes on working after a reconnect.
+     */
+    private static volatile String openModule;
+
     public static void setModuleManager(ModuleManager manager) {
         moduleManager = manager;
         updateModuleList();
     }
 
+    /**
+     * A connection's module runtime is shut down. If it is the one the window still shows, its list
+     * and its settings page go: the modules they belong to run no more - a button there called a
+     * module whose executor was shut down (22.11: "Mine" pressed after a reconnect, on the page of the
+     * connection before - {@code RejectedExecutionException}), a tick set a field nobody reads. A new
+     * connection's runtime, shown already, is left alone.
+     */
+    public static void moduleManagerGone(ModuleManager manager) {
+        if (moduleManager != manager) {
+            return;
+        }
+        moduleManager = null;
+        SwingUtilities.invokeLater(() -> {
+            if (moduleManager != null) {
+                return;         // the next connection came meanwhile: its page is put up by its own update
+            }
+            if (listModel != null) {
+                listModel.clear();
+            }
+            String open = openModule;
+            if (open != null && settingsContent != null) {
+                JLabel note = new JLabel("  Not connected. The settings of " + open + " come back with the next connection.");
+                note.setForeground(new Color(170, 170, 170));
+                settingsContent.removeAll();
+                settingsContent.add(note, BorderLayout.NORTH);
+                settingsContent.revalidate();
+                settingsContent.repaint();
+            }
+        });
+    }
+
     public static void updateModuleList() {
-        if (listModel == null || moduleManager == null) return;
+        ModuleManager manager = moduleManager;
+        if (listModel == null || manager == null) return;
         SwingUtilities.invokeLater(() -> {
             listModel.clear();
-            for (ModuleEntry entry : moduleManager.getLoadedModules()) {
+            for (ModuleEntry entry : manager.getLoadedModules()) {
                 listModel.addElement(entry);
             }
             // Incompatible modules appear after the loaded ones, flagged red.
-            for (SkippedModule skipped : moduleManager.getSkippedModules()) {
+            for (SkippedModule skipped : manager.getSkippedModules()) {
                 listModel.addElement(skipped);
+            }
+            // The settings page left open: the same module's, of this runtime.
+            String open = openModule;
+            if (open != null && manager == moduleManager) {
+                for (ModuleEntry entry : manager.getLoadedModules()) {
+                    if (open.equals(entry.name) && entry.settingsPanel != null
+                            && entry.settingsPanel.getParent() == null) {
+                        openSettings(entry);
+                        break;
+                    }
+                }
             }
         });
     }
@@ -346,7 +397,10 @@ public final class LogWindow {
 
         JButton btnBack = new JButton("← Back to Console");
         btnBack.setFocusPainted(false);
-        btnBack.addActionListener(e -> cardLayout.show(mainContainer, "CONSOLE"));
+        btnBack.addActionListener(e -> {
+            openModule = null;
+            cardLayout.show(mainContainer, "CONSOLE");
+        });
         
         settingsTitle = new JLabel("Module Settings");
         settingsTitle.setForeground(Color.WHITE);
@@ -812,6 +866,7 @@ public final class LogWindow {
             // would call a torn-down scheduler/session). Drop back to the console and
             // discard the stale panel — re-opening a module after reconnect renders a
             // fresh one against the new runtime.
+            openModule = null;
             if (cardLayout != null && mainContainer != null) {
                 cardLayout.show(mainContainer, "CONSOLE");
             }
@@ -1059,6 +1114,7 @@ public final class LogWindow {
 
     /** Shows why an incompatible module did not load, with its update link. */
     private static void openIncompatible(SkippedModule s) {
+        openModule = null;
         settingsTitle.setText(" Incompatible: " + s.name());
         settingsContent.removeAll();
 
@@ -1148,6 +1204,7 @@ public final class LogWindow {
             return;
         }
 
+        openModule = entry.name;
         settingsTitle.setText(" Settings: " + entry.name);
         settingsContent.removeAll();
         settingsContent.add(scrollSettings(entry.settingsPanel), BorderLayout.CENTER);
